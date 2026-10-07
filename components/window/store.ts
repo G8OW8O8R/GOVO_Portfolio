@@ -88,10 +88,10 @@ export function useOpenWindowKey(): WindowKey | null {
 }
 
 /**
- * "A window is open" for the desktop's own animations (stepping aside, dim)
- * and the window sliding in beside the character: one shared value, driven by
- * the desktop layer. It follows the URL two frames late, so the transitions
- * start after the heavy frame in which the window mounts – and start together.
+ * "A window is open" for the desktop's own animations (dim, files hiding,
+ * the dock sliding away), driven by the desktop layer. It follows the URL two
+ * frames late, so the transitions start after the heavy frame in which the
+ * window mounts.
  * Before the desktop drives it (server, first render) it equals the URL.
  */
 let settled: boolean | null = null;
@@ -117,9 +117,4 @@ export function useDriveWindowOpenSettled(): boolean {
     return () => cancelAnimationFrame(raf);
   }, [open]);
   return useSyncExternalStore(subscribeSettled, () => settled ?? open, () => open);
-}
-
-/** Read-only: has the desktop started reacting to the open window? */
-export function useWindowOpenSettled(): boolean {
-  return useSyncExternalStore(subscribeSettled, () => settled ?? false, () => false);
 }

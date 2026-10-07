@@ -16,18 +16,22 @@ export function ContactWindow({ lang }: { lang: Locale }) {
 
   return (
     <div className={ui.page}>
-      <p className="flex items-center gap-2.5 font-mono text-13 text-ink-soft">
-        <AvailableDot />
-        {dict.workWithMe.availability}
-      </p>
-      <h2 className={`mt-3 ${ui.display}`}>{dict.workWithMe.label}</h2>
-      <p className={`mt-4 max-w-[46ch] ${ui.body}`}>{dict.contact.lead}</p>
+      <header className="text-center">
+        <h2 className={ui.display}>{dict.workWithMe.label}</h2>
+        <p className={`${ui.introText} max-w-[46ch]`}>{dict.contact.lead}</p>
+        <p className="mt-4 flex items-center justify-center gap-2.5 text-13 font-medium text-ink">
+          <AvailableDot className="size-2" />
+          {dict.workWithMe.availability}
+        </p>
+      </header>
 
-      <Suspense fallback={<ContactForm lang={lang} labels={dict.contact} />}>
-        <ContactFormWithParams lang={lang} labels={dict.contact} />
-      </Suspense>
+      <div className={`${ui.surface} mx-auto mt-8 max-w-[680px] p-5 desk:p-8`}>
+        <Suspense fallback={<ContactForm lang={lang} labels={dict.contact} />}>
+          <ContactFormWithParams lang={lang} labels={dict.contact} />
+        </Suspense>
+      </div>
 
-      <div className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-win-line pt-6">
+      <div className="mx-auto mt-6 flex max-w-[680px] flex-wrap items-center justify-between gap-4 px-1">
         <PreferEmail labels={dict.contact} />
         {profiles.length > 0 && (
           <ul className="flex gap-1">

@@ -31,7 +31,9 @@ import {
 } from "@/lib/desktop-positions";
 import type { Depth } from "@/lib/desktop-slots";
 import type { WindowKey } from "@/lib/routes";
+import { computeWindowRect, overlaps } from "@/lib/window-layout";
 import { REDUCED_MOTION } from "@/components/window/ghost";
+import { useOpenWindowKey } from "@/components/window/store";
 import { useWindowNav } from "@/components/window/useWindowNav";
 import { HoverPreview, QuickLook, type Preview } from "./QuickLook";
 import s from "./desktop.module.css";
@@ -59,8 +61,10 @@ const HOVER_PREVIEW_MS = 600;
 const LONG_PRESS_MS = 420;
 const DRAG_THRESHOLD = 5;
 const KEY_STEP = 16;
-/** Files stay below the top bar and above the screen edge. */
-const AREA_MARGIN = { top: 64, side: 8, bottom: 8 };
+/** Files stay below the top bar and above the dock (never under it). */
+const AREA_MARGIN = { top: 64, side: 8, bottom: 96 };
+/** A file this close to the window counts as covered. */
+const COVER_MARGIN = 12;
 
 const isDesktop = () => matchMedia(DESKTOP_MEDIA).matches;
 const desktopScale = () => computeCharacterBox({ width: innerWidth, height: innerHeight }, "desktop").scale;
@@ -133,6 +137,23 @@ export function DesktopFiles({ files, labels }: { files: DesktopFile[]; labels: 
     window.addEventListener("pointermove", onMove, { passive: true });
     return () => window.removeEventListener("pointermove", onMove);
   }, [px, py]);
+
+  // Files the open window would cover hide (CSS: [data-covered]); the rest dim.
+  const windowOpen = useOpenWindowKey() !== null;
+  useEffect(() => {
+    const mark = () => {
+      const win = windowOpen && isDesktop() ? computeWindowRect({ width: innerWidth, height: innerHeight }) : null;
+      for (const el of document.querySelectorAll<HTMLElement>("[data-file-key]")) {
+        const r = el.getBoundingClientRect();
+        const covered = !!win && overlaps({ x: r.left, y: r.top, width: r.width, height: r.height }, win, COVER_MARGIN);
+        el.toggleAttribute("data-covered", covered);
+      }
+    };
+    mark();
+    if (!windowOpen) return;
+    window.addEventListener("resize", mark);
+    return () => window.removeEventListener("resize", mark);
+  }, [windowOpen]);
 
   const commit = useCallback((key: string, next: Offset) => store.set({ ...store.get(), [key]: next }), [store]);
 

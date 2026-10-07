@@ -16,6 +16,7 @@ export const offer = offerSchema.parse({
   services: [
     {
       id: "strony-firmowe",
+      thumb: "ux-ui",
       title: t("Strony firmowe i wizytówki", "Business websites and one-pagers"),
       text: t(
         "Strona, z której klient w kilka sekund dowie się, czym się zajmujesz i jak się z Tobą skontaktować. Działa szybko na telefonie i od startu jest gotowa na Google.",
@@ -28,6 +29,7 @@ export const offer = offerSchema.parse({
     },
     {
       id: "landing-page",
+      thumb: "assety-wizualne",
       title: t("Landing page"),
       text: t(
         "Jedna strona pod jedną kampanię lub produkt. Każda sekcja prowadzi do jednego działania, na przykład zapisu na listę.",
@@ -40,6 +42,7 @@ export const offer = offerSchema.parse({
     },
     {
       id: "sklepy",
+      thumb: "api-dane-na-zywo",
       title: t("Sklepy internetowe", "Online shops"),
       text: t(
         "Sklep, w którym produkt znajdziesz szybko, a zapłacisz w kilka kliknięć. Płatności online i wysyłki konfiguruję za Ciebie.",
@@ -52,6 +55,7 @@ export const offer = offerSchema.parse({
     },
     {
       id: "redesign",
+      thumb: "jakosc-wdrozenie",
       title: t("Redesign"),
       text: t(
         "Nowy wygląd i szybkość dla strony, która już działa. Stare adresy przekierowuję na nowe, więc pozycje w Google zostają.",

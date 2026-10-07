@@ -35,6 +35,7 @@ export function Dock({ lang, dict }: { lang: Locale; dict: Dictionary }) {
   return (
     <nav
       aria-label={dict.dock.label}
+      data-dock=""
       className="fixed bottom-[calc(14px+env(safe-area-inset-bottom))] left-1/2 z-50 -translate-x-1/2 desk:bottom-5"
     >
       <ul className="flex items-center gap-1 rounded-[20px] bg-glass p-1.5 shadow-glass backdrop-blur-xl">

@@ -105,7 +105,7 @@ export function ContactForm({ lang, labels: L, initial = EMPTY }: { lang: Locale
 
   if (sent) {
     return (
-      <div className="mt-10 border-t border-ink pt-8" role="status">
+      <div className="py-4 text-center" role="status">
         <p className="text-28 font-semibold tracking-[-0.03em] text-ink">{L.sentTitle}</p>
         <p className={`mt-2 ${ui.body}`}>{L.sentText}</p>
         <button type="button" onClick={sendAnother} className={`mt-6 ${ui.secondary}`}>
@@ -133,7 +133,7 @@ export function ContactForm({ lang, labels: L, initial = EMPTY }: { lang: Locale
       onFocus={lookAtField}
       onBlur={lookAway}
       noValidate
-      className="mt-10 grid gap-6"
+      className="grid gap-6"
       aria-describedby={`${id}-status`}
     >
       <input type="hidden" name="lang" value={lang} />
@@ -235,7 +235,7 @@ export function ContactForm({ lang, labels: L, initial = EMPTY }: { lang: Locale
 }
 
 const input =
-  "h-12 w-full rounded-field border border-win-line bg-white px-3.5 text-17 text-ink transition-colors placeholder:text-ink-soft/80 hover:border-ink/25 focus:border-focus aria-invalid:border-danger";
+  "h-12 w-full rounded-field border border-win-line bg-win/70 px-3.5 text-17 text-ink transition-colors placeholder:text-ink-soft/80 hover:border-ink/25 focus:border-focus focus:bg-white aria-invalid:border-danger";
 
 function Field({
   id,

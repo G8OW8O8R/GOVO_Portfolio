@@ -31,7 +31,7 @@ export function WindowBackdrop() {
   );
 }
 
-/** Desktop layer (top bar, character, files): inert while a window is open (at once), dimmed and stepped aside (settled). */
+/** Desktop layer (top bar, character, files): inert while a window is open (at once), dimmed (settled). */
 export function DesktopLayer({ children, className }: { children: React.ReactNode; className?: string }) {
   const open = useOpenWindowKey() !== null;
   const settled = useDriveWindowOpenSettled();

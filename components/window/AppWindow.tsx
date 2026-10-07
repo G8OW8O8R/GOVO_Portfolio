@@ -19,11 +19,11 @@ import { animate, m, useMotionValue } from "motion/react";
 import { Maximize2, Minimize2, Minus, X } from "lucide-react";
 import { DESKTOP_MEDIA } from "@/lib/character-box";
 import { characterGaze } from "@/lib/character/look-at";
-import { DURATION, SHEET_SPRING, SPRING, WINDOW_ENTER_SPRING } from "@/lib/motion-tokens";
+import { DURATION, SHEET_SPRING, SPRING } from "@/lib/motion-tokens";
 import type { WindowKey } from "@/lib/routes";
-import { SIDE_MEDIA, clampWindowOffset } from "@/lib/window-layout";
+import { clampWindowOffset } from "@/lib/window-layout";
 import { REDUCED_MOTION, flip, playExit, windowAnchor } from "./ghost";
-import { useWindowOpenSettled, windowStore } from "./store";
+import { windowStore } from "./store";
 import { useWindowNav } from "./useWindowNav";
 import s from "./window.module.css";
 
@@ -43,8 +43,6 @@ const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select, textarea, iframe, [tabindex]:not([tabindex="-1"])';
 
 const isDesktop = () => matchMedia(DESKTOP_MEDIA).matches;
-/** Wide desktop: the character steps aside and the window slides in from the right. */
-const isSide = () => matchMedia(SIDE_MEDIA).matches;
 
 /** How long the gaze keeps following a scroll of the window content, ms. */
 const SCROLL_GLANCE_MS = 900;
@@ -54,6 +52,11 @@ const SCROLL_GLANCE_MS = 900;
  * renders its content on the server; this adds the chrome and behaviour:
  * grow from the file (shared element), working dots, drag by the title bar,
  * full screen, Esc, focus trap and focus return, swipe down to close.
+ *
+ * Sharp text: at rest the window has no transform at all (Motion writes
+ * `transform: none` once x/y/scale are back at identity), no will-change and
+ * no filter; it sits on whole pixels (window.module.css) and a drag moves it
+ * by whole pixels. The title bar's blur lives on a layer of its own.
  */
 export function AppWindow({
   windowKey,
@@ -71,9 +74,6 @@ export function AppWindow({
   const titleId = useId();
   const { close } = useWindowNav();
   const [fullscreen, setFullscreen] = useState(false);
-
-  const sideEnter = useRef(false);
-  const settled = useWindowOpenSettled();
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -95,13 +95,6 @@ export function AppWindow({
       animate(y, [el.getBoundingClientRect().height, 0], SHEET_SPRING);
       return;
     }
-    if (isSide()) {
-      // waits off to the right; slides in when the character starts stepping aside (below)
-      x.set(el.getBoundingClientRect().width * 0.45);
-      opacity.set(0);
-      sideEnter.current = true;
-      return;
-    }
     const f = flip(origin.getBoundingClientRect(), el.getBoundingClientRect());
     animate(x, [f.x, 0], SPRING);
     animate(y, [f.y, 0], SPRING);
@@ -109,16 +102,6 @@ export function AppWindow({
     animate(scaleY, [f.scaleY, 1], SPRING);
     animate(opacity, [0, 1], { duration: DURATION.fast });
   }, [windowKey, x, y, scaleX, scaleY, opacity]);
-
-  // Side layout: the window and the character start together (the desktop
-  // reacts to the settled state); the window's spring trails a little, so its
-  // edge never passes the face mid-way (lib/window-layout.ts tests the end state).
-  useEffect(() => {
-    if (!settled || !sideEnter.current) return;
-    sideEnter.current = false;
-    animate(x, 0, WINDOW_ENTER_SPRING);
-    animate(opacity, 1, { duration: DURATION.base });
-  }, [settled, x, opacity]);
 
   // The title bar turns frosted only once content scrolls under it.
   useEffect(() => {
@@ -158,7 +141,7 @@ export function AppWindow({
     };
   }, []);
 
-  // Full screen: the character hides (stageShiftCss reacts to this attribute).
+  // Full screen: the character and the files hide (desktop.module.css reacts to this attribute).
   useEffect(() => {
     const root = document.documentElement;
     if (fullscreen) root.setAttribute("data-window-fullscreen", "");
@@ -276,8 +259,9 @@ export function AppWindow({
       { x: d.ox + e.clientX - d.sx, y: d.oy + e.clientY - d.sy },
       { width: window.innerWidth, height: window.innerHeight },
     );
-    x.set(next.x);
-    y.set(next.y);
+    // whole pixels: the dragged window keeps crisp text
+    x.set(Math.round(next.x));
+    y.set(Math.round(next.y));
   };
 
   const onBarPointerUp = (e: ReactPointerEvent<HTMLElement>) => {

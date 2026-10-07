@@ -7,7 +7,6 @@ export const about = aboutSchema.parse({
   facts: [
     { pl: "Polska", en: "Poland" },
     { pl: "Zdalnie lub hybrydowo", en: "Remote or hybrid" },
-    { pl: "Dostępny od zaraz", en: "Available now" },
     { pl: "PL / EN", en: "PL / EN" },
   ],
   lead: {
@@ -30,6 +29,8 @@ export const about = aboutSchema.parse({
   ],
   seeking: {
     label: { pl: "Czego szukam", en: "What I'm looking for" },
+    // "Dostępny od zaraz" from the facts, next to the green dot
+    status: { pl: "Dostępny od zaraz", en: "Available now" },
     // shown as a large sentence, the rest below it (one sentence of the source split in two)
     strong: { pl: "Szukam pracy jako frontend developer.", en: "I'm looking for a job as a frontend developer." },
     rest: {

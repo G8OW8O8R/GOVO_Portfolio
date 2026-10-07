@@ -31,8 +31,10 @@
 
 /*
  * Frosted once content scrolls under it (glass only here and on the dock).
- * The blur switches on with [data-scrolled]: at the top there is nothing
- * under the bar to blur, and the window mounts without the extra pass.
+ * The blur sits on a layer of its own (::before), never on the element that
+ * holds the title and the dots: text in a filtered layer loses its sharpness.
+ * It switches on with [data-scrolled]: at the top there is nothing under the
+ * bar to blur, and the window mounts without the extra pass.
  */
 .bar {
   position: absolute;
@@ -44,12 +46,20 @@
   height: var(--bar-h);
   padding: 0 8px 0 14px;
   border-bottom: 1px solid var(--win-line);
-  background: var(--win-bar);
+  isolation: isolate;
   user-select: none;
   touch-action: none;
 }
 
-.window[data-scrolled] .bar {
+.bar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--win-bar);
+}
+
+.window[data-scrolled] .bar::before {
   -webkit-backdrop-filter: blur(18px) saturate(1.6);
   backdrop-filter: blur(18px) saturate(1.6);
 }
@@ -73,10 +83,9 @@
   grid-column: 2;
   margin: 0;
   padding-top: 6px;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
@@ -113,8 +122,8 @@
   overscroll-behavior: contain;
   padding-top: var(--bar-h);
   scroll-padding-top: var(--bar-h);
-  /* the dock floats over the bottom of the window */
-  padding-bottom: calc(92px + env(safe-area-inset-bottom));
+  /* the dock hides while a window is open */
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
   -webkit-overflow-scrolling: touch;
 }
 
@@ -123,13 +132,12 @@
 @media (min-width: 768px) and (min-height: 540px) and (min-aspect-ratio: 5/6) {
   .window {
     --bar-h: 40px;
-    /* its own layer: slides in, is dragged and zoomed without repainting */
-    will-change: transform;
+    /* whole pixels (no will-change, no transform at rest): text stays crisp */
     inset: auto;
-    left: var(--win-x);
-    top: var(--win-y);
-    width: var(--win-w);
-    height: var(--win-h);
+    left: round(down, var(--win-x), 1px);
+    top: round(down, var(--win-y), 1px);
+    width: round(var(--win-w), 1px);
+    height: round(down, var(--win-h), 1px);
     border-radius: var(--radius-window);
   }
 

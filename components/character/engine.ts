@@ -149,10 +149,9 @@ export class CharacterEngine {
   // ---------- geometry ----------
 
   /**
-   * Canvas buffer and pixel map come from layout sizes, not from the screen
-   * rect: the stage may be transformed (it steps aside and scales while a
-   * window is open) and the buffer must not be reallocated every frame of
-   * that transition. The gaze uses the on-screen box (screenImageBox).
+   * Canvas buffer and pixel map come from layout sizes (offsetWidth/Height),
+   * so a transformed ancestor never reallocates the buffer. The gaze uses the
+   * on-screen box (screenImageBox).
    */
   private measure = () => {
     const { canvas } = this.o;
@@ -251,7 +250,6 @@ export class CharacterEngine {
   // ---------- input ----------
 
   private onPointer = (e: PointerEvent) => {
-    this.poster = this.screenImageBox();
     this.pointer = { gaze: this.gazeAt({ x: e.clientX, y: e.clientY }), at: this.now() };
   };
 
@@ -277,8 +275,6 @@ export class CharacterEngine {
   private target(): Vec2 {
     if (this.targetOverride) return this.targetOverride;
     const look = characterGaze.current();
-    // the stage may be moving (window open/close): read where the image is now
-    if (look && look !== VIEWER) this.poster = this.screenImageBox();
     return this.director.update({
       now: this.now(),
       pointer: this.pointer,

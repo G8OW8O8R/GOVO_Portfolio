@@ -6,7 +6,7 @@ import { href } from "@/lib/routes";
 import { hasCv, optionalAsset } from "@/lib/site";
 import { Tabs } from "../Tabs";
 import { WindowLink } from "../WindowLink";
-import { AvailableDot, Thumb, Timeline, ui } from "./ui";
+import { AvailableDot, Steps, Thumb, ui } from "./ui";
 
 export function AboutWindow({ lang }: { lang: Locale }) {
   const dict = getDictionary(lang);
@@ -32,25 +32,30 @@ function AboutPanel({ lang }: { lang: Locale }) {
   const dict = getDictionary(lang);
   return (
     <div className={ui.page}>
-      <header>
-        <p className={ui.mono}>{about.role[lang]}</p>
-        <h2 className={`mt-2 ${ui.display}`}>{about.name}</h2>
-        <p className={`mt-4 max-w-[30ch] ${ui.lead}`}>{about.lead[lang]}</p>
-        <p className={`mt-4 ${ui.mono}`}>{about.facts.map((f) => f[lang]).join("  ·  ")}</p>
-      </header>
+      <div className="grid items-start gap-6 desk:grid-cols-[1.2fr_1fr] desk:gap-8">
+        <header>
+          <h2 className={ui.display}>{about.name}</h2>
+          <p className="mt-1 text-15 text-ink-soft">{about.role[lang]}</p>
+          <p className={`mt-3 ${ui.mono}`}>{about.facts.map((f) => f[lang]).join("  ·  ")}</p>
+          <p className={`mt-5 ${ui.lead}`}>{about.lead[lang]}</p>
+        </header>
 
-      <section className="mt-10" aria-labelledby="seeking">
-        <h3 id="seeking" className={ui.label}>
-          {about.seeking.label[lang]}
-        </h3>
-        <p className="mt-2 flex items-baseline gap-3.5 text-22 font-semibold tracking-[-0.025em] text-ink desk:text-28">
-          <AvailableDot className="relative -top-1 desk:-top-1.5" />
-          <span>{about.seeking.strong[lang]}</span>
-        </p>
-        <p className={`mt-2 max-w-[60ch] pl-6 ${ui.body}`}>{about.seeking.rest[lang]}</p>
-      </section>
+        <section className={`${ui.fill} p-5 desk:p-6`} aria-labelledby="seeking">
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+            <h3 id="seeking" className={ui.label}>
+              {about.seeking.label[lang]}
+            </h3>
+            <p className="flex items-center gap-2 text-13 font-medium text-ink">
+              <AvailableDot className="size-2" />
+              {about.seeking.status[lang]}
+            </p>
+          </div>
+          <p className="mt-3 text-17 font-semibold tracking-[-0.01em] text-ink">{about.seeking.strong[lang]}</p>
+          <p className="mt-1.5 text-15 text-ink-soft">{about.seeking.rest[lang]}</p>
+        </section>
+      </div>
 
-      <div className="mt-10 max-w-[64ch] space-y-4">
+      <div className="mt-10 max-w-[66ch] space-y-4">
         {about.text.map((p) => (
           <p key={p.pl.slice(0, 24)} className={ui.body}>
             {p[lang]}
@@ -58,16 +63,16 @@ function AboutPanel({ lang }: { lang: Locale }) {
         ))}
       </div>
 
-      <section className="mt-12" aria-labelledby="how-i-work">
-        <h3 id="how-i-work" className={`mb-5 ${ui.h3}`}>
+      <section className="mt-10" aria-labelledby="how-i-work">
+        <h3 id="how-i-work" className={`mb-4 ${ui.label}`}>
           {about.howIWork.label[lang]}
         </h3>
-        <Timeline items={about.howIWork.points.map((p) => ({ title: p.title[lang], text: capitalize(p.text[lang]) }))} />
+        <Steps items={about.howIWork.points.map((p) => ({ title: p.title[lang], text: capitalize(p.text[lang]) }))} />
       </section>
 
-      <div className="mt-12 border-t border-win-line pt-8">
-        <p className="max-w-[40ch] text-22 font-medium tracking-[-0.02em] text-ink">{about.closing[lang]}</p>
-        <div className="mt-5 flex flex-wrap gap-2">
+      <div className="mt-10 flex flex-col items-start gap-5 desk:flex-row desk:items-center desk:justify-between">
+        <p className="max-w-[40ch] text-17 font-medium text-ink">{about.closing[lang]}</p>
+        <div className="flex shrink-0 flex-wrap gap-2">
           <WindowLink href={href(lang, "contact")} className={ui.primary}>
             {dict.workWithMe.label}
           </WindowLink>
@@ -85,24 +90,24 @@ function SkillsPanel({ lang }: { lang: Locale }) {
   return (
     <div className={ui.page}>
       <header>
-        <h2 className={ui.display}>{skills.title[lang]}</h2>
-        <p className={`mt-3 max-w-[52ch] ${ui.body}`}>{skills.lead[lang]}</p>
+        <h2 className={ui.intro}>{skills.title[lang]}</h2>
+        <p className={ui.introText}>{skills.lead[lang]}</p>
       </header>
 
       {skills.categories.map((category, ci) => (
-        <section key={category.id} className="mt-12" aria-labelledby={`skills-${category.id}`}>
-          <h3 id={`skills-${category.id}`} className="flex items-baseline gap-3 border-b border-ink pb-2.5">
+        <section key={category.id} className="mt-10" aria-labelledby={`skills-${category.id}`}>
+          <h3 id={`skills-${category.id}`} className="mb-3 flex items-baseline gap-2.5 px-1">
             <span className="font-mono text-13 tabular-nums text-ink-soft">{String(ci + 1).padStart(2, "0")}</span>
             <span className={ui.label}>{category.label[lang]}</span>
           </h3>
-          <ul>
+          <ul className={`${ui.surface} divide-y divide-win-line`}>
             {category.skills.map((skill) => (
               <li
                 key={skill.id}
-                className="grid grid-cols-[1fr_56px] items-start gap-x-5 border-b border-win-line py-4 last:border-b-0 desk:grid-cols-[1fr_72px]"
+                className="grid grid-cols-[1fr_56px] items-center gap-x-5 px-5 py-4 desk:grid-cols-[1fr_72px] desk:px-6"
               >
                 <div className="min-w-0">
-                  <p className="text-22 font-medium tracking-[-0.02em] text-ink">{skill.name[lang]}</p>
+                  <p className="text-17 font-semibold tracking-[-0.01em] text-ink desk:text-22">{skill.name[lang]}</p>
                   <p className="mt-0.5 text-15 text-ink-soft">{skill.note[lang]}</p>
                   <p className={`mt-2 ${ui.mono}`}>
                     <span className="sr-only">{skill.name[lang]}: </span>
@@ -116,26 +121,28 @@ function SkillsPanel({ lang }: { lang: Locale }) {
         </section>
       ))}
 
-      <section className="mt-14" aria-labelledby="skills-workflow">
-        <h3 id="skills-workflow" className={ui.h3}>
+      <section className="mt-12" aria-labelledby="skills-workflow">
+        <h3 id="skills-workflow" className={`text-center ${ui.h3}`}>
           {skills.workflow.label[lang]}
         </h3>
-        <p className={`mt-1 ${ui.small}`}>{skills.workflow.caption[lang]}</p>
-        <ol className="mt-5 grid gap-5 desk:grid-cols-3 desk:gap-4">
+        <p className={`mt-1 text-center ${ui.small}`}>{skills.workflow.caption[lang]}</p>
+        <ol className={`${ui.surface} mt-5 grid gap-5 p-4 desk:grid-cols-3 desk:gap-4`}>
           {skills.workflow.steps.map((step, i) => (
             <li key={step.id}>
-              <Thumb src={optionalAsset(`/skills/${step.id}.png`)} sizes="(max-width: 767px) 90vw, 240px" className="aspect-[16/10] w-full" />
-              <p className="mt-2.5 flex items-baseline gap-2.5">
+              <Thumb src={optionalAsset(`/skills/${step.id}.png`)} sizes="(max-width: 767px) 90vw, 260px" className="aspect-[16/10] w-full" />
+              <p className="mt-2.5 flex items-baseline gap-2.5 px-1">
                 <span className="font-mono text-13 tabular-nums text-ink-soft">{String(i + 1).padStart(2, "0")}</span>
                 <span className="text-15 font-medium text-ink">{step.title[lang]}</span>
               </p>
             </li>
           ))}
         </ol>
-        <p className={`mt-6 max-w-[62ch] ${ui.body}`}>{skills.workflow.note[lang]}</p>
+        <p className={`mx-auto mt-5 max-w-[62ch] text-center ${ui.small}`}>{skills.workflow.note[lang]}</p>
       </section>
 
-      <CvLink lang={lang} label={dict.about.seeCv} className={`mt-10 ${ui.secondary}`} />
+      <div className="mt-8 flex justify-center">
+        <CvLink lang={lang} label={dict.about.seeCv} className={ui.secondary} />
+      </div>
     </div>
   );
 }

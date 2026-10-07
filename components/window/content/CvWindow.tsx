@@ -24,7 +24,7 @@ export function CvWindow({ lang }: { lang: Locale }) {
         src={`${CV_PATH}#view=FitH&toolbar=0`}
         title={dict.cv.preview}
         loading="lazy"
-        className="hidden min-h-[480px] w-full flex-1 border-0 bg-win-card desk:block"
+        className="hidden min-h-[480px] w-full flex-1 border-0 bg-win-fill desk:block"
       />
     </div>
   );

@@ -11,10 +11,8 @@ export const DURATION = { fast: 0.15, base: 0.25, slow: 0.4 } as const;
 export const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 export const EASE_IN = [0.4, 0, 1, 1] as const;
 
-/** The one UI spring: window enter, the character stepping aside, full screen. */
+/** The one UI spring: window enter, full screen, the dock coming back. */
 export const SPRING = { type: "spring", visualDuration: 0.38, bounce: 0.06 } as const;
-/** Window sliding in beside the character: the UI spring, a touch slower so it trails the figure. */
-export const WINDOW_ENTER_SPRING = { type: "spring", visualDuration: 0.46, bounce: 0 } as const;
 /** Phone sheet: a touch slower, no overshoot. */
 export const SHEET_SPRING = { type: "spring", visualDuration: 0.4, bounce: 0 } as const;
 

@@ -13,7 +13,7 @@ export const aboutSchema = z.object({
   facts: z.array(localized).min(1),
   lead: localized,
   text: z.array(localized).min(1),
-  seeking: z.object({ label: localized, strong: localized, rest: localized }),
+  seeking: z.object({ label: localized, status: localized, strong: localized, rest: localized }),
   howIWork: z.object({
     label: localized,
     points: z.array(z.object({ title: localized, text: localized })).length(3),
@@ -81,7 +81,8 @@ export const pricingSchema = z.object({
 export const offerSchema = z.object({
   servicesTitle: localized,
   servicesLead: localized,
-  services: z.array(z.object({ id, title: localized, text: localized, fit: localized })).length(4),
+  // thumb: a picture from public/skills/<thumb>.png, a different one per service
+  services: z.array(z.object({ id, title: localized, text: localized, fit: localized, thumb: id })).length(4),
   processTitle: localized,
   process: z.array(z.object({ title: localized, text: localized })).min(1),
 });

@@ -38,15 +38,18 @@
   --selection: rgb(111 143 224 / 0.26);
   --danger: #b3261e;
 
-  /* Windows (light macOS style) */
-  --win-bg: #fcfcfb;
-  --win-bar: rgb(248 248 247 / 0.74);
+  /* Windows (light macOS style): white surfaces on a light window ground */
+  --win-bg: #f6f6f4;
+  --win-bar: rgb(246 246 244 / 0.78);
   --win-line: rgb(17 17 17 / 0.09);
-  --win-fill: #f1f1ef;
+  --win-fill: #ebebe8;
+  --surface: #ffffff;
+  --shadow-surface: 0 0 0 1px rgb(17 17 17 / 0.045), 0 1px 2px rgb(17 17 17 / 0.04), 0 14px 34px -16px rgb(17 17 17 / 0.16);
   --shadow-window: 0 0 0 0.5px rgb(0 0 0 / 0.1), 0 34px 90px -12px rgb(0 0 0 / 0.3), 0 10px 28px rgb(0 0 0 / 0.08);
 
-  /* Radii: window 14, buttons 999, fields 10 */
+  /* Radii: window 14, surfaces 16, buttons 999, fields 10 */
   --radius-window: 14px;
+  --radius-surface: 16px;
   --radius-pill: 999px;
   --radius-field: 10px;
 }
@@ -81,12 +84,15 @@
   --color-paper: var(--paper);
   --color-win: var(--win-bg);
   --color-win-fill: var(--win-fill);
+  --color-surface: var(--surface);
   --color-win-line: var(--win-line);
   --color-focus: var(--focus);
   --color-danger: var(--danger);
   --color-available: var(--available);
   --shadow-window: var(--shadow-window);
   --shadow-glass: var(--shadow-glass);
+  --shadow-surface: var(--shadow-surface);
+  --radius-surface: var(--radius-surface);
   --radius-field: var(--radius-field);
   --radius-window: var(--radius-window);
 }
@@ -132,6 +138,33 @@ body {
 
 [data-window-open] [data-dim] {
   opacity: 0.6;
+}
+
+/* Files the window would cover hide completely (DesktopFiles marks them). */
+[data-window-open] [data-dim][data-covered] {
+  opacity: 0;
+}
+
+/*
+ * The dock slides down out of the way while a window is open and comes back
+ * when it closes. Hidden also for focus and pointer (visibility flips after
+ * the slide out, before the slide in).
+ */
+[data-dock] {
+  transition:
+    transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.24s ease-out,
+    visibility 0s;
+}
+
+:root:has([data-window-open]) [data-dock] {
+  transform: translateY(calc(100% + 28px));
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    transform 0.28s cubic-bezier(0.4, 0, 1, 1),
+    opacity 0.2s ease-in 0.06s,
+    visibility 0s 0.28s;
 }
 
 /* Window content scrollbar: thin, ink-tinted, no track */

@@ -121,13 +121,14 @@ export function Tabs({ tabs, label, children }: { tabs: Tab[]; label: string; ch
     <TabsContext.Provider value={select}>
       <div data-tabs={base} data-hydrated={hydrated || undefined} className="contents">
         {!hydrated && <style>{preHydrationCss}</style>}
-        <div className="sticky top-0 z-10 border-b border-win-line bg-win">
+        {/* frosted on a layer of its own (::before): the tab labels themselves stay unfiltered and crisp */}
+        <div className="sticky top-0 z-10 isolate flex justify-center border-b border-win-line px-4 py-2.5 before:absolute before:inset-0 before:-z-10 before:bg-win/85 before:backdrop-blur-md">
           <div
             ref={listRef}
             role="tablist"
             aria-label={label}
             onKeyDown={onKeyDown}
-            className="mx-auto flex w-full max-w-[780px] gap-1 px-2 py-2.5 desk:px-8"
+            className="flex gap-1 rounded-full bg-win-fill p-1"
           >
             {tabs.map((t) => {
               const selected = t.id === active;
@@ -142,7 +143,7 @@ export function Tabs({ tabs, label, children }: { tabs: Tab[]; label: string; ch
                   aria-controls={t.id}
                   tabIndex={selected ? 0 : -1}
                   onClick={() => select(t.id)}
-                  className="h-9 rounded-full px-4 text-15 font-medium text-ink-soft transition-colors hover:text-ink aria-selected:bg-ink aria-selected:text-white"
+                  className="h-8 rounded-full px-4 text-15 font-medium text-ink-soft transition-colors hover:text-ink aria-selected:bg-ink aria-selected:text-white"
                 >
                   {t.label}
                 </button>
@@ -160,7 +161,7 @@ export function Tabs({ tabs, label, children }: { tabs: Tab[]; label: string; ch
             aria-labelledby={`${base}-tab-${ids[i]}`}
             hidden={hydrated ? ids[i] !== active : undefined}
             tabIndex={0}
-            className="scroll-mt-14 outline-none"
+            className="scroll-mt-16 outline-none"
           >
             {panel}
           </div>

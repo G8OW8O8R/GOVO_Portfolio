@@ -171,9 +171,14 @@
     inset: 0;
     height: auto;
     mask-image: none;
+    transition: opacity 0.3s ease-out;
   }
 
-
+  /* full-screen window: the character and the files step out of view (no transform) */
+  :global(html[data-window-fullscreen]) .stage,
+  :global(html[data-window-fullscreen]) .files {
+    opacity: 0;
+  }
 
   .files {
     /* 72 px at 1536×864 */
@@ -184,6 +189,7 @@
     max-width: none;
     padding: 0;
     pointer-events: none;
+    transition: opacity 0.3s ease-out;
   }
 
   .slot {

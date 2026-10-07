@@ -14,7 +14,7 @@ export function ProjectWindow({ project, lang }: { project: Project; lang: Local
   return (
     <article className={`${ui.page} max-w-[860px]`}>
       <header className="text-center">
-        <h2 className={ui.display}>{project.title[lang]}</h2>
+        <h2 className="text-balance text-40 font-semibold tracking-[-0.035em] text-ink desk:text-56">{project.title[lang]}</h2>
         <p className={`mx-auto mt-4 max-w-[40ch] ${ui.body} desk:text-22`}>{project.summary[lang]}</p>
       </header>
 

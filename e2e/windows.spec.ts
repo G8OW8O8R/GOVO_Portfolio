@@ -99,39 +99,49 @@ test.describe("desktop windows", () => {
     await expect(page.getByRole("dialog")).toHaveCount(0);
   });
 
-  test("the character steps aside: the window never covers the face, in any frame", async ({ browser }) => {
+  test("centred window with crisp text; the dock slides away, covered files hide", async ({ browser }) => {
     for (const [width, height] of [[1280, 720], [1536, 864], [1920, 1080]]) {
       const page = await browser.newPage({ viewport: { width, height } });
       await page.goto("/pl");
-      // every animation frame: gap between the window's left edge and the face (incl. hair and ears,
-      // lib/window-layout.ts FACE_BOX), while the window is visible at all
-      await page.evaluate(() => {
-        const w = window as unknown as { __gaps: number[] };
-        w.__gaps = [];
-        const poster = document.querySelector("[data-character-poster]")!;
-        const t0 = performance.now();
-        const loop = () => {
-          const win = document.querySelector("[data-app-window]");
-          if (win && +getComputedStyle(win).opacity > 0.02) {
-            const p = poster.getBoundingClientRect();
-            w.__gaps.push(win.getBoundingClientRect().left - (p.left + (1560 * p.width) / 2752));
-          }
-          if (performance.now() - t0 < 2500) requestAnimationFrame(loop);
-        };
-        requestAnimationFrame(loop);
-      });
+      const posterBefore = await page.locator("[data-character-poster]").boundingBox();
       await page.getByRole("navigation", { name: "Pliki na pulpicie" }).getByRole("link", { name: "Oferta" }).click();
-      await expect(page.getByRole("dialog", { name: "Oferta" })).toBeVisible();
-      await page.waitForTimeout(1500);
-      const gaps = await page.evaluate(() => (window as unknown as { __gaps: number[] }).__gaps);
-      expect(gaps.length, `${width}×${height} frames`).toBeGreaterThan(20);
-      expect(Math.min(...gaps), `${width}×${height} closest approach`).toBeGreaterThan(0);
-      // at rest the face sits at ~28% of the width
-      const faceX = await page.evaluate(() => {
-        const p = document.querySelector("[data-character-poster]")!.getBoundingClientRect();
-        return p.left + (1372 * p.width) / 2752;
+      const win = page.getByRole("dialog", { name: "Oferta" });
+      await expect(win).toBeVisible();
+      await page.waitForTimeout(1200);
+
+      const state = await page.evaluate(() => {
+        const w = document.querySelector<HTMLElement>("[data-app-window]")!;
+        const chain: string[] = [];
+        for (let n: HTMLElement | null = w; n && n !== document.documentElement; n = n.parentElement) {
+          const cs = getComputedStyle(n);
+          if (cs.transform !== "none" || cs.willChange !== "auto" || cs.filter !== "none" || cs.backdropFilter !== "none")
+            chain.push(n.tagName);
+        }
+        const r = w.getBoundingClientRect();
+        const dock = getComputedStyle(document.querySelector("[data-dock]")!);
+        const files = [...document.querySelectorAll<HTMLElement>("[data-file-key]")].map((n) => {
+          const f = n.getBoundingClientRect();
+          const over = f.left < r.right && r.left < f.right && f.top < r.bottom && r.top < f.bottom;
+          return { over, opacity: getComputedStyle(n).opacity };
+        });
+        return { chain, rect: [r.left, r.top, r.width], dock: [dock.visibility, dock.opacity], files };
       });
-      expect(Math.abs(faceX - width * 0.28)).toBeLessThan(4);
+      // sharp text: no transform, will-change or filter on the window or above it; whole pixels
+      expect(state.chain, `${width}×${height}`).toEqual([]);
+      expect(Number.isInteger(state.rect[0]) && Number.isInteger(state.rect[1])).toBe(true);
+      // centred, and the character did not move or scale
+      expect(Math.abs(state.rect[0] + state.rect[2] / 2 - width / 2)).toBeLessThanOrEqual(1);
+      expect(await page.locator("[data-character-poster]").boundingBox()).toEqual(posterBefore);
+      // dock away, nothing visible under the window
+      expect(state.dock).toEqual(["hidden", "0"]);
+      expect(state.files.filter((f) => f.over && f.opacity !== "0")).toEqual([]);
+
+      await page.keyboard.press("Escape");
+      await expect(win).toHaveCount(0);
+      await expect.poll(() => page.evaluate(() => getComputedStyle(document.querySelector("[data-dock]")!).opacity)).toBe("1");
+      await expect
+        .poll(() => page.evaluate(() => [...document.querySelectorAll("[data-file-key]")].every((n) => getComputedStyle(n).opacity === "1")))
+        .toBe(true);
       await page.close();
     }
   });
