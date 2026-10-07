@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+/* Keep in sync with DESKTOP_MEDIA in lib/character-box.ts */
+@custom-variant desk (@media (min-width: 768px) and (min-height: 540px) and (min-aspect-ratio: 5/6));
+
+:root {
+  /* Surface – matches the grey studio backdrop of the character image */
+  --bg-center: #e6e5e6;
+  --bg-mid: #dedddf;
+  --bg-edge: #d6d5d7;
+
+  /* Ink */
+  --ink: #141414;
+  --ink-muted: #4d4d4f;
+  --ink-inverse: #ffffff;
+
+  /* Glass (capsule, dock) */
+  --glass: rgb(255 255 255 / 0.5);
+  --glass-strong: rgb(255 255 255 / 0.72);
+  --glass-border: rgb(255 255 255 / 0.75);
+  --glass-edge: rgb(0 0 0 / 0.08);
+
+  /* Files */
+  --paper: #fbfbfb;
+  --paper-fold: #e9e9ea;
+  --paper-edge: rgb(0 0 0 / 0.12);
+  --shadow-file: 0 1px 2px rgb(0 0 0 / 0.08), 0 8px 22px rgb(0 0 0 / 0.12);
+  --shadow-hero: 0 2px 4px rgb(0 0 0 / 0.08), 0 18px 44px rgb(0 0 0 / 0.22);
+  --shadow-glass: 0 1px 2px rgb(0 0 0 / 0.06), 0 10px 30px rgb(0 0 0 / 0.12);
+
+  /* The only colour besides the pendant sparkles */
+  --available: #2fbf5a;
+
+  --focus-ring: #141414;
+  --radius-pill: 999px;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-inverse: var(--ink-inverse);
+  --color-glass: var(--glass);
+  --color-glass-strong: var(--glass-strong);
+  --color-glass-border: var(--glass-border);
+  --color-paper: var(--paper);
+  --color-available: var(--available);
+  --shadow-file: var(--shadow-file);
+  --shadow-hero: var(--shadow-hero);
+  --shadow-glass: var(--shadow-glass);
+}
+
+html {
+  background: var(--bg-edge);
+  color: var(--ink);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  background: radial-gradient(120% 90% at 50% 28%, var(--bg-center) 0%, var(--bg-mid) 55%, var(--bg-edge) 100%)
+    fixed;
+  overflow-x: hidden;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

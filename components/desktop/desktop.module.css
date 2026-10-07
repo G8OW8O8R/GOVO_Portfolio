@@ -1,0 +1,220 @@
+/*
+ * Desktop geometry. The character box variables (--cb-*) come from
+ * lib/character-box.ts; file slots (--sx, --sy) are in character-image px.
+ * Mobile first; the desktop stage applies under the DESKTOP_MEDIA query.
+ */
+
+.root {
+  position: relative;
+  min-height: 100dvh;
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+/* ---------- Character ---------- */
+
+.stage {
+  position: relative;
+  height: var(--cb-area);
+  overflow: hidden;
+  pointer-events: none;
+  /* fade the shown part into the backdrop above the file grid */
+  mask-image: linear-gradient(to bottom, #000 72%, transparent);
+}
+
+.character {
+  position: absolute;
+  left: var(--cb-x);
+  top: var(--cb-y);
+  width: var(--cb-w);
+  height: var(--cb-h);
+  max-width: none;
+  user-select: none;
+}
+
+/* ---------- Files ---------- */
+
+.files {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-flow: row dense;
+  gap: 22px 12px;
+  padding: 8px 20px 0;
+  margin: 0;
+  list-style: none;
+  max-width: 480px;
+  margin-inline: auto;
+}
+
+.file {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  text-align: center;
+  color: var(--ink);
+  text-decoration: none;
+  border-radius: 14px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 6px 2.5px;
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: var(--ink-inverse);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+/* phone: app tiles */
+.tile {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  aspect-ratio: 1;
+  border-radius: 15px;
+  background: var(--paper);
+  box-shadow: var(--shadow-file);
+  color: var(--ink);
+}
+
+.tile svg {
+  width: 28px;
+  height: 28px;
+}
+
+.doc {
+  display: none;
+}
+
+.thumb {
+  display: block;
+  width: 60px;
+  aspect-ratio: 1;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: var(--shadow-file);
+  outline: 1px solid rgb(0 0 0 / 0.06);
+  outline-offset: -1px;
+}
+
+.thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* hero project: 2×2 widget on the phone */
+.hero {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.hero .thumb {
+  width: 100%;
+  border-radius: 22px;
+  box-shadow: var(--shadow-hero);
+}
+
+.hero .label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ---------- Desktop stage ---------- */
+
+@media (min-width: 768px) and (min-height: 540px) and (min-aspect-ratio: 5/6) {
+  .root {
+    height: 100dvh;
+    min-height: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+  }
+
+  .stage {
+    position: absolute;
+    inset: 0;
+    height: auto;
+    mask-image: none;
+  }
+
+  .character {
+    /* soften the image edges where the screen is wider or taller than the photo */
+    mask-image:
+      linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%),
+      linear-gradient(to bottom, transparent 0, #000 4%);
+    mask-composite: intersect;
+  }
+
+  .files {
+    position: absolute;
+    inset: 0;
+    display: block;
+    max-width: none;
+    padding: 0;
+    pointer-events: none;
+  }
+
+  .slot {
+    position: absolute;
+    left: calc(var(--cb-x) + var(--sx) * var(--cb-s));
+    top: calc(var(--cb-y) + var(--sy) * var(--cb-s));
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+  }
+
+  .file {
+    gap: clamp(6px, calc(14 * var(--cb-s)), 12px);
+  }
+
+  .label {
+    font-size: clamp(13px, calc(24 * var(--cb-s)), 16px);
+    font-weight: 450;
+    text-shadow: 0 1px 0 rgb(255 255 255 / 0.5);
+  }
+
+  .tile {
+    display: none;
+  }
+
+  .doc {
+    display: block;
+    width: clamp(46px, calc(100 * var(--cb-s)), 76px);
+    height: auto;
+    filter: drop-shadow(0 6px 10px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
+  }
+
+  .thumb {
+    width: clamp(62px, calc(130 * var(--cb-s)), 100px);
+    border-radius: clamp(10px, calc(22 * var(--cb-s)), 16px);
+  }
+
+  .hero .thumb {
+    width: clamp(150px, calc(340 * var(--cb-s)), 260px);
+    border-radius: clamp(16px, calc(40 * var(--cb-s)), 28px);
+  }
+
+  .hero .label {
+    font-size: clamp(14px, calc(27 * var(--cb-s)), 18px);
+    font-weight: 600;
+  }
+
+  .badge {
+    font-size: clamp(10px, calc(18 * var(--cb-s)), 12px);
+    padding: 2px 7px 3px;
+  }
+}

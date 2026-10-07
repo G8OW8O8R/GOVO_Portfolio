@@ -1,0 +1,168 @@
+{
+  "image": [
+    2752,
+    1536
+  ],
+  "eyes": {
+    "L": {
+      "irisCenter": [
+        1300.3,
+        330.2
+      ],
+      "irisRadius": 14.0,
+      "spriteOrigin": [
+        1283,
+        313
+      ],
+      "spriteSize": 35,
+      "maskOrigin": [
+        1266,
+        321
+      ],
+      "maskSize": [
+        70,
+        24
+      ],
+      "range": {
+        "x": [
+          -12,
+          12
+        ],
+        "y": [
+          -5,
+          5
+        ]
+      }
+    },
+    "R": {
+      "irisCenter": [
+        1446.0,
+        339.0
+      ],
+      "irisRadius": 14.0,
+      "spriteOrigin": [
+        1429,
+        322
+      ],
+      "spriteSize": 35,
+      "maskOrigin": [
+        1413,
+        331
+      ],
+      "maskSize": [
+        68,
+        24
+      ],
+      "range": {
+        "x": [
+          -12,
+          12
+        ],
+        "y": [
+          -5,
+          5
+        ]
+      }
+    }
+  },
+  "notes": {
+    "highlight": "highlight follows iris at 85% of its offset and is clipped by the iris alpha and the eye mask",
+    "mapping": "cursor position relative to the face center maps to iris offset with a spring (stiffness ~180, damping ~22); both eyes share the same offset",
+    "layers": "base-no-iris.jpg, then for each eye: iris (translated, clipped by mask), highlight (clipped by mask and iris)"
+  },
+  "blink": {
+    "origin": [
+      1244,
+      298
+    ],
+    "size": [
+      259,
+      80
+    ],
+    "timing_ms": {
+      "close": 60,
+      "hold": 40,
+      "open": 110
+    },
+    "interval_s": [
+      3,
+      7
+    ]
+  },
+  "living": {
+    "note": "All motion is done in code (WebGL displacement of the single character image). Eye layers are composited before the warp so they move with the head.",
+    "breathing": {
+      "period_s": 4.2,
+      "lift_px": 2.8,
+      "lift_weight": "smoothstep from y=1536 (0) to y=700 (1)",
+      "chest_expand": 0.0035,
+      "chest_center_y": 900,
+      "chest_sigma": 180
+    },
+    "head": {
+      "center": [
+        1372,
+        360
+      ],
+      "radius": [
+        270,
+        310
+      ],
+      "fade_to_neck_y": [
+        500,
+        640
+      ],
+      "follow_gaze_px": {
+        "x": 5,
+        "y": 3
+      },
+      "note": "head moves up when looking up, down when looking down; no roll, only slow sway",
+      "sway_rad": 0.004,
+      "sway_period_s": 6.3
+    },
+    "pendant_sparkles": {
+      "mask": "diamond-mask.png",
+      "glints_per_s": "2.5 + |chain angular velocity| * 60",
+      "glint_life_s": 0.35,
+      "glint_size_px": [
+        14,
+        34
+      ],
+      "sweep": {
+        "every_s": 3.5,
+        "duration_s": 1.2,
+        "angle_deg": 45,
+        "width_px": 40,
+        "strength": 0.55
+      },
+      "order": "draw glints and sweep before the warp so they move with the chain"
+    },
+    "idle": "after ~4 s without cursor movement the gaze wanders slowly between random points and occasionally glances at a desktop file",
+    "reduced_motion": "no breathing, sway, sparkles or wandering; eyes may follow the cursor with a short fade; blinks off",
+    "coordinates": "all values in pixels of the 2752x1536 base image",
+    "chain": {
+      "mask": "diamond-mask.png",
+      "maskOrigin": [
+        1203,
+        564
+      ],
+      "pivot": [
+        1387,
+        585
+      ],
+      "attach_fade_y": [
+        585,
+        760
+      ],
+      "pendulum": {
+        "stiffness": 28,
+        "damping": 2.2,
+        "drive": "negative head x-velocity (px/s) * 0.075"
+      },
+      "vertical_factor": 0.35
+    },
+    "eyelids": {
+      "look_down_droop": "overlay blink-lids.png at alpha = 0.32 * max(gazeY, 0) where gazeY is -1 (up) .. 1 (down); blinks use the same layer at alpha 1"
+    }
+  }
+}
