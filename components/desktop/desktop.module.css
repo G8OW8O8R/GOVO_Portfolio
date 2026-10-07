@@ -29,15 +29,7 @@
   mask-image: linear-gradient(to bottom, #000 72%, transparent);
 }
 
-.character {
-  position: absolute;
-  left: var(--cb-x);
-  top: var(--cb-y);
-  width: var(--cb-w);
-  height: var(--cb-h);
-  max-width: none;
-  user-select: none;
-}
+/* poster and canvas: components/character/character.module.css */
 
 /* ---------- Files ---------- */
 
@@ -168,13 +160,6 @@
     mask-image: none;
   }
 
-  .character {
-    /* soften the image edges where the screen is wider or taller than the photo */
-    mask-image:
-      linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%),
-      linear-gradient(to bottom, transparent 0, #000 4%);
-    mask-composite: intersect;
-  }
 
   .files {
     /* ≈ 64 px at 1536×864 */

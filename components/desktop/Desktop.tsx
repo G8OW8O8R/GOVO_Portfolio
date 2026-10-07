@@ -1,15 +1,15 @@
 import type { CSSProperties, ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import baseImage from "@/public/character/base.jpg";
 import { projects } from "@/content/projects";
 import type { Project } from "@/content/projects/schema";
 import { getDictionary, type Dictionary } from "@/content/dictionaries";
-import { characterBoxCss, characterImageSizes } from "@/lib/character-box";
+import { characterBoxCss } from "@/lib/character-box";
 import { INFO_SLOTS, assignSlots, type Slot } from "@/lib/desktop-slots";
 import type { Locale } from "@/lib/i18n";
 import { href } from "@/lib/routes";
 import { CV_PATH, hasCv } from "@/lib/site";
+import { Character } from "@/components/character/Character";
 import type { GlyphName } from "@/components/ui/glyphs";
 import { Dock } from "./Dock";
 import { DocIcon, TileIcon } from "./FileIcons";
@@ -36,16 +36,7 @@ export function Desktop({ lang, children }: { lang: Locale; children?: ReactNode
         <h1 className="sr-only">{dict.desktop.heading}</h1>
 
         <div className={s.stage}>
-          <Image
-            src={baseImage}
-            alt={dict.desktop.characterAlt}
-            className={s.character}
-            loading="eager"
-            fetchPriority="high"
-            sizes={characterImageSizes()}
-            quality={90}
-            draggable={false}
-          />
+          <Character alt={dict.desktop.characterAlt} />
         </div>
 
         <nav aria-label={dict.desktop.filesLabel}>

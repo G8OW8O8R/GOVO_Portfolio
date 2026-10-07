@@ -138,7 +138,7 @@
       "order": "draw glints and sweep before the warp so they move with the chain"
     },
     "idle": "after ~4 s without cursor movement the gaze wanders slowly between random points and occasionally glances at a desktop file",
-    "reduced_motion": "no breathing, sway, sparkles or wandering; eyes may follow the cursor with a short fade; blinks off",
+    "reduced_motion": "static base.jpg only: no WebGL canvas, no eye movement, breathing, sway, blinks, sparkles or wandering",
     "coordinates": "all values in pixels of the 2752x1536 base image",
     "chain": {
       "mask": "diamond-mask.png",
