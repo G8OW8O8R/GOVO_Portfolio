@@ -18,10 +18,12 @@ import { flushSync } from "react-dom";
 import { animate, m, useMotionValue } from "motion/react";
 import { Maximize2, Minimize2, Minus, X } from "lucide-react";
 import { DESKTOP_MEDIA } from "@/lib/character-box";
+import { characterGaze } from "@/lib/character/look-at";
+import { DURATION, SHEET_SPRING, SPRING, WINDOW_ENTER_SPRING } from "@/lib/motion-tokens";
 import type { WindowKey } from "@/lib/routes";
-import { clampWindowOffset } from "@/lib/window-layout";
+import { SIDE_MEDIA, clampWindowOffset } from "@/lib/window-layout";
 import { REDUCED_MOTION, flip, playExit, windowAnchor } from "./ghost";
-import { windowStore } from "./store";
+import { useWindowOpenSettled, windowStore } from "./store";
 import { useWindowNav } from "./useWindowNav";
 import s from "./window.module.css";
 
@@ -37,11 +39,15 @@ type WindowContextValue = { windowKey: WindowKey; scrollerRef: RefObject<HTMLDiv
 const WindowContext = createContext<WindowContextValue | null>(null);
 export const useAppWindow = () => useContext(WindowContext);
 
-const SPRING = { type: "spring", visualDuration: 0.42, bounce: 0.14 } as const;
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select, textarea, iframe, [tabindex]:not([tabindex="-1"])';
 
 const isDesktop = () => matchMedia(DESKTOP_MEDIA).matches;
+/** Wide desktop: the character steps aside and the window slides in from the right. */
+const isSide = () => matchMedia(SIDE_MEDIA).matches;
+
+/** How long the gaze keeps following a scroll of the window content, ms. */
+const SCROLL_GLANCE_MS = 900;
 
 /**
  * A desktop window (macOS style) or, on phones, a bottom sheet. The page
@@ -66,6 +72,9 @@ export function AppWindow({
   const { close } = useWindowNav();
   const [fullscreen, setFullscreen] = useState(false);
 
+  const sideEnter = useRef(false);
+  const settled = useWindowOpenSettled();
+
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const scaleX = useMotionValue(1);
@@ -79,11 +88,18 @@ export function AppWindow({
     const origin = windowStore.takeOrigin(() => windowAnchor(windowKey));
     if (!origin) return;
     if (matchMedia(REDUCED_MOTION).matches) {
-      animate(opacity, [0, 1], { duration: 0.15 });
+      animate(opacity, [0, 1], { duration: DURATION.fast });
       return;
     }
     if (!isDesktop()) {
-      animate(y, [el.getBoundingClientRect().height, 0], { type: "spring", visualDuration: 0.4, bounce: 0.08 });
+      animate(y, [el.getBoundingClientRect().height, 0], SHEET_SPRING);
+      return;
+    }
+    if (isSide()) {
+      // waits off to the right; slides in when the character starts stepping aside (below)
+      x.set(el.getBoundingClientRect().width * 0.45);
+      opacity.set(0);
+      sideEnter.current = true;
       return;
     }
     const f = flip(origin.getBoundingClientRect(), el.getBoundingClientRect());
@@ -91,8 +107,64 @@ export function AppWindow({
     animate(y, [f.y, 0], SPRING);
     animate(scaleX, [f.scaleX, 1], SPRING);
     animate(scaleY, [f.scaleY, 1], SPRING);
-    animate(opacity, [0, 1], { duration: 0.16 });
+    animate(opacity, [0, 1], { duration: DURATION.fast });
   }, [windowKey, x, y, scaleX, scaleY, opacity]);
+
+  // Side layout: the window and the character start together (the desktop
+  // reacts to the settled state); the window's spring trails a little, so its
+  // edge never passes the face mid-way (lib/window-layout.ts tests the end state).
+  useEffect(() => {
+    if (!settled || !sideEnter.current) return;
+    sideEnter.current = false;
+    animate(x, 0, WINDOW_ENTER_SPRING);
+    animate(opacity, 1, { duration: DURATION.base });
+  }, [settled, x, opacity]);
+
+  // The title bar turns frosted only once content scrolls under it.
+  useEffect(() => {
+    const el = ref.current;
+    const scroller = scrollerRef.current;
+    if (!el || !scroller) return;
+    const onScroll = () => el.toggleAttribute("data-scrolled", scroller.scrollTop > 2);
+    onScroll();
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+    return () => scroller.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Desktop: the character watches the window; scrolling its content draws the
+  // eyes a little up or down for a moment. Later lookAt calls (a form field) win.
+  useEffect(() => {
+    const el = ref.current;
+    const scroller = scrollerRef.current;
+    if (!el || !scroller || !isDesktop()) return;
+    const glance = { dir: 0, at: -Infinity, top: scroller.scrollTop };
+    const onScroll = () => {
+      const dy = scroller.scrollTop - glance.top;
+      glance.top = scroller.scrollTop;
+      if (Math.abs(dy) < 1) return;
+      glance.dir = Math.sign(dy);
+      glance.at = performance.now();
+    };
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+    const release = characterGaze.lookAt(() => {
+      if (!el.isConnected) return null;
+      const r = el.getBoundingClientRect();
+      const k = Math.max(0, 1 - (performance.now() - glance.at) / SCROLL_GLANCE_MS);
+      return { x: r.left + r.width / 2, y: r.top + r.height * 0.42 + glance.dir * k * r.height * 0.15 };
+    });
+    return () => {
+      release();
+      scroller.removeEventListener("scroll", onScroll);
+    };
+  }, []);
+
+  // Full screen: the character hides (stageShiftCss reacts to this attribute).
+  useEffect(() => {
+    const root = document.documentElement;
+    if (fullscreen) root.setAttribute("data-window-fullscreen", "");
+    else root.removeAttribute("data-window-fullscreen");
+    return () => root.removeAttribute("data-window-fullscreen");
+  }, [fullscreen]);
 
   // Exit: React has removed the window, a static clone plays the animation.
   useLayoutEffect(() => {
@@ -171,11 +243,10 @@ export function AppWindow({
     y.set(0);
     if (matchMedia(REDUCED_MOTION).matches) return;
     const f = flip(before, el.getBoundingClientRect());
-    const spring = { type: "spring", visualDuration: 0.36, bounce: 0.08 } as const;
-    animate(x, [f.x, 0], spring);
-    animate(y, [f.y, 0], spring);
-    animate(scaleX, [f.scaleX, 1], spring);
-    animate(scaleY, [f.scaleY, 1], spring);
+    animate(x, [f.x, 0], SPRING);
+    animate(y, [f.y, 0], SPRING);
+    animate(scaleX, [f.scaleX, 1], SPRING);
+    animate(scaleY, [f.scaleY, 1], SPRING);
   }, [x, y, scaleX, scaleY]);
 
   // Drag by the title bar (desktop) / swipe the sheet down (phone).
@@ -219,7 +290,7 @@ export function AppWindow({
   function settleSheet(dy: number, ms: number) {
     const velocity = ms > 0 ? (dy / ms) * 1000 : 0;
     if (dy > 120 || (dy > 30 && velocity > 700)) close();
-    else animate(y, 0, { type: "spring", visualDuration: 0.3, bounce: 0.1 });
+    else animate(y, 0, SHEET_SPRING);
   }
   const settleRef = useRef(settleSheet);
   useLayoutEffect(() => {

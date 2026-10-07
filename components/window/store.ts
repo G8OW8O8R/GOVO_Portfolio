@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { windowKeyForPath, type WindowKey } from "@/lib/routes";
 
@@ -84,4 +85,41 @@ export const windowStore = {
 /** The window shown by the current URL (also on the server, so SSR matches). */
 export function useOpenWindowKey(): WindowKey | null {
   return windowKeyForPath(usePathname());
+}
+
+/**
+ * "A window is open" for the desktop's own animations (stepping aside, dim)
+ * and the window sliding in beside the character: one shared value, driven by
+ * the desktop layer. It follows the URL two frames late, so the transitions
+ * start after the heavy frame in which the window mounts – and start together.
+ * Before the desktop drives it (server, first render) it equals the URL.
+ */
+let settled: boolean | null = null;
+const settledListeners = new Set<() => void>();
+const subscribeSettled = (fn: () => void) => {
+  settledListeners.add(fn);
+  return () => void settledListeners.delete(fn);
+};
+function setSettled(v: boolean) {
+  if (settled === v) return;
+  settled = v;
+  settledListeners.forEach((fn) => fn());
+}
+
+/** The desktop layer drives the shared value (one caller). */
+export function useDriveWindowOpenSettled(): boolean {
+  const open = useOpenWindowKey() !== null;
+  useEffect(() => {
+    if (settled === null) return setSettled(open); // first mount: as rendered, no animation
+    let raf = requestAnimationFrame(() => {
+      raf = requestAnimationFrame(() => setSettled(open));
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [open]);
+  return useSyncExternalStore(subscribeSettled, () => settled ?? open, () => open);
+}
+
+/** Read-only: has the desktop started reacting to the open window? */
+export function useWindowOpenSettled(): boolean {
+  return useSyncExternalStore(subscribeSettled, () => settled ?? false, () => false);
 }

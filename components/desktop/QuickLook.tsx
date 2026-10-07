@@ -45,14 +45,14 @@ export function HoverPreview({ preview, anchor }: { preview: Preview; anchor: DO
   return createPortal(
     <m.div
       aria-hidden="true"
-      className="pointer-events-none fixed z-30 rounded-[14px] border border-glass-border bg-glass-strong p-1.5 shadow-glass backdrop-blur-xl"
+      className="pointer-events-none fixed z-30 rounded-[14px] border border-win-line bg-win p-1.5 shadow-glass"
       style={{ left, top, width }}
       initial={{ opacity: 0, scale: 0.94, x: right ? -6 : 6 }}
       animate={{ opacity: 1, scale: 1, x: 0 }}
-      transition={{ type: "spring", visualDuration: 0.22, bounce: 0.1 }}
+      transition={{ type: "spring", visualDuration: 0.22, bounce: 0.05 }}
     >
       <Media preview={preview} sizes="232px" />
-      <span className="block px-1.5 pb-1 pt-2 text-[12.5px] font-semibold text-ink">{preview.title}</span>
+      <span className="block px-1.5 pb-1 pt-2 font-mono text-13 font-medium text-ink">{preview.title}</span>
     </m.div>,
     document.body,
   );
@@ -109,14 +109,14 @@ export function QuickLook({
         className="relative w-full max-w-[560px] rounded-[18px] bg-win p-3 shadow-window"
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ type: "spring", visualDuration: 0.3, bounce: 0.15 }}
+        transition={{ type: "spring", visualDuration: 0.3, bounce: 0.06 }}
         onClick={(e) => e.stopPropagation()}
       >
         <Media preview={preview} sizes="(max-width: 600px) 92vw, 540px" />
         <div className="flex items-start gap-4 px-2 pb-1 pt-4">
           <div className="min-w-0 flex-1">
-            <p className="text-[19px] font-semibold tracking-[-0.01em] text-ink">{preview.title}</p>
-            <p className="mt-1 text-[14px] leading-snug text-ink-soft">{preview.summary}</p>
+            <p className="text-22 font-semibold tracking-[-0.02em] text-ink">{preview.title}</p>
+            <p className="mt-1 text-15 text-ink-soft">{preview.summary}</p>
           </div>
           <Link
             href={href}
@@ -125,7 +125,7 @@ export function QuickLook({
               e.preventDefault();
               onOpen();
             }}
-            className="shrink-0 rounded-full bg-accent px-4 py-2 text-[14px] font-medium text-white hover:brightness-110"
+            className="inline-flex h-10 shrink-0 items-center rounded-full bg-ink px-4 text-15 font-medium text-white transition-colors hover:bg-[#2a2a2a]"
           >
             {labels.open}
           </Link>
@@ -134,7 +134,7 @@ export function QuickLook({
           type="button"
           onClick={onClose}
           aria-label={labels.close}
-          className="absolute right-5 top-5 grid size-8 place-items-center rounded-full bg-black/45 text-white backdrop-blur-md hover:bg-black/60"
+          className="absolute right-5 top-5 grid size-8 place-items-center rounded-full bg-black/55 text-white hover:bg-black/70"
         >
           <X className="size-4" aria-hidden="true" />
         </button>

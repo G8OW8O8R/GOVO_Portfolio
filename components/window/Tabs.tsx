@@ -36,11 +36,26 @@ function writeHash(id: string | null) {
 
 const TabsContext = createContext<((id: string) => void) | null>(null);
 
-/** Switch to another tab of the same window (e.g. "See pricing"). */
-export function TabButton({ tab, className, children }: { tab: string; className?: string; children: ReactNode }) {
+/** Switch to another tab of the same window, optionally to a section in it (`target` id). */
+export function TabButton({
+  tab,
+  target,
+  className,
+  children,
+}: {
+  tab: string;
+  target?: string;
+  className?: string;
+  children: ReactNode;
+}) {
   const select = useContext(TabsContext);
+  const onClick = () => {
+    select?.(tab);
+    // the panel is shown on the next render
+    if (target) requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById(target)?.scrollIntoView({ block: "start" })));
+  };
   return (
-    <button type="button" className={className} onClick={() => select?.(tab)}>
+    <button type="button" className={className} onClick={onClick}>
       {children}
     </button>
   );
@@ -97,8 +112,8 @@ export function Tabs({ tabs, label, children }: { tabs: Tab[]; label: string; ch
       .slice(1)
       .map(
         (id) =>
-          `${scope}:has(#${id}:target) [data-tab]{background:transparent;color:var(--ink-soft);box-shadow:none}` +
-          `${scope}:has(#${id}:target) [data-tab="${id}"]{background:var(--accent);color:#fff}`,
+          `${scope}:has(#${id}:target) [data-tab]{background:transparent;color:var(--ink-soft)}` +
+          `${scope}:has(#${id}:target) [data-tab="${id}"]{background:var(--ink);color:#fff}`,
       )
       .join("");
 
@@ -106,13 +121,13 @@ export function Tabs({ tabs, label, children }: { tabs: Tab[]; label: string; ch
     <TabsContext.Provider value={select}>
       <div data-tabs={base} data-hydrated={hydrated || undefined} className="contents">
         {!hydrated && <style>{preHydrationCss}</style>}
-        <div className="sticky top-0 z-10 flex justify-center border-b border-win-line bg-win/90 px-4 py-2.5 backdrop-blur-md">
+        <div className="sticky top-0 z-10 border-b border-win-line bg-win">
           <div
             ref={listRef}
             role="tablist"
             aria-label={label}
             onKeyDown={onKeyDown}
-            className="flex gap-1 rounded-full bg-win-card p-1"
+            className="mx-auto flex w-full max-w-[780px] gap-1 px-2 py-2.5 desk:px-8"
           >
             {tabs.map((t) => {
               const selected = t.id === active;
@@ -127,7 +142,7 @@ export function Tabs({ tabs, label, children }: { tabs: Tab[]; label: string; ch
                   aria-controls={t.id}
                   tabIndex={selected ? 0 : -1}
                   onClick={() => select(t.id)}
-                  className="rounded-full px-4 py-1.5 text-[14px] font-medium text-ink-soft transition-colors hover:text-ink aria-selected:bg-accent aria-selected:text-white aria-selected:shadow-sm"
+                  className="h-9 rounded-full px-4 text-15 font-medium text-ink-soft transition-colors hover:text-ink aria-selected:bg-ink aria-selected:text-white"
                 >
                   {t.label}
                 </button>
@@ -145,7 +160,7 @@ export function Tabs({ tabs, label, children }: { tabs: Tab[]; label: string; ch
             aria-labelledby={`${base}-tab-${ids[i]}`}
             hidden={hydrated ? ids[i] !== active : undefined}
             tabIndex={0}
-            className="scroll-mt-16 outline-none"
+            className="scroll-mt-14 outline-none"
           >
             {panel}
           </div>

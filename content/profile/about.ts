@@ -30,10 +30,11 @@ export const about = aboutSchema.parse({
   ],
   seeking: {
     label: { pl: "Czego szukam", en: "What I'm looking for" },
-    strong: { pl: "Szukam pracy jako frontend developer", en: "I'm looking for a job as a frontend developer" },
+    // shown as a large sentence, the rest below it (one sentence of the source split in two)
+    strong: { pl: "Szukam pracy jako frontend developer.", en: "I'm looking for a job as a frontend developer." },
     rest: {
-      pl: "– jestem otwarty na etat, B2B i stałą współpracę, zdalnie lub hybrydowo. Mogę zacząć od zaraz. Przyjmuję też zlecenia na strony dla firm.",
-      en: "– I'm open to full-time employment, B2B and long-term collaboration, remote or hybrid. I can start right away. I also take on website projects for businesses.",
+      pl: "Jestem otwarty na etat, B2B i stałą współpracę, zdalnie lub hybrydowo. Mogę zacząć od zaraz. Przyjmuję też zlecenia na strony dla firm.",
+      en: "I'm open to full-time employment, B2B and long-term collaboration, remote or hybrid. I can start right away. I also take on website projects for businesses.",
     },
   },
   howIWork: {

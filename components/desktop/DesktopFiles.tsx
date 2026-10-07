@@ -174,7 +174,7 @@ export function DesktopFiles({ files, labels }: { files: DesktopFile[]; labels: 
       </nav>
 
       {tidyNeeded && (
-        <button type="button" className={s.tidy} onClick={tidy} aria-label={labels.tidyLabel}>
+        <button type="button" className={s.tidy} onClick={tidy} aria-label={labels.tidyLabel} data-dim="">
           {labels.tidy}
         </button>
       )}
@@ -417,7 +417,7 @@ function FileItem({
   const style = { "--sx": file.slot.x, "--sy": file.slot.y, x, y } as unknown as CSSProperties;
 
   return (
-    <m.li ref={li} className={s.slot} data-file-key={file.key} style={style} suppressHydrationWarning>
+    <m.li ref={li} className={s.slot} data-file-key={file.key} data-dim="" style={style} suppressHydrationWarning>
       <m.span className={s.parallax} style={{ x: parallaxX, y: parallaxY }}>
         <Link
           ref={link}

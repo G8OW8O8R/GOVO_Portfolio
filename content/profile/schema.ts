@@ -57,9 +57,10 @@ const pkg = z.object({
 
 /** Source: design/content-pricing.md. Prices net, PLN, always "from". */
 export const pricingSchema = z.object({
+  headline: localized,
   lead: localized,
-  perks: z.array(z.object({ icon: z.enum(["fast", "progress", "revisions"]), text: localized })).length(3),
-  smallBudget: z.object({ strong: localized, rest: localized, cta: localized }),
+  perks: z.array(localized).length(3),
+  smallBudget: z.object({ text: localized, cta: localized }),
   popularBadge: localized,
   packages: z.array(pkg).min(1),
   experience: z.object({
@@ -76,9 +77,12 @@ export const pricingSchema = z.object({
   footnote: localized,
 });
 
-/** Services and Process tabs (Offer window), built on the packages in pricing.ts. */
+/** Services and Process tabs (Offer window). Services say what I do – no prices (those live in pricing.ts). */
 export const offerSchema = z.object({
+  servicesTitle: localized,
   servicesLead: localized,
+  services: z.array(z.object({ id, title: localized, text: localized, fit: localized })).length(4),
+  processTitle: localized,
   process: z.array(z.object({ title: localized, text: localized })).min(1),
 });
 

@@ -1,7 +1,7 @@
 import { computeCharacterBox, isDesktopViewport } from "@/lib/character-box";
 import { DERIVED, EYES, EYE_MIDPOINT, type Vec2 } from "@/lib/character/config";
 import { GazeDirector, pointToGaze } from "@/lib/character/gaze";
-import { characterGaze, type ClientPoint } from "@/lib/character/look-at";
+import { VIEWER, characterGaze, type ClientPoint } from "@/lib/character/look-at";
 import { clamp, seededRng, type Rng } from "@/lib/character/motion";
 import { CharacterSim, REST_FRAME, type CharacterFrame } from "@/lib/character/sim";
 import { FpsWatchdog } from "@/lib/character/watchdog";
@@ -148,27 +148,33 @@ export class CharacterEngine {
 
   // ---------- geometry ----------
 
+  /**
+   * Canvas buffer and pixel map come from layout sizes, not from the screen
+   * rect: the stage may be transformed (it steps aside and scales while a
+   * window is open) and the buffer must not be reallocated every frame of
+   * that transition. The gaze uses the on-screen box (screenImageBox).
+   */
   private measure = () => {
     const { canvas } = this.o;
-    const c = canvas.getBoundingClientRect();
-    const p = this.imageBox();
-    if (!p.scale || !c.width || !c.height) return;
+    const l = this.layout();
+    if (!l) return;
+    const { image: p, width: cssWidth, height: cssHeight } = l;
     const scale = p.scale;
-    this.poster = p;
+    this.poster = this.screenImageBox();
 
     const dpr = Math.min(devicePixelRatio || 1, MAX_DPR);
-    const width = Math.round(c.width * dpr);
-    const height = Math.round(c.height * dpr);
+    const width = Math.round(cssWidth * dpr);
+    const height = Math.round(cssHeight * dpr);
     if (canvas.width !== width || canvas.height !== height) {
       canvas.width = width;
       canvas.height = height;
     }
-    const sx = c.width / width;
-    const sy = c.height / height;
+    const sx = cssWidth / width;
+    const sy = cssHeight / height;
     this.size = {
       width,
       height,
-      map: [sx / scale, (c.left - p.left) / scale, -sy / scale, (c.top + c.height - p.top) / scale],
+      map: [sx / scale, -p.left / scale, -sy / scale, (cssHeight - p.top) / scale],
     };
     this.renderer?.setMinification(scale * dpr);
     this.ensureBaseCovers();
@@ -186,19 +192,33 @@ export class CharacterEngine {
    * The full image's box on screen, read from the poster. On portrait phones
    * the poster shows MOBILE_CROP (CSS media query), placed at its spot.
    */
-  private imageBox(): { left: number; top: number; scale: number } {
+  private screenImageBox(): { left: number; top: number; scale: number } {
     const p = this.o.poster.getBoundingClientRect();
     const crop = matchMedia(CROP_MEDIA).matches ? MOBILE_CROP : null;
     const scale = p.width / (crop ? crop.width : W);
     return crop ? { left: p.left - crop.x * scale, top: p.top - crop.y * scale, scale } : { left: p.left, top: p.top, scale };
   }
 
+  /** Canvas CSS size and the image box relative to the canvas, untransformed (layout px). */
+  private layout(): { width: number; height: number; image: { left: number; top: number; scale: number } } | null {
+    const { canvas } = this.o;
+    const c = canvas.getBoundingClientRect();
+    const width = canvas.offsetWidth;
+    const height = canvas.offsetHeight;
+    if (!width || !height || !c.width) return null;
+    const k = c.width / width; // current stage transform scale
+    const p = this.screenImageBox();
+    if (!p.scale) return null;
+    return { width, height, image: { left: (p.left - c.left) / k, top: (p.top - c.top) / k, scale: p.scale / k } };
+  }
+
   /** Image px the canvas shows (character box relative to the canvas). */
   private visibleImage(): Rect {
-    const p = this.imageBox();
-    const c = this.o.canvas.getBoundingClientRect();
-    const box = { x: p.left - c.left, y: p.top - c.top, width: W * p.scale, height: H * p.scale, scale: p.scale, areaHeight: c.height };
-    return visibleImageRect(box, { width: c.width, height: c.height });
+    const l = this.layout();
+    if (!l) return { x: 0, y: 0, width: W, height: H };
+    const { image: p, width, height } = l;
+    const box = { x: p.left, y: p.top, width: W * p.scale, height: H * p.scale, scale: p.scale, areaHeight: height };
+    return visibleImageRect(box, { width, height });
   }
 
   /** After a rotation the phone crop may no longer cover the view: switch to the full image. */
@@ -231,6 +251,7 @@ export class CharacterEngine {
   // ---------- input ----------
 
   private onPointer = (e: PointerEvent) => {
+    this.poster = this.screenImageBox();
     this.pointer = { gaze: this.gazeAt({ x: e.clientX, y: e.clientY }), at: this.now() };
   };
 
@@ -238,7 +259,7 @@ export class CharacterEngine {
   private onScroll = () => {
     const dy = scrollY - this.lastScrollY;
     this.lastScrollY = scrollY;
-    this.poster = this.imageBox();
+    this.poster = this.screenImageBox();
     if (Math.abs(dy) < 1) return;
     // look towards the content that scrolls into view, for ~1.2 s
     this.pointer = { gaze: [this.pointer?.gaze[0] ?? 0, clamp(Math.sign(dy) * 0.7, -1, 1)], at: this.now() - (DERIVED.idleAfterS - 1.2) };
@@ -256,10 +277,12 @@ export class CharacterEngine {
   private target(): Vec2 {
     if (this.targetOverride) return this.targetOverride;
     const look = characterGaze.current();
+    // the stage may be moving (window open/close): read where the image is now
+    if (look && look !== VIEWER) this.poster = this.screenImageBox();
     return this.director.update({
       now: this.now(),
       pointer: this.pointer,
-      lookAt: look ? this.gazeAt(look) : null,
+      lookAt: look === VIEWER ? [0, 0] : look ? this.gazeAt(look) : null,
       glance: () => {
         const files = characterGaze.glanceTargets();
         return files.length ? this.gazeAt(files[Math.floor(this.rng() * files.length)]) : null;
@@ -374,7 +397,7 @@ export class CharacterEngine {
         return { frames: t.length, avgMs: avg, medianMs: t[t.length >> 1] ?? 0, p95Ms: t[Math.floor(t.length * 0.95)] ?? 0 };
       },
       resetFps: () => void (this.frameTimes = []),
-      geometry: () => ({ poster: this.poster, canvas: { width: this.size.width, height: this.size.height }, map: this.size.map }),
+      geometry: () => ({ poster: this.screenImageBox(), canvas: { width: this.size.width, height: this.size.height }, map: this.size.map }),
       /** Rest frame rendered 1:1 vs base.jpg as decoded by the browser. */
       restCompare: () => {
         const got = renderer.renderNative(REST_FRAME);

@@ -34,7 +34,7 @@ test.describe("desktop windows", () => {
   test("tabs live in the hash; without JS the hashed tab shows too", async ({ page, browser }) => {
     await page.goto("/pl/oferta#cennik");
     await expect(page.getByRole("tab", { name: "Cennik" })).toHaveAttribute("aria-selected", "true");
-    await expect(page.getByText("Masz mniejszy budżet? Napisz śmiało.")).toBeVisible();
+    await expect(page.getByText("Masz mniejszy budżet?", { exact: false })).toBeVisible();
     await page.getByRole("tab", { name: "Proces" }).click();
     await expect(page).toHaveURL(/\/pl\/oferta#proces$/);
     await page.reload();
@@ -86,14 +86,54 @@ test.describe("desktop windows", () => {
     await expect(page.getByRole("tab", { name: "Cennik" })).toHaveAttribute("aria-selected", "true");
     await page.getByRole("button", { name: "Pełny ekran" }).click();
     await expect.poll(async () => (await page.getByRole("dialog").boundingBox())?.width).toBeGreaterThan(1500);
+    // the character hides while the window is full screen
+    await expect.poll(() => page.evaluate(() => getComputedStyle(document.querySelector("[data-character-poster]")!.closest("div")!).opacity)).toBe("0");
 
     // switching windows replaces: back from Contact returns to the desktop
     await page.getByRole("link", { name: "Napisz, ile chcesz wydać" }).click();
-    await expect(page).toHaveURL(/\/pl\/kontakt\?budzet=do-1000$/);
-    await expect(page.getByText("Budżet: Do 1 000 zł")).toBeVisible();
+    await expect(page).toHaveURL(/\/pl\/kontakt\?budzet=do-1000&temat=strona$/);
+    await expect(page.getByRole("radio", { name: "Do 1 000 zł" })).toBeChecked();
+    await expect(page.getByRole("radio", { name: "Strona dla firmy" })).toBeChecked();
     await page.goBack();
     await expect(page).toHaveURL(/\/pl$/);
     await expect(page.getByRole("dialog")).toHaveCount(0);
+  });
+
+  test("the character steps aside: the window never covers the face, in any frame", async ({ browser }) => {
+    for (const [width, height] of [[1280, 720], [1536, 864], [1920, 1080]]) {
+      const page = await browser.newPage({ viewport: { width, height } });
+      await page.goto("/pl");
+      // every animation frame: gap between the window's left edge and the face (incl. hair and ears,
+      // lib/window-layout.ts FACE_BOX), while the window is visible at all
+      await page.evaluate(() => {
+        const w = window as unknown as { __gaps: number[] };
+        w.__gaps = [];
+        const poster = document.querySelector("[data-character-poster]")!;
+        const t0 = performance.now();
+        const loop = () => {
+          const win = document.querySelector("[data-app-window]");
+          if (win && +getComputedStyle(win).opacity > 0.02) {
+            const p = poster.getBoundingClientRect();
+            w.__gaps.push(win.getBoundingClientRect().left - (p.left + (1560 * p.width) / 2752));
+          }
+          if (performance.now() - t0 < 2500) requestAnimationFrame(loop);
+        };
+        requestAnimationFrame(loop);
+      });
+      await page.getByRole("navigation", { name: "Pliki na pulpicie" }).getByRole("link", { name: "Oferta" }).click();
+      await expect(page.getByRole("dialog", { name: "Oferta" })).toBeVisible();
+      await page.waitForTimeout(1500);
+      const gaps = await page.evaluate(() => (window as unknown as { __gaps: number[] }).__gaps);
+      expect(gaps.length, `${width}×${height} frames`).toBeGreaterThan(20);
+      expect(Math.min(...gaps), `${width}×${height} closest approach`).toBeGreaterThan(0);
+      // at rest the face sits at ~28% of the width
+      const faceX = await page.evaluate(() => {
+        const p = document.querySelector("[data-character-poster]")!.getBoundingClientRect();
+        return p.left + (1372 * p.width) / 2752;
+      });
+      expect(Math.abs(faceX - width * 0.28)).toBeLessThan(4);
+      await page.close();
+    }
   });
 
   test("files remember where they were dragged; tidy puts them back", async ({ page }) => {

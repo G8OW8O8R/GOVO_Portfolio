@@ -1,42 +1,88 @@
 import { describe, expect, it } from "vitest";
-import { computeCharacterBox, imageToScreen } from "./character-box";
-import { WINDOW, clampWindowOffset, computeWindowRect } from "./window-layout";
+import { FACE, computeCharacterBox, imageToScreen } from "./character-box";
+import {
+  SIDE,
+  WINDOW,
+  clampWindowOffset,
+  computeWindowRect,
+  faceRect,
+  isSideLayout,
+  shiftedCharacterBox,
+  type Rect,
+} from "./window-layout";
 
-/** Chin and eyes in character-image px. */
-const CHIN_Y = 592;
+/** Eyes in character-image px. */
 const EYES_Y = 340;
 
-describe("computeWindowRect", () => {
+const overlaps = (a: Rect, b: Rect) =>
+  a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+
+describe("side layout: the character steps aside", () => {
   for (const vp of [
+    { width: 1280, height: 720 },
     { width: 1536, height: 864 },
     { width: 1920, height: 1080 },
-    { width: 1280, height: 800 },
+    { width: 1024, height: 768 },
+    { width: 1440, height: 900 },
     { width: 2560, height: 1440 },
+    { width: 2560, height: 1080 },
   ]) {
-    it(`leaves the face uncovered at ${vp.width}×${vp.height}`, () => {
+    describe(`${vp.width}×${vp.height}`, () => {
       const r = computeWindowRect(vp);
-      const box = computeCharacterBox(vp, "desktop");
-      const [, chin] = imageToScreen(box, [0, CHIN_Y]);
-      expect(r.y).toBeGreaterThan(chin);
-      expect(r.y + r.height).toBe(vp.height - WINDOW.bottomGap);
-      expect(r.x * 2 + r.width).toBeCloseTo(vp.width);
-      expect(r.width / vp.width).toBeGreaterThanOrEqual(0.4);
+      const face = faceRect(vp);
+
+      it("never covers the face", () => {
+        expect(isSideLayout(vp)).toBe(true);
+        expect(overlaps(r, face)).toBe(false);
+        expect(r.x).toBeGreaterThan(face.x + face.width);
+      });
+
+      it("puts the face at ~28% of the width, 0.85 scale, standing on the bottom edge", () => {
+        const b = shiftedCharacterBox(vp);
+        const box = computeCharacterBox(vp, "desktop");
+        expect(b.x + FACE.x * b.scale).toBeCloseTo(SIDE.faceShare * vp.width, 5);
+        expect(b.scale / box.scale).toBeCloseTo(SIDE.scale, 5);
+        expect(b.y + b.height).toBeCloseTo(vp.height, 5);
+      });
+
+      it("takes the space right of the pendant, almost full height", () => {
+        const [pendantRight] = imageToScreen(shiftedCharacterBox(vp), [SIDE.pendantRight, 0]);
+        expect(r.x).toBeGreaterThanOrEqual(pendantRight);
+        expect(r.x + r.width).toBeLessThanOrEqual(vp.width - WINDOW.sideMargin + 0.001);
+        expect(r.width).toBeLessThanOrEqual(SIDE.maxWidth);
+        expect(r.y).toBe(SIDE.top);
+        expect(r.y + r.height).toBe(vp.height - WINDOW.bottomGap);
+      });
     });
   }
 
-  it("is 64% wide and over half the height at 1536×864", () => {
-    const r = computeWindowRect({ width: 1536, height: 864 });
-    expect(r.width).toBeCloseTo(983, 0);
-    expect(r.height / 864).toBeGreaterThan(0.55);
+  it("is ~60% of the width on common laptops", () => {
+    for (const vp of [
+      { width: 1280, height: 720 },
+      { width: 1536, height: 864 },
+      { width: 1920, height: 1080 },
+    ]) {
+      const share = computeWindowRect(vp).width / vp.width;
+      expect(share).toBeGreaterThan(0.56);
+      expect(share).toBeLessThan(0.68);
+    }
   });
+});
 
-  it("keeps a minimum height on short screens, still below the eyes", () => {
-    const vp = { width: 1280, height: 600 };
-    const r = computeWindowRect(vp);
-    expect(r.height).toBe(WINDOW.minHeight);
-    const [, eyes] = imageToScreen(computeCharacterBox(vp, "desktop"), [0, EYES_Y]);
-    expect(r.y).toBeGreaterThan(eyes);
-  });
+describe("narrow desktop (768–1023 px): the window stays below the eyes", () => {
+  for (const vp of [
+    { width: 900, height: 700 },
+    { width: 1000, height: 800 },
+    { width: 1000, height: 600 },
+  ]) {
+    it(`${vp.width}×${vp.height}`, () => {
+      expect(isSideLayout(vp)).toBe(false);
+      const r = computeWindowRect(vp);
+      expect(r.height).toBeGreaterThanOrEqual(WINDOW.minHeight);
+      const [, eyes] = imageToScreen(computeCharacterBox(vp, "desktop"), [0, EYES_Y]);
+      expect(r.y).toBeGreaterThan(eyes);
+    });
+  }
 });
 
 describe("clampWindowOffset", () => {

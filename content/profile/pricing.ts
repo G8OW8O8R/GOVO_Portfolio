@@ -8,23 +8,22 @@ const t = (pl: string, en = pl) => ({ pl, en });
  * EN translated. Net prices in PLN, always "from".
  */
 export const pricing = pricingSchema.parse({
+  // the lead of design/content-pricing.md, its first sentence as the heading
+  headline: t("Szybko i dobrze, nie długo i drogo.", "Fast and good, not slow and expensive."),
   lead: t(
-    "Szybko i dobrze, nie długo i drogo. Prostą stronę oddaję nawet w 2–3 dni robocze, a każdy projekt wyceniam indywidualnie – prostszy może kosztować mniej.",
-    "Fast and good, not slow and expensive. I can deliver a simple website in as little as 2–3 working days, and I price every project individually – a simpler one may cost less.",
+    "Prostą stronę oddaję nawet w 2–3 dni robocze, a każdy projekt wyceniam indywidualnie – prostszy może kosztować mniej.",
+    "I can deliver a simple website in as little as 2–3 working days, and I price every project individually – a simpler one may cost less.",
   ),
   perks: [
-    { icon: "fast", text: t("Gotowe nawet w 2–3 dni robocze", "Ready in as little as 2–3 working days") },
-    {
-      icon: "progress",
-      text: t("Widzisz postęp na bieżąco, nie dopiero na końcu", "You see progress as it happens, not only at the end"),
-    },
-    { icon: "revisions", text: t("Poprawki w cenie", "Revisions included") },
+    t("Gotowe nawet w 2–3 dni robocze", "Ready in as little as 2–3 working days"),
+    t("Widzisz postęp na bieżąco, nie dopiero na końcu", "You see progress as it happens, not only at the end"),
+    t("Poprawki w cenie", "Revisions included"),
   ],
+  // one sentence under the lead (task 5a), the link opens Contact with the budget preset
   smallBudget: {
-    strong: t("Masz mniejszy budżet? Napisz śmiało.", "Have a smaller budget? Just write."),
-    rest: t(
-      "Dopasuję zakres do kwoty – prosta strona na start też jest w porządku, a rozbudować ją można później.",
-      "I'll fit the scope to the amount – a simple website to start with is fine too, and it can be expanded later.",
+    text: t(
+      "Masz mniejszy budżet? Dopasuję zakres do kwoty, a stronę rozbudujesz później.",
+      "Have a smaller budget? I'll fit the scope to the amount, and you can grow the site later.",
     ),
     cta: t("Napisz, ile chcesz wydać", "Tell me how much you want to spend"),
   },

@@ -7,8 +7,8 @@ const obok: ProjectInput = {
   title: { pl: "Obok", en: "Obok" },
   // Draft – final copy comes with the case study (task 4).
   summary: {
-    pl: "Obok – strona z doświadczeniem: wideo, ruch i interakcje oraz asystent AI.",
-    en: "Obok – an experience website: video, motion and interactions, plus an AI assistant.",
+    pl: "Strona z doświadczeniem: wideo, ruch i interakcje.",
+    en: "An experience website: video, motion and interactions.",
   },
   icon: "/projects/obok/icon.png",
 };

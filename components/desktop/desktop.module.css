@@ -79,12 +79,14 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* file names in mono, like a file system */
 .label {
   display: block;
-  font-size: 12.5px;
+  font-family: var(--font-mono);
+  font-size: 13px;
   line-height: 1.2;
   font-weight: 500;
-  letter-spacing: -0.005em;
+  letter-spacing: -0.02em;
 }
 
 /* "New" badge: notification-style, on the icon's top-right corner */
@@ -102,9 +104,10 @@
   border-radius: var(--radius-pill);
   background: var(--ink);
   color: var(--ink-inverse);
+  font-family: var(--font-mono);
   font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-weight: 500;
+  letter-spacing: 0;
   line-height: 1.2;
   white-space: nowrap;
   box-shadow: 0 2px 6px rgb(0 0 0 / 0.22);
@@ -171,9 +174,10 @@
   }
 
 
+
   .files {
-    /* ≈ 64 px at 1536×864 */
-    --file-icon: clamp(52px, calc(114 * var(--cb-s)), 88px);
+    /* 72 px at 1536×864 */
+    --file-icon: clamp(60px, calc(128 * var(--cb-s)), 96px);
     position: absolute;
     inset: 0;
     display: block;
@@ -210,19 +214,18 @@
     z-index: 25;
     display: inline-flex;
     align-items: center;
-    padding: 9px 15px;
-    border: 1px solid var(--glass-border);
+    padding: 8px 16px;
+    border: 1px solid var(--win-line);
     border-radius: var(--radius-pill);
-    background: var(--glass);
+    background: var(--win-bg);
     box-shadow: var(--shadow-glass);
-    backdrop-filter: blur(12px);
-    font-size: 13.5px;
+    font-size: 13px;
     font-weight: 500;
     color: var(--ink);
   }
 
   .tidy:hover {
-    background: var(--glass-strong);
+    border-color: rgb(17 17 17 / 0.25);
   }
 
   .file {
@@ -230,8 +233,8 @@
   }
 
   .label {
-    font-size: clamp(13px, calc(24 * var(--cb-s)), 16px);
-    font-weight: 450;
+    font-size: clamp(13px, calc(23 * var(--cb-s)), 15px);
+    font-weight: 500;
     text-shadow: 0 1px 0 rgb(255 255 255 / 0.5);
   }
 

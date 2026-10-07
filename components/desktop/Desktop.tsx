@@ -6,7 +6,7 @@ import { INFO_SLOTS, assignSlots } from "@/lib/desktop-slots";
 import type { Locale } from "@/lib/i18n";
 import { href, windowHref } from "@/lib/routes";
 import { hasCv, optionalAsset } from "@/lib/site";
-import { windowLayoutCss } from "@/lib/window-layout";
+import { stageShiftCss, windowLayoutCss } from "@/lib/window-layout";
 import { Character } from "@/components/character/Character";
 import { MotionProvider } from "@/components/ui/MotionProvider";
 import { DesktopLayer, WindowBackdrop } from "@/components/window/WindowBackdrop";
@@ -43,7 +43,13 @@ export function Desktop({ lang, children }: { lang: Locale; children?: ReactNode
 
   return (
     <div className={s.root}>
-      <style>{characterBoxCss(":root") + windowLayoutCss(":root")}</style>
+      <style>
+        {characterBoxCss(":root") +
+          windowLayoutCss(":root") +
+          stageShiftCss(`.${s.stage}`, "[data-window-open]", "html[data-window-fullscreen]") +
+          // the files are glued to the figure: they step aside with it (and stay off the face)
+          stageShiftCss(`.${s.files}`, "[data-window-open]", "html[data-window-fullscreen]")}
+      </style>
       <MotionProvider>
         <DesktopLayer className="contents">
           <TopBar lang={lang} dict={dict} />

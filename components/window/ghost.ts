@@ -2,6 +2,8 @@
 
 import { animate } from "motion/react";
 import { DESKTOP_MEDIA } from "@/lib/character-box";
+import { DURATION, EASE_IN, EASE_OUT } from "@/lib/motion-tokens";
+import { SIDE_MEDIA } from "@/lib/window-layout";
 import type { WindowKey } from "@/lib/routes";
 import type { ExitMode } from "./store";
 
@@ -25,6 +27,21 @@ export function flip(from: Box, to: Box) {
     scaleX: from.width / to.width,
     scaleY: from.height / to.height,
   };
+}
+
+/**
+ * Where an element will be once the desktop is back at rest: files step aside
+ * with the character while a window is open (stageShiftCss), so a window
+ * minimising to its file aims at the file's home, not where it is now.
+ */
+function restRect(el: Element): Box {
+  const r = el.getBoundingClientRect();
+  const layer = el.closest("ul");
+  if (!(layer instanceof HTMLElement) || !layer.offsetWidth) return r;
+  const l = layer.getBoundingClientRect();
+  const k = l.width / layer.offsetWidth;
+  const home = { left: layer.offsetLeft, top: layer.offsetTop };
+  return { left: home.left + (r.left - l.left) / k, top: home.top + (r.top - l.top) / k, width: r.width / k, height: r.height / k };
 }
 
 /**
@@ -62,22 +79,27 @@ export function playExit(clone: HTMLElement, rect: Box, mode: ExitMode, key: Win
   const done = () => clone.remove();
 
   if (reduced) {
-    animate(clone, { opacity: 0 }, { duration: 0.12 }).then(done, done);
+    animate(clone, { opacity: 0 }, { duration: DURATION.fast }).then(done, done);
     return;
   }
   if (!desktop) {
-    animate(clone, { y: window.innerHeight - rect.top }, { duration: 0.28, ease: [0.4, 0, 1, 1] }).then(done, done);
+    animate(clone, { y: window.innerHeight - rect.top }, { duration: 0.28, ease: EASE_IN }).then(done, done);
     return;
   }
   const anchor = mode === "minimize" ? windowAnchor(key) : null;
   if (anchor) {
-    const f = flip(anchor.getBoundingClientRect(), rect);
+    const f = flip(restRect(anchor), rect);
     animate(
       clone,
       { x: f.x, y: f.y, scaleX: f.scaleX, scaleY: f.scaleY, opacity: [1, 1, 0] },
-      { duration: 0.42, ease: [0.5, 0, 0.2, 1], opacity: { duration: 0.42, times: [0, 0.7, 1] } },
+      { duration: DURATION.slow, ease: [0.5, 0, 0.2, 1], opacity: { duration: DURATION.slow, times: [0, 0.7, 1] } },
     ).then(done, done);
     return;
   }
-  animate(clone, { scale: 0.96, opacity: 0 }, { duration: 0.18, ease: [0.4, 0, 1, 1] }).then(done, done);
+  if (matchMedia(SIDE_MEDIA).matches) {
+    // leaves to the right while the character steps back to the centre
+    animate(clone, { x: Math.min(rect.width * 0.3, 280), opacity: 0 }, { duration: DURATION.base, ease: EASE_OUT }).then(done, done);
+    return;
+  }
+  animate(clone, { scale: 0.96, opacity: 0 }, { duration: 0.18, ease: EASE_IN }).then(done, done);
 }

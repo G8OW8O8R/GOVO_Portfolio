@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { JetBrains_Mono, Schibsted_Grotesk } from "next/font/google";
 import { notFound } from "next/navigation";
 import { getDictionary } from "@/content/dictionaries";
 import { isLocale, locales } from "@/lib/i18n";
@@ -7,8 +7,16 @@ import { alternates } from "@/lib/routes";
 import { SITE_URL } from "@/lib/site";
 import "../globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+/* Schibsted Grotesk for text, JetBrains Mono for technical details.
+   Variable fonts; next/font adjusts the fallback metrics, so the swap doesn't shift the layout. */
+const sans = Schibsted_Grotesk({
+  variable: "--font-schibsted",
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
+});
+
+const mono = JetBrains_Mono({
+  variable: "--font-jetbrains",
   subsets: ["latin", "latin-ext"],
   display: "swap",
 });
@@ -46,7 +54,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
   if (!isLocale(lang)) notFound();
 
   return (
-    <html lang={lang} className={`${inter.variable} antialiased`}>
+    <html lang={lang} className={`${sans.variable} ${mono.variable} antialiased`}>
       <body className="font-sans">{children}</body>
     </html>
   );

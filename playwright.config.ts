@@ -23,6 +23,8 @@ export default defineConfig({
       url: `http://localhost:${port}/pl`,
       reuseExistingServer: true,
       timeout: 180_000,
+      // contact form: everything runs except the e-mail provider call (never on Vercel production)
+      env: { CONTACT_DRY_RUN: "1" },
     },
     {
       command: `pnpm dev -p ${devPort}`,

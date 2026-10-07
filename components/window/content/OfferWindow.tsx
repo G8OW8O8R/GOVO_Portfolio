@@ -1,15 +1,18 @@
-import { Check, Eye, RefreshCw, Zap } from "lucide-react";
+import Image from "next/image";
+import { ChevronDown } from "lucide-react";
 import { getDictionary } from "@/content/dictionaries";
-import { BUDGET_PARAM } from "@/content/profile/contact";
+import { BUDGET_PARAM, SUBJECT_PARAM } from "@/content/profile/contact";
 import { offer } from "@/content/profile/offer";
 import { pricing } from "@/content/profile/pricing";
 import { getProject } from "@/content/projects";
-import { formatPriceFrom } from "@/lib/format";
+import { priceParts } from "@/lib/format";
 import type { Locale } from "@/lib/i18n";
 import { href } from "@/lib/routes";
 import { TabButton, Tabs } from "../Tabs";
 import { WindowLink } from "../WindowLink";
-import { ui } from "./ui";
+import { Timeline, ui } from "./ui";
+
+const EXPERIENCE_ID = "strony-z-doswiadczeniem";
 
 export function OfferWindow({ lang }: { lang: Locale }) {
   const dict = getDictionary(lang);
@@ -23,44 +26,37 @@ export function OfferWindow({ lang }: { lang: Locale }) {
   );
 }
 
+/** What I do – no prices here (they live only in Pricing). */
 function ServicesPanel({ lang }: { lang: Locale }) {
   const dict = getDictionary(lang);
-  const pricingTab = dict.tabs.offer.pricing.id;
-  const exp = pricing.experience;
-  const proof = getProject(exp.proofProject);
   return (
     <div className={ui.page}>
-      <p className="mx-auto max-w-[36ch] text-balance text-center text-[22px] font-medium leading-[1.3] tracking-[-0.015em] text-ink desk:text-[25px]">
-        {offer.servicesLead[lang]}
-      </p>
-      <ul className="mt-7 grid gap-3 desk:grid-cols-3">
-        {pricing.packages.map((p) => (
-          <li key={p.id} className={`${ui.card} flex flex-col p-5`}>
-            <h3 className="text-[17px] font-semibold text-ink">{p.name[lang]}</h3>
-            <p className="mt-1.5 flex-1 text-[14px] leading-snug text-ink-soft">{p.description[lang]}</p>
-            <p className="mt-4 text-[15px] font-semibold text-ink">{formatPriceFrom(p.from, lang)}</p>
-            <p className="text-[13px] text-ink-soft">
-              {dict.offer.time}: {p.time[lang]}
-            </p>
-            <TabButton tab={pricingTab} className="mt-3 self-start text-[13.5px] font-medium text-accent underline-offset-4 hover:underline">
-              {dict.offer.seePricing} →
-            </TabButton>
-          </li>
+      <h2 className={ui.display}>{offer.servicesTitle[lang]}</h2>
+      <p className={`mt-4 max-w-[34ch] ${ui.lead}`}>{offer.servicesLead[lang]}</p>
+
+      <div className="mt-12 space-y-10">
+        {offer.services.map((service, i) => (
+          <section key={service.id} className="grid gap-x-6 desk:grid-cols-[44px_1fr]" aria-labelledby={`service-${service.id}`}>
+            <span className="pt-1.5 font-mono text-13 tabular-nums text-ink-soft" aria-hidden="true">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <div className="max-w-[60ch]">
+              <h3 id={`service-${service.id}`} className={ui.h3}>
+                {service.title[lang]}
+              </h3>
+              <p className={`mt-2 ${ui.body}`}>{service.text[lang]}</p>
+              <p className={`mt-2 ${ui.small}`}>{service.fit[lang]}</p>
+            </div>
+          </section>
         ))}
-        <li className="flex flex-col rounded-2xl bg-ink p-5 text-white">
-          <h3 className="text-[17px] font-semibold">{exp.name[lang]}</h3>
-          <p className="mt-1.5 flex-1 text-[14px] leading-snug text-white/75">{exp.description[lang]}</p>
-          <p className="mt-4 text-[15px] font-semibold">{formatPriceFrom(exp.from, lang)}</p>
-          {proof && (
-            <WindowLink
-              href={href(lang, "project", proof.slug)}
-              className="mt-3 self-start text-[13.5px] font-medium text-white underline-offset-4 hover:underline"
-            >
-              {dict.offer.seeProject} →
-            </WindowLink>
-          )}
-        </li>
-      </ul>
+      </div>
+
+      <p className="mt-12 border-t border-win-line pt-6 text-17 text-ink">
+        {dict.offer.moreThanWebsite}{" "}
+        <TabButton tab={dict.tabs.offer.pricing.id} target={EXPERIENCE_ID} className={ui.link}>
+          {pricing.experience.name[lang]} →
+        </TabButton>
+      </p>
     </div>
   );
 }
@@ -68,129 +64,181 @@ function ServicesPanel({ lang }: { lang: Locale }) {
 function ProcessPanel({ lang }: { lang: Locale }) {
   return (
     <div className={ui.page}>
-      <ol className="relative mx-auto max-w-[640px]">
-        {offer.process.map((step, i) => (
-          <li key={step.title.pl} className="relative grid grid-cols-[40px_1fr] gap-4 pb-7 last:pb-0">
-            {i < offer.process.length - 1 && (
-              <span className="absolute left-[19px] top-10 bottom-0 w-px bg-win-line" aria-hidden="true" />
-            )}
-            <span className="grid size-10 place-items-center rounded-full bg-win-card text-[13px] font-semibold tabular-nums text-ink" aria-hidden="true">
-              {String(i + 1).padStart(2, "0")}
-            </span>
-            <div className="pt-1.5">
-              <h3 className="text-[17px] font-semibold text-ink">{step.title[lang]}</h3>
-              <p className={`mt-1 ${ui.body}`}>{step.text[lang]}</p>
-            </div>
-          </li>
-        ))}
-      </ol>
+      <h2 className={`mb-10 ${ui.display}`}>{offer.processTitle[lang]}</h2>
+      <div className="max-w-[60ch]">
+        <Timeline items={offer.process.map((step) => ({ title: step.title[lang], text: step.text[lang] }))} />
+      </div>
     </div>
   );
 }
 
-const perkIcons = { fast: Zap, progress: Eye, revisions: RefreshCw } as const;
+/** "od" small, amount large (mono, tabular), currency small. */
+function Price({
+  value,
+  lang,
+  perMonth = false,
+  dark = false,
+  className = "",
+}: {
+  value: number;
+  lang: Locale;
+  perMonth?: boolean;
+  dark?: boolean;
+  className?: string;
+}) {
+  const p = priceParts(value, lang, perMonth);
+  const small = `text-13 ${dark ? "text-white/60" : "text-ink-soft"}`;
+  return (
+    <span className={`inline-flex items-baseline gap-1.5 whitespace-nowrap font-mono tabular-nums ${className}`}>
+      <span className={small}>{p.from}</span>
+      {p.currencyFirst && <span className={small}>{p.currency}</span>}
+      <span className={`text-22 font-medium tracking-[-0.03em] desk:text-28 ${dark ? "text-white" : "text-ink"}`}>
+        {/* thousands apart by a narrow gap, not a full mono cell */}
+        {p.amount.split("\u00a0").map((group, i) => (
+          <span key={i} className={i ? "ml-[0.18em]" : undefined}>
+            {group}
+          </span>
+        ))}
+      </span>
+      {!p.currencyFirst && <span className={small}>{p.currency}</span>}
+      {p.per && <span className={small}>{p.per}</span>}
+    </span>
+  );
+}
+
+const row = "grid gap-x-6 gap-y-2 py-5 desk:grid-cols-[1fr_170px_180px] desk:items-baseline";
 
 function PricingPanel({ lang }: { lang: Locale }) {
   const dict = getDictionary(lang);
   const exp = pricing.experience;
   const proof = getProject(exp.proofProject);
   const contact = href(lang, "contact");
+  // one root element: a server fragment reaches the client Tabs as an unkeyed array
   return (
-    <div className={ui.page}>
-      <p className="mx-auto max-w-[60ch] text-balance text-center text-[18px] leading-[1.45] text-ink desk:text-[19px]">{pricing.lead[lang]}</p>
-      <ul className="mt-4 flex flex-wrap justify-center gap-2">
-        {pricing.perks.map((perk) => {
-          const PerkIcon = perkIcons[perk.icon];
-          return (
-            <li key={perk.icon} className="inline-flex items-center gap-1.5 rounded-full bg-win-card px-3 py-1.5 text-[13.5px] font-medium text-ink">
-              <PerkIcon className="size-4 text-accent" aria-hidden="true" />
-              {perk.text[lang]}
-            </li>
-          );
-        })}
-      </ul>
-
-      <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-accent/25 bg-accent-soft p-5 desk:flex-row desk:items-center desk:justify-between">
-        <p className="text-[15px] leading-snug text-ink">
-          <strong className="font-semibold">{pricing.smallBudget.strong[lang]}</strong> {pricing.smallBudget.rest[lang]}
+    <div>
+      <div className={`${ui.page} pb-10`}>
+        <h2 className={ui.display}>{pricing.headline[lang]}</h2>
+        <p className={`mt-4 max-w-[52ch] ${ui.body}`}>{pricing.lead[lang]}</p>
+        <p className="mt-3 max-w-[60ch] text-17 text-ink">
+          {pricing.smallBudget.text[lang]}{" "}
+          <WindowLink href={`${contact}?${BUDGET_PARAM}=do-1000&${SUBJECT_PARAM}=strona`} className={ui.link}>
+            {pricing.smallBudget.cta[lang]} →
+          </WindowLink>
         </p>
-        <WindowLink href={`${contact}?${BUDGET_PARAM}=do-1000`} className={`${ui.primary} shrink-0`}>
-          {pricing.smallBudget.cta[lang]}
-        </WindowLink>
-      </div>
-
-      <ul className="mt-6 grid gap-3 desk:grid-cols-2">
-        {pricing.packages.map((p) => (
-          <li
-            key={p.id}
-            className={`relative flex flex-col rounded-2xl border bg-white p-5 ${p.popular ? "border-accent shadow-[0_0_0_1px_var(--accent)]" : "border-win-line"}`}
-          >
-            {p.popular && (
-              <span className="absolute -top-2.5 right-4 rounded-full bg-accent px-2.5 py-0.5 text-[11.5px] font-semibold text-white">
-                {pricing.popularBadge[lang]}
+        <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-1.5 text-15 font-medium text-ink">
+          {pricing.perks.map((perk, i) => (
+            <li key={perk.pl} className="flex items-baseline gap-2">
+              <span className="font-mono text-13 text-ink-soft" aria-hidden="true">
+                {String(i + 1).padStart(2, "0")}
               </span>
-            )}
-            <div className="flex items-baseline justify-between gap-3">
-              <h3 className="text-[17px] font-semibold text-ink">{p.name[lang]}</h3>
-              <p className="shrink-0 text-[16px] font-semibold text-ink">{formatPriceFrom(p.from, lang)}</p>
-            </div>
-            <p className="mt-1 text-[14px] leading-snug text-ink-soft">{p.description[lang]}</p>
-            <ul className="mt-3 space-y-1.5">
-              {p.features.map((f) => (
-                <li key={f.pl} className="flex gap-2 text-[14px] leading-snug text-ink">
-                  <Check className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden="true" />
-                  {f[lang]}
-                </li>
-              ))}
-              <li className="flex gap-2 text-[14px] leading-snug text-ink-soft">
-                <Check className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden="true" />
-                {dict.offer.time}: {p.time[lang]}
-              </li>
-            </ul>
-          </li>
-        ))}
-      </ul>
-
-      <section className="mt-4 rounded-2xl bg-ink p-6 text-white desk:p-7" aria-labelledby="experience">
-        <div className="flex flex-wrap items-baseline justify-between gap-3">
-          <h3 id="experience" className="text-[20px] font-semibold tracking-[-0.01em]">
-            {exp.name[lang]}
-          </h3>
-          <p className="text-[17px] font-semibold">{formatPriceFrom(exp.from, lang)}</p>
-        </div>
-        <p className="mt-2 max-w-[62ch] text-[15px] leading-relaxed text-white/80">{exp.description[lang]}</p>
-        <ul className="mt-4 grid gap-1.5 desk:grid-cols-2">
-          {exp.features.map((f) => (
-            <li key={f.pl} className="flex gap-2 text-[14px] leading-snug">
-              <Check className="mt-0.5 size-4 shrink-0 text-[#e9b46a]" aria-hidden="true" />
-              {f[lang]}
+              {perk[lang]}
             </li>
           ))}
         </ul>
-        <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
-          <WindowLink href={contact} className={ui.primary}>
-            {exp.cta[lang]}
-          </WindowLink>
-          {proof && (
-            <p className="text-[14px] text-white/80">
-              {exp.proofLabel[lang]}{" "}
-              <WindowLink href={href(lang, "project", proof.slug)} className="font-medium text-white underline underline-offset-4">
-                {proof.title[lang]}
+
+        <ul className="mt-10 border-t border-ink">
+          {pricing.packages.map((p) => (
+            <li key={p.id} className="border-b border-win-line">
+              <details className="group">
+                <summary className={`${row} cursor-pointer list-none [&::-webkit-details-marker]:hidden`}>
+                  <span className="min-w-0">
+                    <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <span className="text-22 font-semibold tracking-[-0.02em] text-ink">{p.name[lang]}</span>
+                      {p.popular && (
+                        <span className="rounded-full bg-ink px-2.5 py-0.5 font-mono text-13 text-white">
+                          {pricing.popularBadge[lang]}
+                        </span>
+                      )}
+                    </span>
+                    <span className="mt-1 block text-15 text-ink-soft">{p.description[lang]}</span>
+                  </span>
+                  <span className="font-mono text-13 text-ink-soft">
+                    <span className="sr-only">{dict.offer.time}: </span>
+                    {p.time[lang]}
+                  </span>
+                  <span className="flex items-baseline justify-between gap-3 desk:justify-end">
+                    <Price value={p.from} lang={lang} />
+                    <ChevronDown
+                      className="size-4 shrink-0 self-center text-ink-soft transition-transform duration-200 group-open:rotate-180"
+                      aria-hidden="true"
+                    />
+                  </span>
+                </summary>
+                <ul className="-mt-1 grid gap-1.5 pb-6 text-15 text-ink desk:max-w-[60%]">
+                  {p.features.map((f) => (
+                    <li key={f.pl} className="flex gap-3">
+                      <span className="mt-[0.7em] h-px w-3 shrink-0 bg-ink/40" aria-hidden="true" />
+                      {f[lang]}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            </li>
+          ))}
+          <li className={`${row} border-b border-win-line`}>
+            <span>
+              <span className="text-17 font-semibold text-ink">{pricing.care.name[lang]}</span>
+              <span className="mt-1 block text-15 text-ink-soft">{pricing.care.description[lang]}</span>
+            </span>
+            <span aria-hidden="true" className="hidden desk:block" />
+            <span className="desk:text-right">
+              <Price value={pricing.care.fromMonthly} lang={lang} perMonth />
+            </span>
+          </li>
+        </ul>
+      </div>
+
+      <section
+        id={EXPERIENCE_ID}
+        className="scroll-mt-14 bg-ink text-white"
+        aria-labelledby="experience-title"
+      >
+        <div className="mx-auto grid max-w-[780px] gap-8 px-6 py-12 desk:grid-cols-[1fr_minmax(0,300px)] desk:items-center desk:px-12 desk:py-14">
+          <div>
+            <h3 id="experience-title" className="text-28 font-semibold tracking-[-0.03em] desk:text-40">
+              {exp.name[lang]}
+            </h3>
+            <Price value={exp.from} lang={lang} dark className="mt-3" />
+            <p className="mt-4 max-w-[52ch] text-17 text-white/75">{exp.description[lang]}</p>
+            <p className="mt-4 font-mono text-13 text-white/60">{exp.features.map((f) => f[lang]).join("  ·  ")}</p>
+            <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
+              <WindowLink
+                href={`${contact}?${BUDGET_PARAM}=8-tys&${SUBJECT_PARAM}=strona`}
+                className="inline-flex h-11 items-center rounded-full bg-white px-5 text-15 font-medium text-ink transition-colors hover:bg-white/85"
+              >
+                {exp.cta[lang]}
               </WindowLink>
-            </p>
+              {proof && (
+                <WindowLink
+                  href={href(lang, "project", proof.slug)}
+                  className="text-15 font-medium text-white underline decoration-white/40 underline-offset-[5px] hover:decoration-white"
+                >
+                  {dict.offer.seeProject} →
+                </WindowLink>
+              )}
+            </div>
+          </div>
+          {proof && (
+            <WindowLink href={href(lang, "project", proof.slug)} className="group block" aria-label={`${dict.offer.seeProject}`}>
+              <Image
+                src={`/projects/${proof.slug}/cover.jpg`}
+                alt=""
+                width={2576}
+                height={1438}
+                sizes="(max-width: 767px) 90vw, 300px"
+                className="h-auto w-full rounded-[10px] shadow-[0_20px_50px_rgb(0_0_0/0.5)] transition-transform duration-300 group-hover:-translate-y-0.5"
+              />
+              <span className="mt-2.5 block font-mono text-13 text-white/60">
+                {exp.proofLabel[lang]} {proof.title[lang]}
+              </span>
+            </WindowLink>
           )}
         </div>
       </section>
 
-      <p className="mt-4 flex flex-wrap items-baseline justify-between gap-2 rounded-2xl border border-win-line px-5 py-3.5 text-[14px]">
-        <span>
-          <strong className="font-semibold text-ink">{pricing.care.name[lang]}</strong>{" "}
-          <span className="text-ink-soft">– {pricing.care.description[lang]}</span>
-        </span>
-        <span className="font-semibold text-ink">{formatPriceFrom(pricing.care.fromMonthly, lang, true)}</span>
-      </p>
-
-      <p className="mt-5 text-[13px] leading-relaxed text-ink-soft">{pricing.footnote[lang]}</p>
+      <div className={`${ui.page} pt-6`}>
+        <p className="max-w-[70ch] text-13 text-ink-soft">{pricing.footnote[lang]}</p>
+      </div>
     </div>
   );
 }

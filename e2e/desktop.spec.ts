@@ -36,7 +36,7 @@ test.describe("static desktop", () => {
     const iconBox = (await obok.locator("img").boundingBox())!;
     const docBox = (await about.locator("img").boundingBox())!;
     expect(Math.abs(iconBox.height - docBox.height)).toBeLessThan(1);
-    expect(Math.abs(iconBox.height - 64)).toBeLessThan(2);
+    expect(Math.abs(iconBox.height - 72)).toBeLessThan(2);
     const gap = async (link: typeof obok, icon: { y: number; height: number }) =>
       (await link.locator("span").last().boundingBox())!.y - (icon.y + icon.height);
     expect(Math.abs((await gap(obok, iconBox)) - (await gap(about, docBox)))).toBeLessThan(1);

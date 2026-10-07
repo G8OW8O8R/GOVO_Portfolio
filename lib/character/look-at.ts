@@ -8,15 +8,20 @@
  *   release();                                         // on pointerleave/blur
  *   const unregister = characterGaze.registerGlanceTarget(fileElement); // idle glances
  *   characterGaze.flash();                             // pendant sweep (hover)
+ *   characterGaze.lookAt(VIEWER);                      // straight at the visitor
  */
 
 export type ClientPoint = { x: number; y: number };
-export type GazeTarget = Element | ClientPoint | (() => ClientPoint | null);
+/** Look straight ahead, at the person in front of the screen. */
+export const VIEWER = "viewer" as const;
+export type Look = ClientPoint | typeof VIEWER;
+export type GazeTarget = Element | Look | (() => Look | null);
 
-type Resolver = () => ClientPoint | null;
+type Resolver = () => Look | null;
 
 function resolver(target: GazeTarget): Resolver {
   if (typeof target === "function") return target;
+  if (target === VIEWER) return () => VIEWER;
   if ("getBoundingClientRect" in target) {
     return () => {
       if (!target.isConnected) return null;
@@ -45,7 +50,7 @@ export function createGazeBus() {
     },
 
     /** Current explicit target, or null. */
-    current(): ClientPoint | null {
+    current(): Look | null {
       for (let i = active.length - 1; i >= 0; i--) {
         const p = active[i].at();
         if (p) return p;
@@ -60,7 +65,7 @@ export function createGazeBus() {
     },
 
     glanceTargets(): ClientPoint[] {
-      return [...glances.values()].map((r) => r()).filter((p): p is ClientPoint => p !== null);
+      return [...glances.values()].map((r) => r()).filter((p): p is ClientPoint => p !== null && p !== VIEWER);
     },
 
     flash() {

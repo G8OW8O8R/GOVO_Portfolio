@@ -20,3 +20,14 @@ export function formatPriceFrom(value: number, lang: Locale, perMonth = false): 
   if (!perMonth) return base;
   return lang === "pl" ? `${base} / mies.` : `${base} / month`;
 }
+
+/** Price split for display: small "od"/"from" and currency, large amount. */
+export function priceParts(value: number, lang: Locale, perMonth = false) {
+  return {
+    from: lang === "pl" ? "od" : "from",
+    amount: groupThousands(value, lang),
+    currency: lang === "pl" ? "zł" : "PLN",
+    currencyFirst: lang === "en",
+    per: perMonth ? (lang === "pl" ? "/ mies." : "/ month") : null,
+  };
+}

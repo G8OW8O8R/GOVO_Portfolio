@@ -3,6 +3,11 @@
 /* Keep in sync with DESKTOP_MEDIA in lib/character-box.ts */
 @custom-variant desk (@media (min-width: 768px) and (min-height: 540px) and (min-aspect-ratio: 5/6));
 
+/*
+ * One world with the desktop: near-black, white, warm-neutral
+ * greys; one cool blue (from the icons) only for focus, selection and states;
+ * green only for "available".
+ */
 :root {
   /* Surface – matches the grey studio backdrop of the character image */
   --bg-center: #e6e5e6;
@@ -10,11 +15,12 @@
   --bg-edge: #d6d5d7;
 
   /* Ink */
-  --ink: #141414;
-  --ink-muted: #4d4d4f;
+  --ink: #111111;
+  --ink-muted: #4a4947;
+  --ink-soft: #62615e;
   --ink-inverse: #ffffff;
 
-  /* Glass (capsule, dock) */
+  /* Glass – only the window title bar, the dock and desktop chips */
   --glass: rgb(255 255 255 / 0.5);
   --glass-strong: rgb(255 255 255 / 0.72);
   --glass-border: rgb(255 255 255 / 0.75);
@@ -26,42 +32,63 @@
   --paper-edge: rgb(0 0 0 / 0.12);
   --shadow-glass: 0 1px 2px rgb(0 0 0 / 0.06), 0 10px 30px rgb(0 0 0 / 0.12);
 
-  /* The only UI colour (besides pendant sparkles and project icons) */
+  /* States */
   --available: #2fbf5a;
+  --focus: #6f8fe0;
+  --selection: rgb(111 143 224 / 0.26);
+  --danger: #b3261e;
 
   /* Windows (light macOS style) */
-  --win-bg: #fbfbfb;
-  --win-bar: linear-gradient(#f7f7f7, #efeff0);
-  --win-line: rgb(0 0 0 / 0.08);
-  --win-card: #f1f1f2;
-  --shadow-window: 0 0 0 0.5px rgb(0 0 0 / 0.12), 0 24px 70px rgb(0 0 0 / 0.22), 0 6px 18px rgb(0 0 0 / 0.1);
-  /* Window accent (mockups): amber, dark enough for white text (≥ 4.5:1) */
-  --accent: #9a5b0b;
-  --accent-soft: #f6ead9;
-  --ink-soft: #5d5d61;
+  --win-bg: #fcfcfb;
+  --win-bar: rgb(248 248 247 / 0.74);
+  --win-line: rgb(17 17 17 / 0.09);
+  --win-fill: #f1f1ef;
+  --shadow-window: 0 0 0 0.5px rgb(0 0 0 / 0.1), 0 34px 90px -12px rgb(0 0 0 / 0.3), 0 10px 28px rgb(0 0 0 / 0.08);
 
-  --focus-ring: #141414;
+  /* Radii: window 14, buttons 999, fields 10 */
+  --radius-window: 14px;
   --radius-pill: 999px;
+  --radius-field: 10px;
 }
 
 @theme inline {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-schibsted), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  /* Type scale 13 / 15 / 17 / 22 / 28 / 40 / 56 */
+  --text-13: 13px;
+  --text-13--line-height: 1.45;
+  --text-15: 15px;
+  --text-15--line-height: 1.5;
+  --text-17: 17px;
+  --text-17--line-height: 1.55;
+  --text-22: 22px;
+  --text-22--line-height: 1.3;
+  --text-28: 28px;
+  --text-28--line-height: 1.2;
+  --text-40: 40px;
+  --text-40--line-height: 1.05;
+  --text-56: 56px;
+  --text-56--line-height: 1;
+
   --color-ink: var(--ink);
   --color-ink-muted: var(--ink-muted);
+  --color-ink-soft: var(--ink-soft);
   --color-ink-inverse: var(--ink-inverse);
   --color-glass: var(--glass);
   --color-glass-strong: var(--glass-strong);
   --color-glass-border: var(--glass-border);
   --color-paper: var(--paper);
   --color-win: var(--win-bg);
-  --color-win-card: var(--win-card);
+  --color-win-fill: var(--win-fill);
   --color-win-line: var(--win-line);
-  --color-accent: var(--accent);
-  --color-accent-soft: var(--accent-soft);
-  --color-ink-soft: var(--ink-soft);
-  --shadow-window: var(--shadow-window);
+  --color-focus: var(--focus);
+  --color-danger: var(--danger);
   --color-available: var(--available);
+  --shadow-window: var(--shadow-window);
   --shadow-glass: var(--shadow-glass);
+  --radius-field: var(--radius-field);
+  --radius-window: var(--radius-window);
 }
 
 html {
@@ -75,12 +102,56 @@ body {
   background: radial-gradient(120% 90% at 50% 28%, var(--bg-center) 0%, var(--bg-mid) 55%, var(--bg-edge) 100%)
     fixed;
   overflow-x: hidden;
+  font-size: 17px;
+  line-height: 1.55;
 }
 
+::selection {
+  background: var(--selection);
+  color: inherit;
+}
+
+/* Own focus ring: 2 px cool blue with a gap */
 :focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 3px;
-  border-radius: 6px;
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/*
+ * Desktop pieces behind an open window (files, logo, capsule) fade on top of
+ * the shared blur (WindowBackdrop), so they recede more than the character.
+ * No filter of their own: a blur switching on these layers costs 75–200 ms
+ * frames (measured in task 5a); a single backdrop layer + opacity is free.
+ * Small, so they are layers from the start: promoting them when the fade
+ * begins cost a ~40 ms frame.
+ */
+[data-dim] {
+  transition: opacity 0.3s ease-out;
+  will-change: opacity;
+}
+
+[data-window-open] [data-dim] {
+  opacity: 0.6;
+}
+
+/* Window content scrollbar: thin, ink-tinted, no track */
+[data-window-scroller] {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(17 17 17 / 0.22) transparent;
+}
+
+[data-window-scroller]::-webkit-scrollbar {
+  width: 10px;
+}
+
+[data-window-scroller]::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 99px;
+  background: rgb(17 17 17 / 0.22) padding-box;
+}
+
+[data-window-scroller]::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(17 17 17 / 0.36);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -90,4 +161,5 @@ body {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }
+
 }

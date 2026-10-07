@@ -9,7 +9,21 @@ export function assembleEmail(parts: { user: string; domain: string } = emailPar
   return [parts.user, parts.domain].join("@");
 }
 
-/** Budget options of the contact form (task 5); `?budzet=<id>` preselects one. */
+/** What the message is about; `?temat=<id>` preselects one. A job offer has no budget. */
+export const subjects = [
+  { id: "strona", label: { pl: "Strona dla firmy", en: "A website for my business" } },
+  { id: "praca", label: { pl: "Oferta pracy", en: "A job offer" } },
+  { id: "inne", label: { pl: "Inne", en: "Something else" } },
+] as const;
+
+export type SubjectId = (typeof subjects)[number]["id"];
+export const SUBJECT_PARAM = "temat";
+
+export function findSubject(id: string | null) {
+  return subjects.find((s) => s.id === id) ?? null;
+}
+
+/** Budget options of the contact form; `?budzet=<id>` preselects one. */
 export const budgets = [
   { id: "do-1000", label: { pl: "Do 1 000 zł", en: "Up to PLN 1,000" } },
   { id: "1-3-tys", label: { pl: "1–3 tys.", en: "PLN 1–3k" } },
