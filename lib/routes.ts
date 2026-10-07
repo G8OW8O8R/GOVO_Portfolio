@@ -10,6 +10,7 @@ export const routeSegments = {
   offer: { pl: "oferta", en: "services" },
   contact: { pl: "kontakt", en: "contact" },
   project: { pl: "projekty", en: "projects" },
+  cv: { pl: "cv", en: "cv" },
 } as const satisfies Record<string, Record<Locale, string>>;
 
 export type RouteKey = keyof typeof routeSegments;
@@ -54,4 +55,47 @@ export function localizedSegmentRules() {
     rules.push({ english: `/en/${en}${tail}`, internal: `/en/${pl}${tail}` });
   }
   return rules;
+}
+
+/** Desktop windows: every window has its own URL. */
+export type WindowKey = "about" | "offer" | "contact" | "cv" | `project-${string}`;
+
+/** Window shown at a pathname, or null for the bare desktop / unknown paths. */
+export function windowKeyForPath(pathname: string): WindowKey | null {
+  const [, maybeLang = "", segment = "", slug = ""] = pathname.split("/");
+  if (!isLocale(maybeLang) || !segment) return null;
+  const route = (Object.keys(routeSegments) as RouteKey[]).find(
+    (key) => key !== "home" && locales.some((l) => routeSegments[key][l] === segment),
+  );
+  switch (route) {
+    case "about":
+    case "offer":
+    case "contact":
+    case "cv":
+      return route;
+    case "project":
+      return slug ? `project-${slug}` : null;
+    default:
+      return null;
+  }
+}
+
+export function windowHref(lang: Locale, key: WindowKey): string {
+  if (key.startsWith("project-")) return href(lang, "project", key.slice("project-".length));
+  return href(lang, key as Exclude<RouteKey, "home" | "project">);
+}
+
+/**
+ * How a window navigation touches history. Opening from the bare desktop
+ * pushes (so "back" closes the window); switching between windows replaces
+ * (one window at a time, back still returns to the desktop). Closing goes
+ * back when the previous entry is the desktop, otherwise replaces with it
+ * (window opened from a shared link or after a reload).
+ */
+export function openMode(windowOpen: boolean): "push" | "replace" {
+  return windowOpen ? "replace" : "push";
+}
+
+export function closeMode(previousIsDesktop: boolean): "back" | "replace" {
+  return previousIsDesktop ? "back" : "replace";
 }

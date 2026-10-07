@@ -1,7 +1,8 @@
-import Link from "next/link";
 import type { Dictionary } from "@/content/dictionaries";
 import { links } from "@/content/profile/links";
 import { Icon, type GlyphName } from "@/components/ui/glyphs";
+import { EmailLink } from "@/components/ui/Email";
+import { WindowLink } from "@/components/window/WindowLink";
 import type { Locale } from "@/lib/i18n";
 import { href } from "@/lib/routes";
 
@@ -9,15 +10,16 @@ const item =
   "grid size-11 place-items-center rounded-[12px] text-ink transition-colors hover:bg-white/55 desk:size-12";
 
 export function Dock({ lang, dict }: { lang: Locale; dict: Dictionary }) {
-  const external: { glyph: GlyphName; label: string; url: string }[] = [
+  const profiles: { glyph: GlyphName; label: string; url?: string }[] = [
     { glyph: "linkedin", label: dict.dock.linkedin, url: links.linkedin },
     { glyph: "github", label: dict.dock.github, url: links.github },
   ];
+  const external = profiles.filter((l): l is { glyph: GlyphName; label: string; url: string } => !!l.url);
 
   return (
     <nav
       aria-label={dict.dock.label}
-      className="fixed bottom-[calc(14px+env(safe-area-inset-bottom))] left-1/2 z-30 -translate-x-1/2 desk:bottom-5"
+      className="fixed bottom-[calc(14px+env(safe-area-inset-bottom))] left-1/2 z-50 -translate-x-1/2 desk:bottom-5"
     >
       <ul className="flex items-center gap-1 rounded-[20px] border border-glass-border bg-glass p-1.5 shadow-glass backdrop-blur-xl">
         {external.map(({ glyph, label, url }) => (
@@ -28,15 +30,15 @@ export function Dock({ lang, dict }: { lang: Locale; dict: Dictionary }) {
           </li>
         ))}
         <li>
-          <a className={item} href={`mailto:${links.email}`} aria-label={dict.dock.email} title={dict.dock.email}>
+          <EmailLink className={item} fallbackHref={href(lang, "contact")} aria-label={dict.dock.email} title={dict.dock.email}>
             <Icon name="mail" className="size-6.5" />
-          </a>
+          </EmailLink>
         </li>
         <li>
           {/* The assistant arrives in task 5; until then it opens Contact. */}
-          <Link className={item} href={href(lang, "contact")} aria-label={dict.dock.ask} title={dict.dock.ask}>
+          <WindowLink className={item} href={href(lang, "contact")} aria-label={dict.dock.ask} title={dict.dock.ask}>
             <Icon name="chat" className="size-6.5" />
-          </Link>
+          </WindowLink>
         </li>
       </ul>
     </nav>

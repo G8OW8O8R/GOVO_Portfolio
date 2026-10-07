@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { getDictionary } from "@/content/dictionaries";
+import { AppWindow } from "@/components/window/AppWindow";
+import { OfferWindow } from "@/components/window/content/OfferWindow";
 import { isLocale } from "@/lib/i18n";
 import { alternates } from "@/lib/routes";
 
@@ -15,7 +18,14 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/oferta">):
   };
 }
 
-/** The Offer window arrives in task 3; the URL already renders the desktop. */
-export default function OfferPage() {
-  return null;
+/** The desktop with the offer window open (server-rendered, own URL). */
+export default async function Page({ params }: PageProps<"/[lang]/oferta">) {
+  const { lang } = await params;
+  if (!isLocale(lang)) notFound();
+  const dict = getDictionary(lang);
+  return (
+    <AppWindow windowKey="offer" title={dict.files.offer} labels={dict.window}>
+      <OfferWindow lang={lang} />
+    </AppWindow>
+  );
 }

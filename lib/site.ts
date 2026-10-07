@@ -10,7 +10,17 @@ export const SITE_URL =
 
 export const CV_PATH = "/cv/CV.pdf";
 
-/** Checked at build time: the CV file is shown only when it exists. */
+/** Whether a file exists in public/ (checked on the server, at build time for static pages). */
+export function publicFileExists(publicPath: string): boolean {
+  return existsSync(join(process.cwd(), "public", publicPath));
+}
+
+/** The CV file and window are shown only when the PDF exists (no dead links). */
 export function hasCv(): boolean {
-  return existsSync(join(process.cwd(), "public", CV_PATH));
+  return publicFileExists(CV_PATH);
+}
+
+/** Optional asset: its public path when the file exists, otherwise null (placeholder). */
+export function optionalAsset(publicPath: string): string | null {
+  return publicFileExists(publicPath) ? publicPath : null;
 }

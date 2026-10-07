@@ -12,7 +12,7 @@
   padding-bottom: calc(96px + env(safe-area-inset-bottom));
 }
 
-.root > main {
+.main {
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -31,6 +31,19 @@
 
 /* poster and canvas: components/character/character.module.css */
 
+/* OVO pendant: invisible button over the medallion (image px 1205–1575 × 805–1000) */
+.pendant {
+  position: absolute;
+  left: calc(var(--cb-x) + 1205 * var(--cb-s));
+  top: calc(var(--cb-y) + 805 * var(--cb-s));
+  width: calc(370 * var(--cb-s));
+  height: calc(195 * var(--cb-s));
+  border-radius: 40%;
+  pointer-events: auto;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* ---------- Files ---------- */
 
 .files {
@@ -48,7 +61,13 @@
 }
 
 
+.parallax {
+  display: block;
+}
+
 .file {
+  -webkit-touch-callout: none;
+  user-select: none;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -129,17 +148,8 @@
   object-fit: cover;
 }
 
-.tile {
-  background: var(--paper);
-  color: var(--ink);
-}
-
-.tile svg {
-  width: 28px;
-  height: 28px;
-}
-
-.doc {
+/* "Tidy up": appears only after a file was moved (desktop) */
+.tidy {
   display: none;
 }
 
@@ -176,8 +186,43 @@
     position: absolute;
     left: calc(var(--cb-x) + var(--sx) * var(--cb-s));
     top: calc(var(--cb-y) + var(--sy) * var(--cb-s));
-    transform: translate(-50%, -50%);
+    /* centre on the slot + remembered offset (image px); drag uses transform */
+    translate: calc(-50% + var(--dx, 0) * var(--cb-s)) calc(-50% + var(--dy, 0) * var(--cb-s));
     pointer-events: auto;
+  }
+
+  .slot[data-dragging] {
+    z-index: 5;
+  }
+
+  .slot[data-dragging] .squircle {
+    box-shadow: 0 14px 24px rgb(0 0 0 / 0.18), 0 2px 4px rgb(0 0 0 / 0.1);
+  }
+
+  .file {
+    touch-action: none;
+  }
+
+  .tidy {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 25;
+    display: inline-flex;
+    align-items: center;
+    padding: 9px 15px;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-pill);
+    background: var(--glass);
+    box-shadow: var(--shadow-glass);
+    backdrop-filter: blur(12px);
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .tidy:hover {
+    background: var(--glass-strong);
   }
 
   .file {
@@ -188,17 +233,6 @@
     font-size: clamp(13px, calc(24 * var(--cb-s)), 16px);
     font-weight: 450;
     text-shadow: 0 1px 0 rgb(255 255 255 / 0.5);
-  }
-
-  .tile {
-    display: none;
-  }
-
-  .doc {
-    display: block;
-    width: auto;
-    height: var(--file-icon);
-    filter: drop-shadow(0 6px 10px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
   }
 
   .badge {

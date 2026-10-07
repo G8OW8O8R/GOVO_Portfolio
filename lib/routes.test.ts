@@ -1,5 +1,41 @@
 import { describe, expect, it } from "vitest";
-import { alternates, href, localizedSegmentRules, switchLocalePath } from "./routes";
+import {
+  alternates,
+  closeMode,
+  href,
+  localizedSegmentRules,
+  openMode,
+  switchLocalePath,
+  windowHref,
+  windowKeyForPath,
+} from "./routes";
+
+describe("windows", () => {
+  it("finds the window for a pathname in both languages", () => {
+    expect(windowKeyForPath("/pl")).toBeNull();
+    expect(windowKeyForPath("/pl/o-mnie")).toBe("about");
+    expect(windowKeyForPath("/en/about")).toBe("about");
+    expect(windowKeyForPath("/en/services")).toBe("offer");
+    expect(windowKeyForPath("/pl/kontakt")).toBe("contact");
+    expect(windowKeyForPath("/en/cv")).toBe("cv");
+    expect(windowKeyForPath("/pl/projekty/obok")).toBe("project-obok");
+    expect(windowKeyForPath("/pl/projekty")).toBeNull();
+    expect(windowKeyForPath("/pl/nieznane")).toBeNull();
+  });
+
+  it("builds window URLs", () => {
+    expect(windowHref("pl", "offer")).toBe("/pl/oferta");
+    expect(windowHref("en", "cv")).toBe("/en/cv");
+    expect(windowHref("en", "project-obok")).toBe("/en/projects/obok");
+  });
+
+  it("pushes from the desktop, replaces between windows, closes back to the desktop", () => {
+    expect(openMode(false)).toBe("push");
+    expect(openMode(true)).toBe("replace");
+    expect(closeMode(true)).toBe("back");
+    expect(closeMode(false)).toBe("replace");
+  });
+});
 
 describe("href", () => {
   it("builds localized paths", () => {

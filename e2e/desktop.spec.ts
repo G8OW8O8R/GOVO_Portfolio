@@ -31,10 +31,10 @@ test.describe("static desktop", () => {
     expect(Math.abs(slot.x + slot.width / 2 - hx)).toBeLessThan(1);
     expect(Math.abs(slot.y + slot.height / 2 - hy)).toBeLessThan(1);
 
-    // Project icon matches a document: same height, same gap to the label.
+    // Project icon matches an info icon: same size, same gap to the label.
     const about = files.getByRole("link", { name: "O mnie" });
     const iconBox = (await obok.locator("img").boundingBox())!;
-    const docBox = (await about.locator("svg").first().boundingBox())!;
+    const docBox = (await about.locator("img").boundingBox())!;
     expect(Math.abs(iconBox.height - docBox.height)).toBeLessThan(1);
     expect(Math.abs(iconBox.height - 64)).toBeLessThan(2);
     const gap = async (link: typeof obok, icon: { y: number; height: number }) =>

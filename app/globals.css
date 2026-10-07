@@ -29,6 +29,17 @@
   /* The only UI colour (besides pendant sparkles and project icons) */
   --available: #2fbf5a;
 
+  /* Windows (light macOS style) */
+  --win-bg: #fbfbfb;
+  --win-bar: linear-gradient(#f7f7f7, #efeff0);
+  --win-line: rgb(0 0 0 / 0.08);
+  --win-card: #f1f1f2;
+  --shadow-window: 0 0 0 0.5px rgb(0 0 0 / 0.12), 0 24px 70px rgb(0 0 0 / 0.22), 0 6px 18px rgb(0 0 0 / 0.1);
+  /* Window accent (mockups): amber, dark enough for white text (≥ 4.5:1) */
+  --accent: #9a5b0b;
+  --accent-soft: #f6ead9;
+  --ink-soft: #5d5d61;
+
   --focus-ring: #141414;
   --radius-pill: 999px;
 }
@@ -42,6 +53,13 @@
   --color-glass-strong: var(--glass-strong);
   --color-glass-border: var(--glass-border);
   --color-paper: var(--paper);
+  --color-win: var(--win-bg);
+  --color-win-card: var(--win-card);
+  --color-win-line: var(--win-line);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-ink-soft: var(--ink-soft);
+  --shadow-window: var(--shadow-window);
   --color-available: var(--available);
   --shadow-glass: var(--shadow-glass);
 }
