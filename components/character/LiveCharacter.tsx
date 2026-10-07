@@ -18,7 +18,8 @@ export function LiveCharacter({ className }: { className?: string }) {
     const canvas = ref.current;
     const poster = canvas?.parentElement?.querySelector<HTMLImageElement>("img[data-character-poster]");
     if (!canvas || !poster) return;
-    const params = new URLSearchParams(location.search);
+    // ?character=debug|off and ?seed= exist only in development; production ignores them
+    const params = new URLSearchParams(process.env.NODE_ENV !== "production" ? location.search : "");
     const debug = params.get("character") === "debug";
     if (params.get("character") === "off") return;
     if (matchMedia(REDUCED_MOTION).matches) return;
@@ -33,7 +34,8 @@ export function LiveCharacter({ className }: { className?: string }) {
       poster,
       debug,
       seed: seed ? Number(seed) : undefined,
-      onLive: () => setLive(true),
+      forceBase: params.get("base") === "full" || params.get("base") === "crop" ? (params.get("base") as "full" | "crop") : undefined,
+      onLive: setLive,
       onFallback: () => setLive(false),
     });
 

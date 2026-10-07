@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { BLINK_DURATION, Blinker, blinkCurve } from "./blink";
-import { EYES, TUNING } from "./config";
+import { EYES, TUNING, type Vec2 } from "./config";
 import { GazeDirector, eyeBlend, irisOffset, pointToGaze } from "./gaze";
 import { createGazeBus } from "./look-at";
 import { seededRng, smoothstep } from "./motion";
-import { CharacterSim, REST_FRAME, warpDisplacement } from "./sim";
+import { CharacterSim, REST_FRAME, warpSource, type CharacterFrame } from "./sim";
 import { Sparkles } from "./sparkles";
 import { FpsWatchdog } from "./watchdog";
 
@@ -108,6 +108,12 @@ describe("blink", () => {
 });
 
 describe("simulation", () => {
+  const D = (q: readonly [number, number], f: CharacterFrame, w: (p: Vec2) => number = () => 0): Vec2 => {
+    const p = warpSource(q, f, w);
+    return [q[0] - p[0], q[1] - p[1]];
+  };
+  const onChain = () => 1;
+
   it("starts at rest: identity warp, untouched eyes", () => {
     const sim = new CharacterSim(seededRng(1), new Float32Array());
     const f = sim.frame();
@@ -117,7 +123,7 @@ describe("simulation", () => {
     expect(f.lid).toBe(0);
     expect(f.sweep).toBe(-1);
     for (const p of [[1372, 330], [1387, 880], [900, 1200], [2000, 100]] as const) {
-      expect(warpDisplacement(p, f, 1)).toEqual([0, 0]);
+      expect(warpSource(p, f, onChain)).toEqual(p);
     }
   });
 
@@ -136,19 +142,43 @@ describe("simulation", () => {
     expect(sim.frame().eyeBlend).toBe(0);
   });
 
-  it("swings the pendant 10–15 CSS px at desktop scale on a fast glance", () => {
+  it("swings the pendant ≈ 9 CSS px at desktop scale on a fast glance, softly limited", () => {
     const sim = new CharacterSim(seededRng(1), new Float32Array());
     run(sim, 2, [-1, 0]);
     let peak = 0;
     for (let i = 0; i < 180; i++) {
       sim.step(DT, [1, 0]);
-      const f = sim.frame();
-      const [dx] = warpDisplacement([1387, 880], { ...f, breath: 0, head: [0, 0], sway: 0 }, 1);
+      const [dx] = D([1387, 880], { ...sim.frame(), breath: 0, head: [0, 0], sway: 0 }, onChain);
       peak = Math.max(peak, Math.abs(dx));
     }
     const scale = 864 / 1536; // 1536×864 desktop
-    expect(peak * scale).toBeGreaterThanOrEqual(10);
-    expect(peak * scale).toBeLessThanOrEqual(15);
+    expect(peak * scale).toBeGreaterThanOrEqual(8);
+    expect(peak * scale).toBeLessThanOrEqual(10.5);
+    // however hard it is driven, the angle stays under the limit
+    sim.pendulum.theta = 10;
+    expect(Math.abs(sim.frame().chain)).toBeLessThanOrEqual(TUNING.chainMaxAngle);
+  });
+
+  it("turns the pendant as a rigid piece around the pivot (no stretching)", () => {
+    const f = { ...REST_FRAME, chain: 0.06 };
+    const pts = [[1250, 900], [1530, 950], [1387, 1000], [1300, 820]] as const;
+    const src = pts.map((p) => warpSource(p, f, onChain));
+    for (let i = 0; i < pts.length; i++)
+      for (let j = i + 1; j < pts.length; j++) {
+        const before = Math.hypot(pts[i][0] - pts[j][0], pts[i][1] - pts[j][1]);
+        const after = Math.hypot(src[i][0] - src[j][0], src[i][1] - src[j][1]);
+        expect(after).toBeCloseTo(before, 6);
+      }
+    const [px, py] = EYES.living.chain.pivot;
+    expect(Math.hypot(src[2][0] - px, src[2][1] - py)).toBeCloseTo(Math.hypot(1387 - px, 1000 - py), 6);
+    expect(D([1387, 1000], f, onChain)[0]).toBeGreaterThan(0); // θ > 0 swings right
+  });
+
+  it("moves only the chain and a thin band around it, never the rest of the chest", () => {
+    const f = { ...REST_FRAME, chain: 0.06 };
+    expect(D([1100, 950], f, () => 0)).toEqual([0, 0]);
+    // above the attachment the chain does not turn
+    expect(D([1387, 585], f, onChain)).toEqual([0, 0]);
   });
 
   it("breathes and sways with eyes.json periods", () => {
@@ -156,15 +186,15 @@ describe("simulation", () => {
     run(sim, EYES.living.breathing.period_s / 2, [0, 0]);
     const f = sim.frame();
     expect(f.breath).toBeCloseTo(1, 2);
-    const [, dy] = warpDisplacement([1372, 330], { ...f, sway: 0, head: [0, 0] }, 0);
+    const [, dy] = D([1372, 330], { ...f, sway: 0, head: [0, 0] });
     expect(dy).toBeCloseTo(-EYES.living.breathing.lift_px, 1);
-    expect(warpDisplacement([1372, 1536], f, 0)[1]).toBeCloseTo(0, 6);
+    expect(D([1372, 1536], f)[1]).toBeCloseTo(0, 6);
   });
 
   it("head weight is rigid at the eyes and gone below the neck", () => {
     const f = { ...REST_FRAME, head: [5, 3] as const };
-    expect(warpDisplacement([1300, 330], f, 0)).toEqual([5, 3]);
-    expect(warpDisplacement([1372, 700], f, 0)).toEqual([0, 0]);
+    expect(D([1300, 330], f)).toEqual([5, 3]);
+    expect(D([1372, 700], f)).toEqual([0, 0]);
   });
 });
 

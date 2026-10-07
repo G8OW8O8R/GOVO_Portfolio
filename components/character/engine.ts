@@ -5,7 +5,8 @@ import { characterGaze, type ClientPoint } from "@/lib/character/look-at";
 import { clamp, seededRng, type Rng } from "@/lib/character/motion";
 import { CharacterSim, REST_FRAME, type CharacterFrame } from "@/lib/character/sim";
 import { FpsWatchdog } from "@/lib/character/watchdog";
-import { CharacterRenderer, loadCharacterAssets, type PixelMap } from "./renderer";
+import { CROP_MEDIA, MOBILE_CROP, cropFits, visibleImageRect, type Rect } from "@/lib/character/mobile-crop";
+import { CharacterRenderer, loadBase, loadCharacterAssets, type PixelMap } from "./renderer";
 
 /**
  * Runs the living character: input → gaze director → simulation → renderer,
@@ -22,10 +23,13 @@ export type FallbackReason = "slow" | "context-lost" | "error" | "reduced-motion
 type Options = {
   canvas: HTMLCanvasElement;
   poster: HTMLImageElement;
-  onLive: () => void;
+  /** canvas ready to show (false while the base is being swapped) */
+  onLive: (live: boolean) => void;
   onFallback: (reason: FallbackReason) => void;
   debug: boolean;
   seed?: number;
+  /** debug: force the full image or the phone crop as the base */
+  forceBase?: "full" | "crop";
 };
 
 export function webgl2Supported(): boolean {
@@ -77,7 +81,9 @@ export class CharacterEngine {
     this.gl = gl;
 
     try {
-      const assets = await loadCharacterAssets(this.abort.signal);
+      // phones: the full-resolution crop when everything visible (plus the warp reach) is inside it
+      const crop = this.o.forceBase ? this.o.forceBase === "crop" : cropFits(this.visibleImage());
+      const assets = await loadCharacterAssets(this.abort.signal, { crop });
       if (this.destroyed) return;
       this.renderer = new CharacterRenderer(gl, assets);
       this.sim = new CharacterSim(this.rng, assets.glintPoints);
@@ -117,7 +123,7 @@ export class CharacterEngine {
     this.measure();
     this.render(REST_FRAME);
     if (this.o.debug) this.exposeDebug();
-    this.o.onLive();
+    this.o.onLive(true);
     this.schedule();
   }
 
@@ -143,12 +149,12 @@ export class CharacterEngine {
   // ---------- geometry ----------
 
   private measure = () => {
-    const { canvas, poster } = this.o;
-    const p = poster.getBoundingClientRect();
+    const { canvas } = this.o;
     const c = canvas.getBoundingClientRect();
-    if (!p.width || !c.width || !c.height) return;
-    const scale = p.width / W;
-    this.poster = { left: p.left, top: p.top, scale };
+    const p = this.imageBox();
+    if (!p.scale || !c.width || !c.height) return;
+    const scale = p.scale;
+    this.poster = p;
 
     const dpr = Math.min(devicePixelRatio || 1, MAX_DPR);
     const width = Math.round(c.width * dpr);
@@ -165,6 +171,7 @@ export class CharacterEngine {
       map: [sx / scale, (c.left - p.left) / scale, -sy / scale, (c.top + c.height - p.top) / scale],
     };
     this.renderer?.setMinification(scale * dpr);
+    this.ensureBaseCovers();
 
     if (process.env.NODE_ENV !== "production" && isDesktopViewport({ width: innerWidth, height: innerHeight })) {
       const box = computeCharacterBox({ width: document.documentElement.clientWidth, height: innerHeight }, "desktop");
@@ -174,6 +181,43 @@ export class CharacterEngine {
     }
     if (this.manual || !this.raf) this.renderCurrent();
   };
+
+  /**
+   * The full image's box on screen, read from the poster. On portrait phones
+   * the poster shows MOBILE_CROP (CSS media query), placed at its spot.
+   */
+  private imageBox(): { left: number; top: number; scale: number } {
+    const p = this.o.poster.getBoundingClientRect();
+    const crop = matchMedia(CROP_MEDIA).matches ? MOBILE_CROP : null;
+    const scale = p.width / (crop ? crop.width : W);
+    return crop ? { left: p.left - crop.x * scale, top: p.top - crop.y * scale, scale } : { left: p.left, top: p.top, scale };
+  }
+
+  /** Image px the canvas shows (character box relative to the canvas). */
+  private visibleImage(): Rect {
+    const p = this.imageBox();
+    const c = this.o.canvas.getBoundingClientRect();
+    const box = { x: p.left - c.left, y: p.top - c.top, width: W * p.scale, height: H * p.scale, scale: p.scale, areaHeight: c.height };
+    return visibleImageRect(box, { width: c.width, height: c.height });
+  }
+
+  /** After a rotation the phone crop may no longer cover the view: switch to the full image. */
+  private swapping = false;
+  private ensureBaseCovers() {
+    const r = this.renderer;
+    if (!r || !r.baseIsCrop || this.swapping || this.o.forceBase === "crop" || cropFits(this.visibleImage())) return;
+    this.swapping = true;
+    this.o.onLive(false); // the poster (full image by its media query) shows meanwhile
+    loadBase(false, this.abort.signal)
+      .then((b) => {
+        if (this.destroyed) return b.base.close();
+        r.replaceBase(b);
+        this.renderCurrent();
+        this.o.onLive(true);
+      })
+      .catch(() => this.fail("error"))
+      .finally(() => (this.swapping = false));
+  }
 
   private clientToImage({ x, y }: ClientPoint): Vec2 {
     const { left, top, scale } = this.poster;
@@ -194,8 +238,7 @@ export class CharacterEngine {
   private onScroll = () => {
     const dy = scrollY - this.lastScrollY;
     this.lastScrollY = scrollY;
-    const p = this.o.poster.getBoundingClientRect();
-    this.poster = { left: p.left, top: p.top, scale: p.width / W };
+    this.poster = this.imageBox();
     if (Math.abs(dy) < 1) return;
     // look towards the content that scrolls into view, for ~1.2 s
     this.pointer = { gaze: [this.pointer?.gaze[0] ?? 0, clamp(Math.sign(dy) * 0.7, -1, 1)], at: this.now() - (DERIVED.idleAfterS - 1.2) };
@@ -309,6 +352,13 @@ export class CharacterEngine {
       blink: () => sim.blinker.trigger(sim.t),
       flash: () => characterGaze.flash(),
       kickChain: (omega: number) => void (sim.pendulum.omega = omega),
+      /** Hold the pendulum at a raw angle (the frame shows it soft-limited). */
+      setChain: (theta: number) => {
+        sim.pendulum.theta = theta;
+        sim.pendulum.omega = 0;
+        this.renderCurrent();
+      },
+      baseIsCrop: () => renderer.baseIsCrop,
       frame: () => sim.frame(),
       source: () => this.director.source,
       running: () => this.raf !== 0,

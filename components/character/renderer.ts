@@ -1,7 +1,8 @@
-import { DIAMOND_RECT, EYES, TUNING } from "@/lib/character/config";
+import { CHAIN_RAY_REACH, CHAIN_WEIGHT_MARGIN, DIAMOND_RECT, EYES, TUNING } from "@/lib/character/config";
 import type { CharacterFrame } from "@/lib/character/sim";
 import { FRAGMENT, MAX_GLINTS, VERTEX } from "./shaders";
 import { glintEnvelope } from "@/lib/character/sparkles";
+import { MOBILE_CROP, MOBILE_CROP_FILE, toCropSpace } from "@/lib/character/mobile-crop";
 
 /**
  * WebGL2 renderer for the character: textures from the original files in
@@ -25,6 +26,8 @@ type Rect = { x: number; y: number; width: number; height: number };
 
 export type CharacterAssets = {
   base: ImageBitmap;
+  /** where the base texture sits in the image: full image or MOBILE_CROP */
+  baseRect: Rect;
   noIris: ImageBitmap;
   iris: { L: ImageBitmap; R: ImageBitmap };
   highlight: { L: ImageBitmap; R: ImageBitmap };
@@ -62,60 +65,94 @@ function pixels(img: ImageBitmap, crop?: Rect): Uint8ClampedArray {
   return ctx.getImageData(0, 0, r.width, r.height).data;
 }
 
-/** Chain warp weight: the diamond mask dilated and blurred, at 1/4 resolution. */
-function chainWeight(diamond: ImageBitmap) {
-  const step = 4;
-  const margin = 32;
-  const rect = { x: DIAMOND_RECT.x - margin, y: DIAMOND_RECT.y - margin, width: diamond.width + 2 * margin, height: diamond.height + 2 * margin };
-  const w = Math.ceil(rect.width / step);
-  const h = Math.ceil(rect.height / step);
-  const src = pixels(diamond);
-  let a = new Float32Array(w * h);
+/**
+ * Base image pixels of an image-px rectangle (eyes.json coordinates), whether
+ * the base is the full image or the phone crop, as RGBA.
+ */
+function basePixels(base: ImageBitmap, baseRect: Rect, r: Rect): Uint8ClampedArray {
+  const [sx, sy] = toCropSpace([r.x, r.y], baseRect);
+  const canvas = new OffscreenCanvas(r.width, r.height);
+  const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
+  ctx.drawImage(base, sx, sy, r.width, r.height, 0, 0, r.width, r.height);
+  return ctx.getImageData(0, 0, r.width, r.height).data;
+}
+
+/** Separable max / box filter on a w×h grid, radius in cells. */
+function filter(a: Float32Array<ArrayBuffer>, w: number, h: number, r: number, op: "max" | "mean"): Float32Array<ArrayBuffer> {
+  for (const horizontal of [true, false]) {
+    const b = new Float32Array(w * h);
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++) {
+        let acc = 0;
+        for (let k = -r; k <= r; k++) {
+          const xx = horizontal ? Math.min(w - 1, Math.max(0, x + k)) : x;
+          const yy = horizontal ? y : Math.min(h - 1, Math.max(0, y + k));
+          const v = a[yy * w + xx];
+          acc = op === "max" ? Math.max(acc, v) : acc + v;
+        }
+        b[y * w + x] = op === "max" ? acc : acc / (2 * r + 1);
+      }
+    a = b;
+  }
+  return a;
+}
+
+/**
+ * Chain warp weight at 1/2 resolution: 1 on the chain and pendant (+ ~2 px for
+ * their anti-aliased edge) and on the star rays baked into base.jpg around
+ * them (thin, slightly coloured bright lines on the dark shirt – the figure
+ * is neutral grey, only the sparkles carry colour – so a star never breaks at
+ * the mask edge while shirt folds stay put), fading to 0 over
+ * TUNING.chainMaskFalloff px.
+ */
+function chainWeight(diamond: ImageBitmap, base: ImageBitmap, baseRect: Rect) {
+  const step = 2;
+  const rayReach = CHAIN_RAY_REACH;
+  const margin = CHAIN_WEIGHT_MARGIN;
+  const w = Math.ceil((diamond.width + 2 * margin) / step);
+  const h = Math.ceil((diamond.height + 2 * margin) / step);
+  const rect = { x: DIAMOND_RECT.x - margin, y: DIAMOND_RECT.y - margin, width: w * step, height: h * step };
+  const mask = pixels(diamond);
+  const img = basePixels(base, baseRect, rect);
+  // thin bright features: luminance well above its 9×9 neighbourhood (top-hat)
+  const lum = new Float32Array(rect.width * rect.height);
+  for (let i = 0; i < lum.length; i++) lum[i] = 0.299 * img[i * 4] + 0.587 * img[i * 4 + 1] + 0.114 * img[i * 4 + 2];
+  const local = filter(lum, rect.width, rect.height, 4, "mean");
+  const onMask = new Float32Array(w * h);
+  const bright = new Uint8Array(w * h);
   for (let y = 0; y < h; y++)
-    for (let x = 0; x < w; x++) {
-      let m = 0;
-      for (let sy = 0; sy < step && !m; sy++)
+    for (let x = 0; x < w; x++)
+      for (let sy = 0; sy < step; sy++)
         for (let sx = 0; sx < step; sx++) {
-          const ix = x * step + sx - margin;
-          const iy = y * step + sy - margin;
-          if (ix >= 0 && iy >= 0 && ix < diamond.width && iy < diamond.height && src[(iy * diamond.width + ix) * 4] > 127) {
-            m = 1;
-            break;
-          }
+          const rx = x * step + sx;
+          const ry = y * step + sy;
+          const ix = rx - margin;
+          const iy = ry - margin;
+          if (ix >= 0 && iy >= 0 && ix < diamond.width && iy < diamond.height && mask[(iy * diamond.width + ix) * 4] > 127) onMask[y * w + x] = 1;
+          const i = ry * rect.width + rx;
+          // below the collar only: the neck skin above is bright too
+          const chroma = Math.max(img[i * 4], img[i * 4 + 1], img[i * 4 + 2]) - Math.min(img[i * 4], img[i * 4 + 1], img[i * 4 + 2]);
+          if (rect.y + ry > 650 && chroma > 5 && lum[i] - local[i] > 15) bright[y * w + x] = 1;
         }
-      a[y * w + x] = m;
-    }
-  // dilate (max) then box blur, radius in cells
-  const pass = (r: number, op: "max" | "mean") => {
-    for (const horizontal of [true, false]) {
-      const b = new Float32Array(w * h);
-      for (let y = 0; y < h; y++)
-        for (let x = 0; x < w; x++) {
-          let acc = 0;
-          for (let k = -r; k <= r; k++) {
-            const xx = horizontal ? Math.min(w - 1, Math.max(0, x + k)) : x;
-            const yy = horizontal ? y : Math.min(h - 1, Math.max(0, y + k));
-            const v = a[yy * w + xx];
-            acc = op === "max" ? Math.max(acc, v) : acc + v;
-          }
-          b[y * w + x] = op === "max" ? acc : acc / (2 * r + 1);
-        }
-      a = b;
-    }
-  };
-  const r = Math.round(TUNING.chainMaskBlur / step);
-  pass(Math.ceil(r * 0.75), "max");
-  pass(Math.ceil(r / 2), "mean");
-  pass(Math.ceil(r / 2), "mean");
+  const near = filter(onMask, w, h, Math.round(rayReach / step), "max");
+  let a = new Float32Array(w * h);
+  for (let i = 0; i < a.length; i++) a[i] = onMask[i] || (near[i] && bright[i]) ? 1 : 0;
+  // dilation by (1 + half) cells, then two box blurs of total radius half:
+  // weight 1 up to ~1 cell outside, 0 beyond ~1 + 2·half cells
+  const half = Math.round(TUNING.chainMaskFalloff / 2 / step);
+  const r1 = Math.ceil(half / 2);
+  a = filter(a, w, h, 1 + half, "max");
+  a = filter(a, w, h, r1, "mean");
+  if (half - r1 > 0) a = filter(a, w, h, half - r1, "mean");
   const data = new Uint8Array(w * h);
   for (let i = 0; i < data.length; i++) data[i] = Math.round(a[i] * 255);
   return { data, width: w, height: h, rect };
 }
 
 /** Bright diamond pixels inside the mask: where glints may appear. */
-function glintCandidates(base: ImageBitmap, diamond: ImageBitmap): Float32Array {
+function glintCandidates(base: ImageBitmap, baseRect: Rect, diamond: ImageBitmap): Float32Array {
   const rect = { x: DIAMOND_RECT.x, y: DIAMOND_RECT.y, width: diamond.width, height: diamond.height };
-  const img = pixels(base, rect);
+  const img = basePixels(base, baseRect, rect);
   const mask = pixels(diamond);
   const pts: number[] = [];
   for (let y = 2; y < rect.height - 2; y += 2)
@@ -128,9 +165,18 @@ function glintCandidates(base: ImageBitmap, diamond: ImageBitmap): Float32Array 
   return new Float32Array(pts);
 }
 
-export async function loadCharacterAssets(signal?: AbortSignal): Promise<CharacterAssets> {
-  const [base, noIris, irisL, irisR, hlL, hlR, maskL, maskR, lids, diamond] = await Promise.all([
-    bitmap("base.jpg", signal),
+export const FULL_RECT: Rect = { x: 0, y: 0, width: W, height: H };
+
+/** The base: full base.jpg, or on phones the full-resolution crop (MOBILE_CROP). */
+export async function loadBase(crop: boolean, signal?: AbortSignal): Promise<{ base: ImageBitmap; baseRect: Rect }> {
+  return crop
+    ? { base: await bitmap(MOBILE_CROP_FILE, signal), baseRect: MOBILE_CROP }
+    : { base: await bitmap("base.jpg", signal), baseRect: FULL_RECT };
+}
+
+export async function loadCharacterAssets(signal: AbortSignal | undefined, { crop = false } = {}): Promise<CharacterAssets> {
+  const [{ base, baseRect }, noIris, irisL, irisR, hlL, hlR, maskL, maskR, lids, diamond] = await Promise.all([
+    loadBase(crop, signal),
     bitmap("base-no-iris.jpg", signal, { crop: NO_IRIS_RECT }),
     bitmap("iris-L.png", signal, { premultiply: true }),
     bitmap("iris-R.png", signal, { premultiply: true }),
@@ -143,19 +189,20 @@ export async function loadCharacterAssets(signal?: AbortSignal): Promise<Charact
   ]);
   return {
     base,
+    baseRect,
     noIris,
     iris: { L: irisL, R: irisR },
     highlight: { L: hlL, R: hlR },
     mask: { L: maskL, R: maskR },
     lids,
     diamond,
-    chainWeight: chainWeight(diamond),
-    glintPoints: glintCandidates(base, diamond),
+    chainWeight: chainWeight(diamond, base, baseRect),
+    glintPoints: glintCandidates(base, baseRect, diamond),
   };
 }
 
 const UNIFORMS = [
-  "u_map", "u_bias", "u_base", "u_noIris", "u_noIrisRect", "u_irisL", "u_irisR", "u_hlL", "u_hlR",
+  "u_map", "u_bias", "u_base", "u_baseRect", "u_noIris", "u_noIrisRect", "u_irisL", "u_irisR", "u_hlL", "u_hlR",
   "u_maskL", "u_maskR", "u_lids", "u_diamond", "u_diamondRect", "u_chainW", "u_chainRect",
   "u_breath", "u_head", "u_sway", "u_chain", "u_iris", "u_eyeBlend", "u_lid", "u_sweep",
   "u_glintCount", "u_glints", "u_glintsB", "u_debug",
@@ -213,6 +260,7 @@ export class CharacterRenderer {
     bind("u_chainW", chainTex);
 
     const rect = (name: UniformName, r: Rect) => gl.uniform4f(this.u[name], r.x, r.y, r.width, r.height);
+    rect("u_baseRect", assets.baseRect);
     rect("u_noIrisRect", NO_IRIS_RECT);
     rect("u_diamondRect", { x: DIAMOND_RECT.x, y: DIAMOND_RECT.y, width: assets.diamond.width, height: assets.diamond.height });
     rect("u_chainRect", cw.rect);
@@ -222,9 +270,26 @@ export class CharacterRenderer {
    * Sharpness: plain LINEAR while the image is shown at > 0.5 device px per
    * image px (trilinear would blur it); trilinear with a −0.5 LOD bias below.
    */
+  /** Swap the base (phone crop → full image after a rotation), same texture unit. */
+  replaceBase({ base, baseRect }: { base: ImageBitmap; baseRect: Rect }) {
+    const gl = this.gl;
+    this.assets.base.close();
+    this.assets.base = base;
+    this.assets.baseRect = baseRect;
+    gl.activeTexture(gl.TEXTURE0); // base is unit 0
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, base);
+    this.mipmapped = this.minifying;
+    if (this.minifying) gl.generateMipmap(gl.TEXTURE_2D);
+    gl.uniform4f(this.u.u_baseRect, baseRect.x, baseRect.y, baseRect.width, baseRect.height);
+  }
+
+  get baseIsCrop(): boolean {
+    return this.assets.baseRect !== FULL_RECT;
+  }
+
   setMinification(devicePxPerImagePx: number) {
     const gl = this.gl;
-    const minify = devicePxPerImagePx <= 0.5;
+    const minify = devicePxPerImagePx * (this.assets.baseRect.width / this.assets.base.width) <= 0.5;
     if (minify === this.minifying) return;
     this.minifying = minify;
     gl.activeTexture(gl.TEXTURE0); // base is unit 0
@@ -301,7 +366,7 @@ export class CharacterRenderer {
 
   /** Base image pixels as the browser decodes them (for renderNative comparisons). */
   basePixels(): Uint8ClampedArray {
-    return pixels(this.assets.base);
+    return basePixels(this.assets.base, this.assets.baseRect, FULL_RECT);
   }
 }
 

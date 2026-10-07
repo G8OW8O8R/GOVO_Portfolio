@@ -3,7 +3,7 @@ import { DERIVED, EYES, TUNING } from "@/lib/character/config";
 /**
  * One full-screen pass. For every output pixel the shader finds the image
  * point p (character box mapping), undoes the warp (p − D(p), mirrors
- * warpDisplacement in lib/character/sim.ts) and composites all layers at that
+ * warpSource in lib/character/sim.ts) and composites all layers at that
  * pre-warp point: base → eyes (iris, highlight) → eyelids → sparkles.
  * Eye layers, lids and sparkles therefore move with the head and the chain.
  */
@@ -29,7 +29,8 @@ precision highp float;
 uniform vec4 u_map;          // image px = (frag.x * x + y, frag.y * z + w)
 uniform float u_bias;        // LOD bias (mipmapped minification only)
 
-uniform sampler2D u_base;    // base.jpg
+uniform sampler2D u_base;    // base.jpg or the phone crop (base-mobile.jpg)
+uniform vec4 u_baseRect;     // the base texture's rect in image px (crop origin, size)
 uniform sampler2D u_noIris;  // base-no-iris.jpg, eye area crop
 uniform vec4 u_noIrisRect;   // origin, size (image px)
 uniform sampler2D u_irisL, u_irisR, u_hlL, u_hlR; // premultiplied
@@ -65,7 +66,13 @@ vec4 sampleRect(sampler2D t, vec2 p, vec4 r) {
   return inRect(p, r) ? texture(t, (p - r.xy) / r.zw) : vec4(0.0);
 }
 
-vec2 warpD(vec2 p) {
+float chainWeight(vec2 p) {
+  return sampleRect(u_chainW, p, u_chainRect).r;
+}
+
+// Inverse warp: the pre-warp image point shown at destination q.
+vec2 warpSource(vec2 q) {
+  vec2 p = q;
   vec2 d = vec2(0.0);
   // breathing
   d.y -= ${f(L.breathing.lift_px)} * u_breath * smoothstep(${f(EYES.image[1])}, ${f(DERIVED.liftFullY)}, p.y);
@@ -77,14 +84,20 @@ vec2 warpD(vec2 p) {
               * (1.0 - smoothstep(${f(L.head.fade_to_neck_y[0])}, ${f(L.head.fade_to_neck_y[1])}, p.y));
   d.x += wHead * (u_head.x - u_sway * (p.y - ${f(TUNING.swayPivotY)}));
   d.y += wHead * (u_head.y + u_sway * (p.x - ${f(L.head.center[0])}));
-  // chain
-  if (u_chain != 0.0 && inRect(p, u_chainRect)) {
-    float w = texture(u_chainW, (p - u_chainRect.xy) / u_chainRect.zw).r
+  p -= d;
+  // chain: rigid rotation around the pivot, weighted by the soft chain mask at
+  // the point and at its rotated source (the chain moves as one piece, only a
+  // thin band of shirt follows); the upper chain bends in the attachment fade
+  if (u_chain != 0.0) {
+    const vec2 PIVOT = ${v2(L.chain.pivot as [number, number])};
+    vec2 r = p - PIVOT;
+    float c = cos(u_chain), s = sin(u_chain);
+    vec2 src = PIVOT + vec2(c * r.x - s * r.y, s * r.x + c * r.y);
+    float w = max(chainWeight(p), chainWeight(src))
             * smoothstep(${f(L.chain.attach_fade_y[0])}, ${f(L.chain.attach_fade_y[1])}, p.y);
-    d.x += w * u_chain * (p.y - ${f(L.chain.pivot[1])});
-    d.y -= w * u_chain * (p.x - ${f(L.chain.pivot[0])}) * ${f(L.chain.vertical_factor)};
+    p = mix(p, src, w);
   }
-  return d;
+  return p;
 }
 
 // Iris + highlight for one eye at p. Returns the reconstructed colour and
@@ -116,8 +129,8 @@ void main() {
     outColor = vec4(0.0);
     return;
   }
-  vec2 p = q - warpD(q);
-  vec3 c = texture(u_base, p / IMAGE, u_bias).rgb;
+  vec2 p = warpSource(q);
+  vec3 c = texture(u_base, (p - u_baseRect.xy) / u_baseRect.zw, u_bias).rgb;
 
   // eyes
   const vec4 EYES_BOX = vec4(${f(EL.maskOrigin[0])}, ${f(Math.min(EL.maskOrigin[1], ER.maskOrigin[1]))},

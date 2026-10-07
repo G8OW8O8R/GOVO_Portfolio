@@ -97,15 +97,17 @@ export class CharacterSim {
 }
 
 /**
- * Warp displacement D at destination point p (image px): the renderer samples
- * the composited image at p − D(p). Mirrors the fragment shader, so tests can
- * check rest = identity and the pendant swing size. `chainMask` is the
- * (dilated) diamond mask value at p.
+ * Inverse warp: the image point whose (pre-warp, composited) colour is shown
+ * at destination q. Mirrors warpSource() in the fragment shader, so tests can
+ * check rest = identity, the rigid chain and the pendant swing size.
+ * `chainWeight` is the soft chain mask (1 on the chain and pendant, fading
+ * to 0 within ~12 px around them).
  */
-export function warpDisplacement([x, y]: Vec2, f: CharacterFrame, chainMask: number): Vec2 {
+export function warpSource(q: Vec2, f: CharacterFrame, chainWeight: (p: Vec2) => number): Vec2 {
   const B = L.breathing;
   const H = L.head;
   const C = L.chain;
+  const [x, y] = q;
   let dx = 0;
   let dy = 0;
 
@@ -120,10 +122,18 @@ export function warpDisplacement([x, y]: Vec2, f: CharacterFrame, chainMask: num
   dx += wHead * (f.head[0] - f.sway * (y - TUNING.swayPivotY));
   dy += wHead * (f.head[1] + f.sway * (x - H.center[0]));
 
-  // chain: pendulum around the pivot, fading in below the attachment
-  const wChain = chainMask * smoothstep(C.attach_fade_y[0], C.attach_fade_y[1], y);
-  dx += wChain * f.chain * (y - C.pivot[1]);
-  dy -= wChain * f.chain * (x - C.pivot[0]) * C.vertical_factor;
+  const p: Vec2 = [x - dx, y - dy];
+  if (f.chain === 0) return p;
 
-  return [dx, dy];
+  // chain: rigid rotation around the pivot (θ > 0 swings the pendant right).
+  // Weighted by the chain mask at the point and at its rotated source, so the
+  // chain moves as one piece and only a thin band of shirt around it follows;
+  // the upper chain bends in the attachment fade.
+  const c = Math.cos(f.chain);
+  const s = Math.sin(f.chain);
+  const rx = p[0] - C.pivot[0];
+  const ry = p[1] - C.pivot[1];
+  const src: Vec2 = [C.pivot[0] + c * rx - s * ry, C.pivot[1] + s * rx + c * ry];
+  const w = Math.max(chainWeight(p), chainWeight(src)) * smoothstep(C.attach_fade_y[0], C.attach_fade_y[1], p[1]);
+  return [p[0] + (src[0] - p[0]) * w, p[1] + (src[1] - p[1]) * w];
 }

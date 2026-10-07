@@ -61,7 +61,6 @@ const schema = z.object({
       pivot: point,
       attach_fade_y: span,
       pendulum: z.object({ stiffness: z.number(), damping: z.number() }),
-      vertical_factor: z.number(),
     }),
   }),
 });
@@ -94,12 +93,12 @@ export const TUNING = {
   /** Head trails the gaze ("head lightly follows the gaze"). */
   headSpring: { stiffness: 60, damping: 14 },
   /**
-   * Pendulum angle is soft-limited (tanh) to this many radians. A fast glance
-   * across the full gaze range swings the OVO pendant (≈300 px below the pivot)
-   * by ≈ 20 image px, i.e. 10–15 CSS px at the usual desktop scale (0.56–0.7);
-   * repeated glances never push it beyond ≈ 45 image px.
+   * Pendulum angle is soft-limited (tanh) to this many radians, so the swing
+   * brakes softly as it nears the limit. A fast glance across the full gaze
+   * range swings the OVO pendant (≈300 px below the pivot) by ≈ 16 image px
+   * (≈ 9 CSS px at 1536×864); it never exceeds ≈ 21 image px.
    */
-  chainMaxAngle: 0.15,
+  chainMaxAngle: 0.07,
   /** Sway pivot: base of the neck. */
   swayPivotY: 640,
   /** Cursor distance (image px) at which the gaze reaches ~70% of its range. */
@@ -109,8 +108,11 @@ export const TUNING = {
    * spring) is below `from` px and the layered reconstruction above `to` px.
    */
   eyeBlend: { from: 0.05, to: 1.2 },
-  /** Chain warp weight: diamond mask dilated by this radius (image px). */
-  chainMaskBlur: 24,
+  /**
+   * Chain warp weight: 1 on the chain and pendant (+2 px for their edge),
+   * fading to 0 over this many image px, so only a thin band of shirt follows.
+   */
+  chainMaskFalloff: 12,
   maxGlints: 16,
 } as const;
 
@@ -129,3 +131,10 @@ export const DIAMOND_RECT = {
   width: 369,
   height: 418,
 } as const;
+
+/**
+ * Chain warp weight texture: diamond rect plus this margin (image px), which
+ * holds the star rays baked into base.jpg (reach 72 px) and the soft falloff.
+ */
+export const CHAIN_RAY_REACH = 72;
+export const CHAIN_WEIGHT_MARGIN = CHAIN_RAY_REACH + 16;
