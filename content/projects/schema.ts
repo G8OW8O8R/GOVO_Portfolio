@@ -5,16 +5,13 @@ const localized = z.object({ pl: z.string().min(1), en: z.string().min(1) });
 /** Project as shown on the desktop. Case study fields are added in task 4. */
 export const projectSchema = z.object({
   slug: z.string().regex(/^[a-z0-9-]+$/),
-  /** Lower first; the first project takes the hero slot on the desktop. */
+  /** Lower first; the first project takes the best desktop slot. */
   order: z.number().int(),
   isNew: z.boolean().default(false),
   title: localized,
   summary: localized,
-  thumb: z.object({
-    src: z.string().regex(/^\/projects\/[a-z0-9-]+\/[\w.-]+\.(jpe?g|png|webp|avif)$/),
-    width: z.number().int().positive(),
-    height: z.number().int().positive(),
-  }),
+  /** Square app icon, full-bleed to the edges; shape, shadow and gloss come from CSS. */
+  icon: z.string().regex(/^\/projects\/[a-z0-9-]+\/icon\.(png|jpe?g|webp|avif)$/),
 });
 
 export type ProjectInput = z.input<typeof projectSchema>;

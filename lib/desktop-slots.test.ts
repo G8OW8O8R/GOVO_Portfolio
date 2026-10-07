@@ -3,7 +3,10 @@ import { computeCharacterBox, imageToScreen } from "./character-box";
 import { INFO_SLOTS, PROJECT_SLOTS, assignSlots, type Slot } from "./desktop-slots";
 
 /** Approximate footprint (icon + label) in image px. */
-const footprint = { hero: [370, 450], project: [170, 220], doc: [150, 210] } as const;
+const footprint = { project: [170, 220], doc: [150, 210] } as const;
+
+/** OVO pendant centre in image px. */
+const PENDANT = { x: 1383, y: 895 };
 
 const rect = (s: Slot) => {
   const [w, h] = footprint[s.size];
@@ -18,10 +21,8 @@ const overlaps = (a: Slot, b: Slot) => {
 const allSlots = [...PROJECT_SLOTS, ...Object.values(INFO_SLOTS)];
 
 describe("assignSlots", () => {
-  it("gives the first project the hero slot", () => {
-    const placed = assignSlots(["obok"]);
-    expect(placed).toEqual([{ item: "obok", slot: PROJECT_SLOTS[0] }]);
-    expect(PROJECT_SLOTS[0].size).toBe("hero");
+  it("gives the first project the first slot", () => {
+    expect(assignSlots(["obok"])).toEqual([{ item: "obok", slot: PROJECT_SLOTS[0] }]);
   });
 
   it("places new projects in the next free slots", () => {
@@ -37,8 +38,14 @@ describe("assignSlots", () => {
 });
 
 describe("slot table", () => {
-  it("has exactly one hero slot, first", () => {
-    expect(PROJECT_SLOTS.filter((s) => s.size === "hero")).toEqual([PROJECT_SLOTS[0]]);
+  it("puts the best slot first: closest to the figure, level with the pendant", () => {
+    const dist = (s: Slot) => Math.hypot(s.x - PENDANT.x, s.y - PENDANT.y);
+    for (const slot of PROJECT_SLOTS.slice(1)) expect(dist(PROJECT_SLOTS[0])).toBeLessThan(dist(slot));
+    expect(Math.abs(PROJECT_SLOTS[0].y - PENDANT.y)).toBeLessThan(60);
+  });
+
+  it("gives every project the same size", () => {
+    expect(new Set(PROJECT_SLOTS.map((s) => s.size))).toEqual(new Set(["project"]));
   });
 
   it("has no overlapping files", () => {

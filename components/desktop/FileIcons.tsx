@@ -1,9 +1,9 @@
 import { glyphs, type GlyphName } from "@/components/ui/glyphs";
 
-/** Desktop document: paper sheet with a folded corner and a glyph. */
+/** Desktop document: paper sheet with a folded corner and a glyph (viewBox hugs the sheet). */
 export function DocIcon({ glyph, className }: { glyph: GlyphName; className?: string }) {
   return (
-    <svg viewBox="0 0 56 70" aria-hidden="true" focusable="false" className={className}>
+    <svg viewBox="1 1 54 68" aria-hidden="true" focusable="false" className={className}>
       <path
         d="M8 1.5h29.5L54.5 18.5V62a6.5 6.5 0 0 1-6.5 6.5H8A6.5 6.5 0 0 1 1.5 62V8A6.5 6.5 0 0 1 8 1.5Z"
         fill="var(--paper)"

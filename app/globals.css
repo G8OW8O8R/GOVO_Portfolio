@@ -24,11 +24,9 @@
   --paper: #fbfbfb;
   --paper-fold: #e9e9ea;
   --paper-edge: rgb(0 0 0 / 0.12);
-  --shadow-file: 0 1px 2px rgb(0 0 0 / 0.08), 0 8px 22px rgb(0 0 0 / 0.12);
-  --shadow-hero: 0 2px 4px rgb(0 0 0 / 0.08), 0 18px 44px rgb(0 0 0 / 0.22);
   --shadow-glass: 0 1px 2px rgb(0 0 0 / 0.06), 0 10px 30px rgb(0 0 0 / 0.12);
 
-  /* The only colour besides the pendant sparkles */
+  /* The only UI colour (besides pendant sparkles and project icons) */
   --available: #2fbf5a;
 
   --focus-ring: #141414;
@@ -45,8 +43,6 @@
   --color-glass-border: var(--glass-border);
   --color-paper: var(--paper);
   --color-available: var(--available);
-  --shadow-file: var(--shadow-file);
-  --shadow-hero: var(--shadow-hero);
   --shadow-glass: var(--shadow-glass);
 }
 

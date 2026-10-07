@@ -21,15 +21,25 @@ test.describe("static desktop", () => {
     expect(Math.abs(img!.y - box.y)).toBeLessThan(1);
     expect(Math.abs(img!.width - box.width)).toBeLessThan(1);
 
-    // Obok takes the hero slot, with the "Nowy" badge.
+    // Obok takes the best slot, with the "Nowy" badge.
     const files = page.getByRole("navigation", { name: "Pliki na pulpicie" });
     const obok = files.getByRole("link", { name: /Obok/ });
     await expect(obok).toHaveAttribute("href", "/pl/projekty/obok");
     await expect(obok).toContainText("Nowy");
-    const hero = (await obok.locator("xpath=..").boundingBox())!;
+    const slot = (await obok.locator("xpath=..").boundingBox())!;
     const [hx, hy] = imageToScreen(box, [PROJECT_SLOTS[0].x, PROJECT_SLOTS[0].y]);
-    expect(Math.abs(hero.x + hero.width / 2 - hx)).toBeLessThan(1);
-    expect(Math.abs(hero.y + hero.height / 2 - hy)).toBeLessThan(1);
+    expect(Math.abs(slot.x + slot.width / 2 - hx)).toBeLessThan(1);
+    expect(Math.abs(slot.y + slot.height / 2 - hy)).toBeLessThan(1);
+
+    // Project icon matches a document: same height, same gap to the label.
+    const about = files.getByRole("link", { name: "O mnie" });
+    const iconBox = (await obok.locator("img").boundingBox())!;
+    const docBox = (await about.locator("svg").first().boundingBox())!;
+    expect(Math.abs(iconBox.height - docBox.height)).toBeLessThan(1);
+    expect(Math.abs(iconBox.height - 64)).toBeLessThan(2);
+    const gap = async (link: typeof obok, icon: { y: number; height: number }) =>
+      (await link.locator("span").last().boundingBox())!.y - (icon.y + icon.height);
+    expect(Math.abs((await gap(obok, iconBox)) - (await gap(about, docBox)))).toBeLessThan(1);
 
     await expect(files.getByRole("link", { name: "O mnie" })).toHaveAttribute("href", "/pl/o-mnie");
     await expect(files.getByRole("link", { name: "Oferta" })).toHaveAttribute("href", "/pl/oferta");

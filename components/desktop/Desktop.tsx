@@ -5,7 +5,7 @@ import baseImage from "@/public/character/base.jpg";
 import { projects } from "@/content/projects";
 import type { Project } from "@/content/projects/schema";
 import { getDictionary, type Dictionary } from "@/content/dictionaries";
-import { characterBoxCss } from "@/lib/character-box";
+import { characterBoxCss, characterImageSizes } from "@/lib/character-box";
 import { INFO_SLOTS, assignSlots, type Slot } from "@/lib/desktop-slots";
 import type { Locale } from "@/lib/i18n";
 import { href } from "@/lib/routes";
@@ -42,8 +42,8 @@ export function Desktop({ lang, children }: { lang: Locale; children?: ReactNode
             className={s.character}
             loading="eager"
             fetchPriority="high"
-            sizes="(min-width: 768px) and (min-height: 540px) and (min-aspect-ratio: 5/6) 180vh, 280vw"
-            quality={80}
+            sizes={characterImageSizes()}
+            quality={90}
             draggable={false}
           />
         </div>
@@ -51,15 +51,15 @@ export function Desktop({ lang, children }: { lang: Locale; children?: ReactNode
         <nav aria-label={dict.desktop.filesLabel}>
           <ul className={s.files}>
             {placed.map(({ item, slot }) => (
-              <li key={item.slug} className={`${s.slot} ${slot.size === "hero" ? s.hero : ""}`} style={slotStyle(slot)}>
-                <ProjectFile project={item} lang={lang} dict={dict} hero={slot.size === "hero"} />
+              <li key={item.slug} className={s.slot} style={slotStyle(slot)}>
+                <ProjectFile project={item} lang={lang} dict={dict} />
               </li>
             ))}
             {infoFiles.map((file) => (
               <li key={file.key} className={s.slot} style={slotStyle(INFO_SLOTS[file.key])}>
                 <a className={s.file} href={file.href} {...(file.key === "cv" ? { download: true } : {})}>
                   <DocIcon glyph={file.glyph} className={s.doc} />
-                  <span className={s.tile}>
+                  <span className={`${s.squircle} ${s.tile}`}>
                     <TileIcon glyph={file.glyph} />
                   </span>
                   <span className={s.label}>{file.label}</span>
@@ -77,23 +77,16 @@ export function Desktop({ lang, children }: { lang: Locale; children?: ReactNode
   );
 }
 
-function ProjectFile({ project, lang, dict, hero }: { project: Project; lang: Locale; dict: Dictionary; hero: boolean }) {
+function ProjectFile({ project, lang, dict }: { project: Project; lang: Locale; dict: Dictionary }) {
   return (
     <Link className={s.file} href={href(lang, "project", project.slug)}>
-      <span className={s.thumb}>
-        <Image
-          src={project.thumb.src}
-          width={project.thumb.width}
-          height={project.thumb.height}
-          alt=""
-          sizes={hero ? "(min-width: 768px) 260px, 45vw" : "100px"}
-          draggable={false}
-        />
-      </span>
-      <span className={s.label}>
-        {project.title[lang]}
+      <span className={s.iconWrap}>
+        <span className={s.squircle}>
+          <Image src={project.icon} width={1024} height={1024} alt="" sizes="88px" draggable={false} />
+        </span>
         {project.isNew && <span className={s.badge}>{dict.files.badgeNew}</span>}
       </span>
+      <span className={s.label}>{project.title[lang]}</span>
     </Link>
   );
 }

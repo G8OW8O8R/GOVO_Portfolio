@@ -10,7 +10,7 @@ const obok: ProjectInput = {
     pl: "Obok – strona z doświadczeniem: wideo, ruch i interakcje oraz asystent AI.",
     en: "Obok – an experience website: video, motion and interactions, plus an AI assistant.",
   },
-  thumb: { src: "/projects/obok/thumb.jpg", width: 640, height: 640 },
+  icon: "/projects/obok/icon.png",
 };
 
 export default obok;

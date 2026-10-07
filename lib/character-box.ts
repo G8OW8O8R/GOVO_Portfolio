@@ -101,6 +101,31 @@ export function screenToImage(box: CharacterBox, [sx, sy]: Point): Point {
   return [(sx - box.x) / box.scale, (sy - box.y) / box.scale];
 }
 
+/** Rendered image width as a share of the viewport: [per 1vh, per 1vw]. */
+function widthFactors(variant: Variant): [number, number] {
+  if (variant === "desktop") {
+    return [
+      (IMAGE.width * DESKTOP.zoom) / IMAGE.height,
+      (IMAGE.width * DESKTOP.maxFigureShare) / FIGURE_WIDTH,
+    ];
+  }
+  const focusHeight = MOBILE.focusBottom - MOBILE.focusTop;
+  return [(IMAGE.width * MOBILE.maxHeightShare) / focusHeight, (IMAGE.width * MOBILE.figureShare) / FIGURE_WIDTH];
+}
+
+/**
+ * `sizes` for the character image: its real rendered width, which is wider
+ * than the viewport. Rounded up so the browser never picks a too-small variant.
+ */
+export function characterImageSizes(): string {
+  const fmt = (variant: Variant) => {
+    const [perVh, perVw] = widthFactors(variant);
+    const up = (n: number) => Math.ceil(n * 10000) / 100;
+    return `min(${up(perVh)}vh, ${up(perVw)}vw)`;
+  };
+  return `${DESKTOP_MEDIA} ${fmt("desktop")}, ${fmt("mobile")}`;
+}
+
 /**
  * The same box as CSS custom properties: --cb-s (length per image px),
  * --cb-x, --cb-y, --cb-w, --cb-h, --cb-area. Mirrors computeCharacterBox.

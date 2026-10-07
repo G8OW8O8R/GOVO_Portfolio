@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  DESKTOP_MEDIA,
   FACE,
   FIGURE,
   IMAGE,
+  characterImageSizes,
   computeCharacterBox,
   imageToScreen,
   isDesktopViewport,
@@ -66,6 +68,31 @@ describe("computeCharacterBox – mobile", () => {
     expect(right - left).toBeLessThanOrEqual(vp.width);
     expect(box.areaHeight).toBeLessThanOrEqual(vp.height * 0.55);
     expect(imageToScreen(box, [FACE.x, FIGURE.top])[1]).toBeGreaterThan(48);
+  });
+});
+
+describe("characterImageSizes", () => {
+  /** Evaluates `min(Avh, Bvw)` for a viewport. */
+  const evalMin = (expr: string, { width, height }: { width: number; height: number }) => {
+    const [, vh, vw] = expr.match(/min\(([\d.]+)vh, ([\d.]+)vw/)!;
+    return Math.min((Number(vh) * height) / 100, (Number(vw) * width) / 100);
+  };
+
+  it("matches the rendered width (never smaller, at most 1 px larger)", () => {
+    const sizes = characterImageSizes();
+    expect(sizes.startsWith(`${DESKTOP_MEDIA} min(`)).toBe(true);
+    const [desktopExpr, mobileExpr] = sizes.replace(DESKTOP_MEDIA, "").split("),");
+
+    for (const vp of desktops) {
+      const diff = evalMin(desktopExpr, vp) - computeCharacterBox(vp, "desktop").width;
+      expect(diff).toBeGreaterThanOrEqual(0);
+      expect(diff).toBeLessThan(1);
+    }
+    for (const vp of [{ width: 390, height: 844 }, { width: 430, height: 932 }]) {
+      const diff = evalMin(mobileExpr, vp) - computeCharacterBox(vp, "mobile").width;
+      expect(diff).toBeGreaterThanOrEqual(0);
+      expect(diff).toBeLessThan(1);
+    }
   });
 });
 
