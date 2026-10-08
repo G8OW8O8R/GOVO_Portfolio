@@ -6,7 +6,8 @@
  *   After a change of the CV content: build locally and commit public/cv/CV-*.pdf.
  * - Server: CV_BASE_URL if set; otherwise its own `next dev` on a free port, or
  *   the dev server of this project that is already running (Next allows one).
- * - Fails when a CV doesn't fit on exactly one A4 page or a font isn't embedded.
+ * - Fails when a CV doesn't fit on exactly one A4 page or a font isn't embedded
+ *   as TrueType (the static print fonts, components/cv/cv.module.css).
  * - Metadata (title, author, subject, language) from the page, written with pdf-lib.
  *   A PDF whose content didn't change is not rewritten (no git churn).
  *
@@ -103,9 +104,10 @@ async function printCv(browser: Awaited<ReturnType<typeof chromium.launch>>, bas
 }
 
 /**
- * Every font is embedded and the CV uses the site fonts. Chromium writes
- * variable fonts as Type3 (glyphs as vector procedures inside the PDF, no
- * FontFile); other fonts must carry a FontFile* in their descriptor.
+ * Every font is embedded as a real font file and the CV uses the site fonts.
+ * Chromium writes variable fonts as Type3 (glyphs as drawing procedures, poor
+ * text extraction) – the print styles use static instances, so a Type3 font
+ * means they didn't load.
  */
 function checkFonts(doc: PDFDocument, lang: string) {
   const name = (key: string) => PDFName.of(key);
@@ -118,8 +120,7 @@ function checkFonts(doc: PDFDocument, lang: string) {
     const label = String(obj.get(name("BaseFont")) ?? descriptor?.get(name("FontName")) ?? obj.get(name("Name")) ?? "?");
     names.push(label);
     if (subtype === name("Type3")) {
-      if (!obj.has(name("CharProcs"))) throw new Error(`CV ${lang.toUpperCase()}: Type3 font ${label} has no glyphs.`);
-      continue;
+      throw new Error(`CV ${lang.toUpperCase()}: ${label} printed as Type 3 – the static print fonts (public/fonts/cv) didn't load.`);
     }
     const embedded = ["FontFile", "FontFile2", "FontFile3"].some((key) => descriptor?.has(name(key)));
     if (!embedded) throw new Error(`CV ${lang.toUpperCase()}: font ${label} is not embedded.`);

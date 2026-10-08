@@ -30,17 +30,9 @@ export function displayUrl(url: string): string {
   return url.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/+$/, "");
 }
 
-type SkillCategory = {
-  label: Record<Locale, string>;
-  skills: { cv: boolean; tags: (Record<Locale, string> & { cv: boolean })[] }[];
-};
+type SkillCategory = { label: Record<Locale, string>; cvTags: readonly Record<Locale, string>[] };
 
-/** Skill groups for the CV: every tag of a category in order, without what is marked `cv: false`. */
+/** Skill groups for the CV: each category's short list (`cvTags`), in the page language. */
 export function cvSkillGroups(categories: readonly SkillCategory[], lang: Locale) {
-  return categories
-    .map((c) => ({
-      label: c.label[lang],
-      tags: c.skills.filter((s) => s.cv).flatMap((s) => s.tags.filter((t) => t.cv).map((t) => t[lang])),
-    }))
-    .filter((g) => g.tags.length > 0);
+  return categories.map((c) => ({ label: c.label[lang], tags: c.cvTags.map((t) => t[lang]) }));
 }

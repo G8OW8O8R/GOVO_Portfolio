@@ -61,8 +61,8 @@ export const cv = cvSchema.parse({
   languages: [
     t("polski (ojczysty)", "Polish (native)"),
     t(
-      "angielski: B2/C1 w komunikacji, C2 w czytaniu i słuchaniu (EF SET 73/100)",
-      "English: B2/C1 in communication, C2 in reading and listening (EF SET 73/100)",
+      "angielski: B2/C1 w komunikacji, C2 w czytaniu i słuchaniu",
+      "English: B2/C1 in communication, C2 in reading and listening",
     ),
     t("niemiecki A2", "German A2"),
   ],

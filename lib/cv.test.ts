@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { CV_TAGS_MAX } from "@/content/profile/schema";
+import { skills } from "@/content/profile/skills";
 import { cvProjectUrl, cvSkillGroups, displayUrl, selectCvProjects } from "./cv";
 
 const p = (slug: string, year: number, order?: number, last = false) => ({ slug, year, order, listed: !last, cv: { last } });
@@ -46,19 +48,12 @@ describe("cv links", () => {
 });
 
 describe("cvSkillGroups", () => {
-  const tag = (pl: string, cv = true) => ({ pl, en: pl.toUpperCase(), cv });
-  it("flattens the tags of each category and leaves out what is marked cv: false", () => {
+  const tag = (pl: string) => ({ pl, en: pl.toUpperCase() });
+  it("takes each category's CV short list in the page language", () => {
     const groups = cvSkillGroups(
       [
-        { label: { pl: "Frontend", en: "Frontend" }, skills: [{ cv: true, tags: [tag("html"), tag("css")] }] },
-        {
-          label: { pl: "Dane", en: "Data" },
-          skills: [
-            { cv: true, tags: [tag("rest"), tag("ai", false)] },
-            { cv: false, tags: [tag("llm")] },
-          ],
-        },
-        { label: { pl: "Pusta", en: "Empty" }, skills: [{ cv: false, tags: [tag("x")] }] },
+        { label: { pl: "Frontend", en: "Frontend" }, cvTags: [tag("html"), tag("css")] },
+        { label: { pl: "Dane", en: "Data" }, cvTags: [tag("rest")] },
       ],
       "en",
     );
@@ -66,5 +61,12 @@ describe("cvSkillGroups", () => {
       { label: "Frontend", tags: ["HTML", "CSS"] },
       { label: "Data", tags: ["REST"] },
     ]);
+  });
+
+  it("keeps the CV's lists short and leaves the AI tools to the website", () => {
+    for (const c of skills.categories) {
+      expect(c.cvTags.length).toBeLessThanOrEqual(CV_TAGS_MAX);
+      expect(c.cvTags.map((t) => `${t.pl} ${t.en}`).join(" ")).not.toMatch(/\bAI\b/);
+    }
   });
 });

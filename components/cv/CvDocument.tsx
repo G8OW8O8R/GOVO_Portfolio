@@ -135,7 +135,18 @@ export function CvDocument({ lang }: { lang: Locale }) {
             {cvSkillGroups(skills.categories, lang).map((group) => (
               <div key={group.label} className={s.groupItem}>
                 <h4 className={s.group}>{group.label}</h4>
-                <p className={s.groupTags}>{group.tags.join(" · ")}</p>
+                {/* a tag never breaks, a line never starts with "·" */}
+                <p className={s.groupTags}>
+                  {group.tags.map((tag, i, all) => (
+                    <Fragment key={tag}>
+                      <span>
+                        {tag}
+                        {i < all.length - 1 && " ·"}
+                      </span>
+                      {i < all.length - 1 && " "}
+                    </Fragment>
+                  ))}
+                </p>
               </div>
             ))}
           </section>

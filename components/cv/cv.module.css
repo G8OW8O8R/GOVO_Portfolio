@@ -305,6 +305,10 @@
   color: var(--mut);
 }
 
+.groupTags > span {
+  white-space: nowrap;
+}
+
 .small,
 .list li {
   font-size: 8.2pt;
@@ -542,9 +546,65 @@
 
 /* ---------- Print: exactly one A4 page ---------- */
 
+/*
+ * Print fonts: static instances of the site fonts (public/fonts/cv, OFL).
+ * Chromium writes variable fonts into a PDF as Type 3 (glyphs as drawing
+ * procedures – poor text extraction in some readers and ATS); static ones are
+ * embedded as TrueType. Downloaded only when printing (PrintButton loads them
+ * first); without them the variable fonts print.
+ */
+@font-face {
+  font-family: "Schibsted Grotesk CV";
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/cv/SchibstedGrotesk-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Schibsted Grotesk CV";
+  font-weight: 500;
+  font-display: block;
+  src: url("/fonts/cv/SchibstedGrotesk-Medium.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Schibsted Grotesk CV";
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/cv/SchibstedGrotesk-Bold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "JetBrains Mono CV";
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/cv/JetBrainsMono-Regular.ttf") format("truetype");
+}
+
 @media print {
   .frame {
     padding: 0;
+  }
+
+  .sheet {
+    font-family: "Schibsted Grotesk CV", var(--font-schibsted), ui-sans-serif, sans-serif;
+  }
+
+  .contact,
+  .meta,
+  .tags,
+  .detail,
+  .groupTags,
+  .footerRow,
+  .stepNumber {
+    font-family: "JetBrains Mono CV", var(--font-jetbrains), ui-monospace, monospace;
+  }
+
+  /* three static weights (400/500/700): the semibold headings print bold */
+  .heading,
+  .group,
+  .stepTitle {
+    font-weight: 700;
   }
 
   /* the printable area of the page (297 − 2 × 12 mm), with a hair of room against rounding */

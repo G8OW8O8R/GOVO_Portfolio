@@ -5,6 +5,7 @@ const t = (pl: string, en = pl) => ({ pl, en });
 /**
  * „Umiejętności” tab. PL 1:1 from design/content-skills.md, EN translated.
  * Changing skills is a content change: thumbnails live in public/skills/<id>.png.
+ * `cvTags`: the CV's short list per group (no AI tools – design/content-cv.md).
  */
 export const skills = skillsSchema.parse({
   title: t("Umiejętności", "Skills"),
@@ -52,6 +53,7 @@ export const skills = skillsSchema.parse({
           tags: [t("WCAG"), t("ARIA"), t("obsługa klawiaturą", "keyboard support"), t("kontrast", "contrast")],
         },
       ],
+      cvTags: [t("HTML5"), t("CSS3"), t("JavaScript (ES2023)"), t("TypeScript"), t("React"), t("Next.js")],
     },
     {
       id: "motion",
@@ -79,6 +81,14 @@ export const skills = skillsSchema.parse({
             t("wideo w tle (AV1/H.264)", "background video (AV1/H.264)"),
           ],
         },
+      ],
+      cvTags: [
+        t("Motion"),
+        t("GSAP"),
+        t("WebGL2"),
+        t("GLSL"),
+        t("Canvas"),
+        t("animacje przy przewijaniu", "scroll-driven animation"),
       ],
     },
     {
@@ -110,8 +120,6 @@ export const skills = skillsSchema.parse({
         },
         {
           id: "funkcje-ai",
-          // CV without AI (design/content-cv.md)
-          cv: false,
           name: t("Funkcje AI w produkcie", "AI features in the product"),
           note: t("asystent i komendy w języku naturalnym", "an assistant and natural-language commands"),
           tags: [
@@ -120,6 +128,13 @@ export const skills = skillsSchema.parse({
             t("ochrona przed prompt injection", "prompt injection protection"),
           ],
         },
+      ],
+      cvTags: [
+        t("REST"),
+        t("API routes w Next.js", "Next.js API routes"),
+        t("cache i fallbacki", "caching and fallbacks"),
+        t("Zod"),
+        t("limity zapytań", "rate limiting"),
       ],
     },
     {
@@ -137,7 +152,7 @@ export const skills = skillsSchema.parse({
           name: t("Assety wizualne", "Visual assets"),
           note: t("grafika i wideo przygotowane pod web", "graphics and video prepared for the web"),
           tags: [
-            { ...t("generowanie obrazu i wideo AI", "AI image and video generation"), cv: false },
+            t("generowanie obrazu i wideo AI", "AI image and video generation"),
             t("bezszwowe pętle", "seamless loops"),
             t("optymalizacja mediów", "media optimisation"),
           ],
@@ -155,6 +170,15 @@ export const skills = skillsSchema.parse({
             t("Vercel"),
           ],
         },
+      ],
+      cvTags: [
+        t("Figma"),
+        t("Vitest"),
+        t("Playwright"),
+        t("Lighthouse"),
+        t("SEO techniczne", "technical SEO"),
+        t("Git"),
+        t("Vercel"),
       ],
     },
   ],

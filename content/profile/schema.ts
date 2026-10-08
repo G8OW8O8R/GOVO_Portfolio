@@ -21,25 +21,34 @@ export const aboutSchema = z.object({
   closing: localized,
 });
 
-/** `cv: false` keeps a tag (or a whole skill) off the CV; the website still shows it. */
-const skillTag = localized.extend({ cv: z.boolean().default(true) });
-
 const skill = z.object({
   /** Thumbnail: public/skills/<id>.png, square (512 px), neutral placeholder until the file exists. */
   id,
   name: localized,
   note: localized,
-  tags: z.array(skillTag).min(1),
-  cv: z.boolean().default(true),
+  tags: z.array(localized).min(1),
   /** Optional link to a case study section, e.g. "/projekty/obok#rozwiazania". */
   seeInProject: z.string().optional(),
 });
+
+/** At most this many tags per skill group on the CV (one A4 page). */
+export const CV_TAGS_MAX = 7;
 
 /** Source: design/content-skills.md */
 export const skillsSchema = z.object({
   title: localized,
   lead: localized,
-  categories: z.array(z.object({ id, label: localized, skills: z.array(skill).min(1) })).min(1),
+  categories: z
+    .array(
+      z.object({
+        id,
+        label: localized,
+        skills: z.array(skill).min(1),
+        /** The CV's short list for the group (most important only); the website shows every skill. */
+        cvTags: z.array(localized).min(1).max(CV_TAGS_MAX),
+      }),
+    )
+    .min(1),
   workflow: z.object({
     label: localized,
     caption: localized,
