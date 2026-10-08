@@ -12,7 +12,8 @@
     "test": "vitest run",
     "e2e": "playwright test",
     "cv": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-cv.ts",
-    "favicon": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-favicon.ts"
+    "favicon": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-favicon.ts",
+    "images": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-images.ts"
   },
   "dependencies": {
     "lucide-react": "^1.52.0",

@@ -12,6 +12,10 @@ const nextConfig: NextConfig = {
     // rendered size × DPR (the character is wider than the viewport).
     deviceSizes: [640, 750, 828, 1080, 1280, 1600, 1920, 2304, 2752, 3840],
   },
+  // Generated pictures carry a content hash in the name (scripts/build-images.ts): never revalidated.
+  async headers() {
+    return [{ source: "/img/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] }];
+  },
   // English URLs (/en/about) are served from the Polish route folders (/en/o-mnie).
   async rewrites() {
     return localizedSegmentRules().map(({ english, internal }) => ({

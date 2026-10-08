@@ -209,6 +209,21 @@ body {
 }
 
 /*
+ * Pictures (components/ui/Picture.tsx) fade in over their blurred
+ * placeholder once loaded; the head script marks them [data-ready].
+ * Without JS they are never hidden.
+ */
+img[data-fade] {
+  transition: opacity 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (scripting: enabled) {
+  img[data-fade]:not([data-ready]) {
+    opacity: 0;
+  }
+}
+
+/*
  * Tab headings revealed line by line (RevealHeading): every word sits in its
  * own mask, so the browser keeps wrapping, balance and centring. The padding
  * (taken back by the negative margin) keeps descenders and Polish accents

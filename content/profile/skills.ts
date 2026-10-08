@@ -4,7 +4,8 @@ const t = (pl: string, en = pl) => ({ pl, en });
 
 /**
  * „Umiejętności” tab. PL is the source copy, EN translated.
- * Changing skills is a content change: thumbnails live in public/skills/<id>.png.
+ * Changing skills is a content change: thumbnails live in public/skills/<id>.png
+ * (then pnpm images writes the variants the site serves).
  * `cvTags`: the CV's short list per group (no AI tools).
  */
 export const skills = skillsSchema.parse({

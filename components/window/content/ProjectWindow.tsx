@@ -1,9 +1,10 @@
-import Image from "next/image";
 import { getDictionary } from "@/content/dictionaries";
 import { SUBJECT_PARAM } from "@/content/profile/contact";
 import type { Project } from "@/content/projects/schema";
 import type { Locale } from "@/lib/i18n";
+import { requireImage } from "@/lib/image-manifest";
 import { href } from "@/lib/routes";
+import { Picture } from "@/components/ui/Picture";
 import { PlayOnOpen } from "../motion/PlayOnOpen";
 import { RevealHeading } from "../motion/RevealHeading";
 import { ShowreelVideo } from "../motion/ShowreelVideo";
@@ -57,6 +58,7 @@ export function ProjectWindow({ project, lang }: { project: Project; lang: Local
         {/* warm glow of Obok's light around the frame (static shadow, nothing animates) */}
         <ShowreelVideo
           {...cs.showreel}
+          poster={requireImage(cs.showreel.poster)}
           labels={dict.project.showreel}
           className="mt-10 shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_36px_90px_-24px_rgb(242_164_71/0.75),0_18px_40px_-18px_rgb(0_0_0/0.45)] desk:mt-12"
         />
@@ -81,13 +83,10 @@ export function ProjectWindow({ project, lang }: { project: Project; lang: Local
             {cs.solutions.map((item, i) => (
               <li key={item.title.pl} className="grid items-center gap-5 desk:grid-cols-2 desk:gap-10">
                 <figure className={i % 2 ? "desk:order-2" : ""}>
-                  <Image
-                    src={item.shot.src}
+                  <Picture
+                    image={requireImage(item.shot.src)}
                     alt={item.shot.alt[lang]}
-                    width={1200}
-                    height={750}
-                    sizes="(max-width: 767px) 92vw, 420px"
-                    className="aspect-[16/10] w-full rounded-[12px] bg-[#16181c] object-cover shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_18px_40px_-20px_rgb(0_0_0/0.45)]"
+                    className="aspect-[16/10] w-full overflow-hidden rounded-[12px] bg-[#16181c] shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_18px_40px_-20px_rgb(0_0_0/0.45)]"
                   />
                 </figure>
                 <div>
@@ -107,13 +106,11 @@ export function ProjectWindow({ project, lang }: { project: Project; lang: Local
             {cs.assets.gallery.map((scene) => (
               <li key={scene.src} className="w-[38%] shrink-0 snap-start desk:w-auto">
                 <figure>
-                  <Image
-                    src={scene.src}
+                  {/* the 4:5 crop (lighthouse at 64 %) is in the generated files */}
+                  <Picture
+                    image={requireImage(scene.src)}
                     alt={scene.alt[lang]}
-                    width={1280}
-                    height={720}
-                    sizes="(max-width: 767px) 38vw, 170px"
-                    className="aspect-[4/5] w-full rounded-[12px] bg-[#16181c] object-cover object-[64%_50%] shadow-[0_0_0_1px_rgb(0_0_0/0.06)]"
+                    className="aspect-[4/5] w-full overflow-hidden rounded-[12px] bg-[#16181c] shadow-[0_0_0_1px_rgb(0_0_0/0.06)]"
                   />
                   {scene.caption && (
                     <figcaption className="mt-2 font-mono text-13 text-ink-soft">{scene.caption[lang]}</figcaption>

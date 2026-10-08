@@ -5,6 +5,7 @@ import { pricing } from "@/content/profile/pricing";
 import { getProject } from "@/content/projects";
 import { serviceForPackage } from "@/content/seo/services";
 import { keepRanges } from "@/lib/format";
+import { requireImage } from "@/lib/image-manifest";
 import type { Locale } from "@/lib/i18n";
 import { href } from "@/lib/routes";
 import { PreviewVideo } from "../motion/PreviewVideo";
@@ -47,7 +48,7 @@ export function PricingContent({ lang, heading }: { lang: Locale; heading?: stri
         </div>
         {proof && (
           <WindowLink href={href(lang, "project", proof.slug)} className="group block">
-            <PreviewVideo slug={proof.slug} sizes="(max-width: 767px) 90vw, 320px" />
+            <PreviewVideo slug={proof.slug} cover={requireImage(`/projects/${proof.slug}/cover.jpg`)} />
             <span className="mt-3 block text-15 font-medium text-white underline decoration-white/40 underline-offset-[5px] transition-colors group-hover:decoration-white">
               {soul.caption[lang]}&nbsp;→
             </span>

@@ -22,7 +22,7 @@ export const aboutSchema = z.object({
 });
 
 const skill = z.object({
-  /** Thumbnail: public/skills/<id>.png, square (512 px), neutral placeholder until the file exists. */
+  /** Thumbnail: public/skills/<id>.png, square (512 px), served as generated variants (pnpm images); neutral placeholder until then. */
   id,
   name: localized,
   note: localized,
@@ -51,7 +51,7 @@ export const skillsSchema = z.object({
   workflow: z.object({
     label: localized,
     caption: localized,
-    /** Graphics: public/skills/<id>.png (square, shown 16:10 – keep the subject in the middle band) */
+    /** Graphics: public/skills/<id>.png (square, cropped to 16:10 by pnpm images – keep the subject in the middle band) */
     steps: z.array(z.object({ id, title: localized })).length(3),
     note: localized,
   }),
@@ -94,7 +94,7 @@ export const pricingSchema = z.object({
 export const offerSchema = z.object({
   servicesTitle: localized,
   servicesLead: localized,
-  // thumb: a picture from public/services/<thumb>.png, a different one per service; page: its service page
+  // thumb: a picture from public/services/<thumb>.png (variants: pnpm images), a different one per service; page: its service page
   services: z
     .array(
       z.object({

@@ -6,6 +6,7 @@ import type { LocalPage, ServicePage } from "@/content/seo/schema";
 import { getServicePage, servicePages } from "@/content/seo/services";
 import { localPages } from "@/content/seo/local";
 import type { Locale } from "@/lib/i18n";
+import { requireImage } from "@/lib/image-manifest";
 import { href } from "@/lib/routes";
 import { packagesById } from "@/lib/seo";
 import { PlayOnOpen } from "../motion/PlayOnOpen";
@@ -138,7 +139,7 @@ export function ServiceWindow({ page, lang }: { page: ServicePage; lang: Locale 
               </div>
               {/* the same case study again, so the picture is not a second stop for the keyboard */}
               <WindowLink href={href(lang, "project", proof.slug)} tabIndex={-1} aria-hidden="true" className="block">
-                <PreviewVideo slug={proof.slug} sizes="(max-width: 767px) 90vw, 360px" />
+                <PreviewVideo slug={proof.slug} cover={requireImage(`/projects/${proof.slug}/cover.jpg`)} />
               </WindowLink>
             </div>
           </Section>

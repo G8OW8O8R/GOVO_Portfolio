@@ -1,14 +1,15 @@
 "use client";
 
-import Image from "next/image";
 import { Pause, Play } from "lucide-react";
+import type { ImageSet } from "@/lib/images";
+import { Picture } from "@/components/ui/Picture";
 import { useWindowVideo } from "./useWindowVideo";
 
 /**
  * The case study showreel: muted, looping, inline, nothing
  * loaded before it nears the view. It plays while in view and pauses outside
  * it, on a hidden page and when the window closes (useWindowVideo). The frame
- * has the video's own aspect ratio, so there are no bars; the optimised poster
+ * has the video's own aspect ratio, so there are no bars; the poster picture
  * sits under the video until a frame plays. The whole frame is the play/pause
  * button (WCAG 2.2.2) with a small state chip in the corner for touch; with
  * reduced motion it starts paused.
@@ -22,7 +23,7 @@ export function ShowreelVideo({
   className = "",
 }: {
   src: string;
-  poster: string;
+  poster: ImageSet;
   width: number;
   height: number;
   labels: { play: string; pause: string };
@@ -38,7 +39,7 @@ export function ShowreelVideo({
       style={{ aspectRatio: `${width} / ${height}` }}
       className={`relative block w-full cursor-pointer overflow-hidden rounded-[14px] bg-[#16181c] ${className}`}
     >
-      <Image src={poster} alt="" fill sizes="(max-width: 767px) 92vw, 860px" className="object-cover" />
+      <Picture image={poster} className="absolute inset-0" loading="eager" fetchPriority="high" />
       <video
         ref={video}
         src={src}

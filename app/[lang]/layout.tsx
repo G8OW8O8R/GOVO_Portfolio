@@ -3,6 +3,7 @@ import { JetBrains_Mono, Schibsted_Grotesk } from "next/font/google";
 import { notFound } from "next/navigation";
 import { getDictionary } from "@/content/dictionaries";
 import { isLocale, locales } from "@/lib/i18n";
+import { IMAGE_FADE_SCRIPT } from "@/lib/images";
 import { introScript } from "@/lib/intro";
 import { pageMetadata } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";
@@ -53,6 +54,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
     <html lang={lang} className={`${sans.variable} ${mono.variable} antialiased`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: introScript() }} />
+        <script dangerouslySetInnerHTML={{ __html: IMAGE_FADE_SCRIPT }} />
       </head>
       <body className="font-sans">{children}</body>
     </html>

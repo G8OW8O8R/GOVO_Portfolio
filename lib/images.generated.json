@@ -1,0 +1,247 @@
+{
+  "icons/cv": {
+    "group": "icons",
+    "hash": "bc8204ba",
+    "width": 192,
+    "height": 192,
+    "placeholder": "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAAAQAgCdASoQABAAA4BaJQBOgCBTMMgbPtgAAP7QCNrYSQGRusKemNnFfdUU3oTCZ7hem3/N+IN7xIGtBVHovoaI+BOkQAAA"
+  },
+  "icons/o-mnie": {
+    "group": "icons",
+    "hash": "048e37b1",
+    "width": 192,
+    "height": 192,
+    "placeholder": "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAAAQAgCdASoQABAAA4BaJQBOgCBTMZAMQIIAAP7QCNUpcRy+BVTuRa0FJ4AOqaNxvtAIbDGOH8Xdmg+xHSEI8g/ZD3f8AA=="
+  },
+  "icons/oferta": {
+    "group": "icons",
+    "hash": "edd217b1",
+    "width": 192,
+    "height": 192,
+    "placeholder": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAADwAQCdASoQABAAA4BaJQBOgB6Rf46XeKAA/tAXzhM8duw62Hin1mD0rAiunBf62wk0Gl+nFmbBSSbB5X8oAA=="
+  },
+  "projects/obok/cover": {
+    "group": "cover",
+    "hash": "37a7fa5c",
+    "width": 960,
+    "height": 536,
+    "placeholder": "data:image/webp;base64,UklGRkQAAABXRUJQVlA4IDgAAACwAQCdASoQAAkAA4BaJZwAAuGs24WAAP7zXaQ00y8O6JmsM4Z7v7EZgSMnMXp4rsKAiE4d5MAAAA=="
+  },
+  "projects/obok/icon": {
+    "group": "projectIcons",
+    "hash": "3b06f494",
+    "width": 192,
+    "height": 192,
+    "placeholder": "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAAAwAgCdASoQABAAA4BaJZACdH8AEbyBs2dT+AD+0Bu0v9diWGVH/jp1zoW72bAhZY6AgDjAR1zMXraQCI30/43uWbIr/fxIAAA="
+  },
+  "projects/obok/scenes/cloudy": {
+    "group": "scenes",
+    "hash": "2681d524",
+    "width": 384,
+    "height": 480,
+    "placeholder": "data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAADwAwCdASoQABQAPu1iqk2ppaQiMAgBMB2JYwAAUz0usQRnr7xIkCgAAPnNZMkmkqNg+H3Sm4I6RgyhLlXcbMvsQ9871MSvCTbOEYNt+0AAAA=="
+  },
+  "projects/obok/scenes/night-clear": {
+    "group": "scenes",
+    "hash": "d7dca1fa",
+    "width": 384,
+    "height": 480,
+    "placeholder": "data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAACwAwCdASoQABQAPu1iqk2ppaQiMAgBMB2JQBOgBDwpPPyIEbTj4AD+7pIWWQf12Kn3xn6vkrjlfCBzvCCaXdmkXQu8eau+cqiAMjsoETME44AA"
+  },
+  "projects/obok/scenes/night-cloudy": {
+    "group": "scenes",
+    "hash": "ab1c373a",
+    "width": 384,
+    "height": 480,
+    "placeholder": "data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAACQAwCdASoQABQAPu1iqU2ppaQiMAgBMB2JZwAAW+swk2MW9i/gAP6cdER+QYIpTbQSyFqwNJYzzA4A"
+  },
+  "projects/obok/scenes/rain": {
+    "group": "scenes",
+    "hash": "348cccbe",
+    "width": 384,
+    "height": 480,
+    "placeholder": "data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAADwAwCdASoQABQAPu1kqk4ppaQiMAgBMB2JQBOmUABpscsDQJP1xj0AAP6467uRLV+fUqWqOwnHlXJgK8YALOBSAUD1KiGC+qcOrHkzKPppNT6ufEPHbk/Hbk0AAA=="
+  },
+  "projects/obok/scenes/sunny": {
+    "group": "scenes",
+    "hash": "5cc0b64c",
+    "width": 384,
+    "height": 480,
+    "placeholder": "data:image/webp;base64,UklGRmIAAABXRUJQVlA4IFYAAADQAwCdASoQABQAPu1iqU2ppaOiMAgBMB2JagAAUkiBncAcqlt2FQAA/UbPQmM0xRoSUGpztbPyKUp/n/11rJtVuu/7BfP06H1ikvLBi7hD+FkrM8AAAA=="
+  },
+  "projects/obok/shots/live-data": {
+    "group": "shots",
+    "hash": "02e4d549",
+    "width": 960,
+    "height": 600,
+    "placeholder": "data:image/webp;base64,UklGRjgAAABXRUJQVlA4ICwAAACwAQCdASoQAAoAA4BaJaQAAn8evUwAAP7sSr31fOGhTuOwdo1BVY9unCAAAA=="
+  },
+  "projects/obok/shots/spotlight": {
+    "group": "shots",
+    "hash": "79872a43",
+    "width": 960,
+    "height": 600,
+    "placeholder": "data:image/webp;base64,UklGRjgAAABXRUJQVlA4ICwAAACwAQCdASoQAAoAA4BaJaQAAu18L/gAAP7u3VGpydO/BlC6rJqfqnZQPmAAAA=="
+  },
+  "projects/obok/shots/weather": {
+    "group": "shots",
+    "hash": "e666c82f",
+    "width": 960,
+    "height": 600,
+    "placeholder": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAACwAQCdASoQAAoAA4BaJZQAApK22LAAAP7Y9WhOMOpHeBVnZc3DoMPwk4At7aevDd91gAAA"
+  },
+  "projects/obok/shots/windows": {
+    "group": "shots",
+    "hash": "4c2f647f",
+    "width": 960,
+    "height": 600,
+    "placeholder": "data:image/webp;base64,UklGRjQAAABXRUJQVlA4ICgAAACwAQCdASoQAAoAA4BaJZwAAp0gCPoAAP7r/xmzBHKr4Omn7+2/mVAA"
+  },
+  "projects/obok/showreel-poster": {
+    "group": "showreel",
+    "hash": "0072a670",
+    "width": 1920,
+    "height": 950,
+    "placeholder": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAADwAQCdASoQAAgAA4BaJQBOgCBvkYhtyQAA/s3liWWaLfFMh4a9183yHMPzuaNvO+Ff4AAA"
+  },
+  "services/firmowe": {
+    "group": "services",
+    "hash": "c13e5b08",
+    "width": 192,
+    "height": 192,
+    "placeholder": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAADwAQCdASoQABAAA4BaJZQCdAEOUhluAmQA/t7StFC7rLFvlcJ5hih3kZuHdye9EScPjwhZQAA="
+  },
+  "services/landing": {
+    "group": "services",
+    "hash": "030f7284",
+    "width": 192,
+    "height": 192,
+    "placeholder": "data:image/webp;base64,UklGRjwAAABXRUJQVlA4IDAAAADwAQCdASoQABAAA4BaJYwCdAEPAG2Z7wAA/t6EvBfmXlfamdEEZa45i+B7obYAAAA="
+  },
+  "services/redesign": {
+    "group": "services",
+    "hash": "86008e45",
+    "width": 192,
+    "height": 192,
+    "placeholder": "data:image/webp;base64,UklGRjwAAABXRUJQVlA4IDAAAAAQAgCdASoQABAAA4BaJZQCdAEPEIKeSFfgAP7ec/+E2FifXWb8njcLmmHOTkiAAAA="
+  },
+  "services/sklep": {
+    "group": "services",
+    "hash": "0e35cbee",
+    "width": 192,
+    "height": 192,
+    "placeholder": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAADwAQCdASoQABAAA4BaJZQCdADcyPsg2QAA/t7sfbqKqWJuC90C3ItWha6SkjW5rBzhGAYAAAA="
+  },
+  "skills/animacje-ui": {
+    "group": "skills",
+    "hash": "6f0403cb",
+    "width": 144,
+    "height": 144,
+    "placeholder": "data:image/webp;base64,UklGRj4AAABXRUJQVlA4IDIAAADwAQCdASoQABAAA4BaJYwCdAEO/MYiPAAA/up0Y6Boac0zyamV1a8rSXKSGOrjsAsAAA=="
+  },
+  "skills/api-dane-na-zywo": {
+    "group": "skills",
+    "hash": "45f5a61b",
+    "width": 144,
+    "height": 144,
+    "placeholder": "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAAAwAgCdASoQABAAA4BaJYwCdAEOmXIiYfC6AAD+6nww+dSn75sAkjtFjCcaGlcKoyhMzy7nFGnzg8VwAAA="
+  },
+  "skills/assety-wizualne": {
+    "group": "skills",
+    "hash": "ae383c93",
+    "width": 144,
+    "height": 144,
+    "placeholder": "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAAAwAgCdASoQABAAA4BaJQBOgCHgeYhnPpswAAD+6yWgvQBnCqO7qEipANXPRLhDzQMcMnJGMTB5eJnyAAA="
+  },
+  "skills/dostepnosc": {
+    "group": "skills",
+    "hash": "04d19c5d",
+    "width": 144,
+    "height": 144,
+    "placeholder": "data:image/webp;base64,UklGRjwAAABXRUJQVlA4IDAAAADQAQCdASoQABAAA4BaJYwCdAEO/FWAAAD+6nO5htYZZzBxBzVX0PwpsL03zq+qAAA="
+  },
+  "skills/funkcje-ai": {
+    "group": "skills",
+    "hash": "4b739be0",
+    "width": 144,
+    "height": 144,
+    "placeholder": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAADQAQCdASoQABAAA4BaJYwCdAEO+7hLgAD+7ULbpKpKoecNtxF3vbXcS1AhEdR1Sge0pbEAAAA="
+  },
+  "skills/grafika-realtime": {
+    "group": "skills",
+    "hash": "91a0956a",
+    "width": 144,
+    "height": 144,
+    "placeholder": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAADwAQCdASoQABAAA4BaJYwCdAEOIE5yEgAA/uq7r60hURLbjQjX/QU9sSXcNnavO9QHtkPYAAA="
+  },
+  "skills/jakosc-wdrozenie": {
+    "group": "skills",
+    "hash": "af66b48f",
+    "width": 144,
+    "height": 144,
+    "placeholder": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAAAQAgCdASoQABAAA4BaJZQCdADxKf9rrw3gAP7qlaUpVvH87d/FODk0O3CMVu8qKfbil8I5y/8Ul8co+OXwAA=="
+  },
+  "skills/jezyki-i-struktura": {
+    "group": "skills",
+    "hash": "7dae5ef3",
+    "width": 144,
+    "height": 144,
+    "placeholder": "data:image/webp;base64,UklGRj4AAABXRUJQVlA4IDIAAAAwAgCdASoQABAAA4BaJYwCdAEPAxiki2EeAAD+6nQiCwxmt0zeNhTv1YgHYoKdzDQAAA=="
+  },
+  "skills/react-nextjs": {
+    "group": "skills",
+    "hash": "2c067d72",
+    "width": 144,
+    "height": 144,
+    "placeholder": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAADwAQCdASoQABAAA4BaJYwCdAEOnP1RL9AA/up5/5jWOXv14KrxjKE+sz3JfUaNyWn6lkAA"
+  },
+  "skills/scroll-i-wideo": {
+    "group": "skills",
+    "hash": "3b42e274",
+    "width": 144,
+    "height": 144,
+    "placeholder": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAADwAQCdASoQABAAA4BaJYwCdAEOjMo6cQAA/u1esgCl2TKcQlmY/jcGrmlX3O6mO+e/yvqfZQsO4mnlUAAAAA=="
+  },
+  "skills/style-i-komponenty": {
+    "group": "skills",
+    "hash": "7823b61a",
+    "width": 144,
+    "height": 144,
+    "placeholder": "data:image/webp;base64,UklGRj4AAABXRUJQVlA4IDIAAAAQAgCdASoQABAAA4BaJYwCdAD0up9v1TDIAP7qltnUYOtsPj163CwwUNE8GuAS6e2AAA=="
+  },
+  "skills/ux-ui": {
+    "group": "skills",
+    "hash": "6f166fd3",
+    "width": 144,
+    "height": 144,
+    "placeholder": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAADwAQCdASoQABAAA4BaJQBOgCHhbOKtx4AA/uq5cp6QtM7IV3Xz4ikHAT99cuPp3Urh3Q9EAAA="
+  },
+  "skills/walidacja-bezpieczenstwo": {
+    "group": "skills",
+    "hash": "5927c7f9",
+    "width": 144,
+    "height": 144,
+    "placeholder": "data:image/webp;base64,UklGRj4AAABXRUJQVlA4IDIAAAAQAgCdASoQABAAA4BaJYwCdAD0iZp3FqeAAP7tX9gmwRqk2L9TpAoYpWDsfNvbIewAAA=="
+  },
+  "skills/workflow-1": {
+    "group": "workflow",
+    "hash": "409ed4dd",
+    "width": 512,
+    "height": 320,
+    "placeholder": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAADwAQCdASoQAAoAA4BaJYwCdAD0WRSD+PAA/t6gRDK9FhF/nFlhh7vFdg1AaltCC970WQ9gAAA="
+  },
+  "skills/workflow-2": {
+    "group": "workflow",
+    "hash": "8eb66eda",
+    "width": 512,
+    "height": 320,
+    "placeholder": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAAAQAgCdASoQAAoAA4BaJZQCdAD2Omoxe0VAAP7UZt/JiIiLL6lxVdk1hn6U6lqDLy3cSWYg5fWsQDbNwgAAAA=="
+  },
+  "skills/workflow-3": {
+    "group": "workflow",
+    "hash": "0b473252",
+    "width": 512,
+    "height": 320,
+    "placeholder": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAADQAQCdASoQAAoAA4BaJZQCw7DwEZSSgAD+3tb4KUT/iy7/cBlupnb6iVKqFKVB7DtCkViuAAA="
+  }
+}

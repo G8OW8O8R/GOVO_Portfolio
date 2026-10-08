@@ -1,16 +1,17 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { m } from "motion/react";
 import { X } from "lucide-react";
 import Link from "next/link";
+import type { ImageSet } from "@/lib/images";
+import { Picture } from "@/components/ui/Picture";
 
 export type Preview = {
   title: string;
   summary: string;
-  cover: string;
+  cover: ImageSet;
   /** preview.mp4 when it exists (it takes over from the cover). */
   video: string | null;
 };
@@ -18,12 +19,11 @@ export type Preview = {
 function Media({ preview, sizes }: { preview: Preview; sizes: string }) {
   return (
     <span className="relative block aspect-[16/10] overflow-hidden rounded-[10px] bg-[#1b1b1d]">
-      <Image src={preview.cover} alt="" fill sizes={sizes} className="object-cover" loading="eager" />
+      <Picture image={preview.cover} sizes={sizes} className="absolute inset-0" loading="eager" />
       {preview.video && (
         <video
           className="absolute inset-0 size-full object-cover"
           src={preview.video}
-          poster={preview.cover}
           autoPlay
           muted
           loop

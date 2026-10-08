@@ -1,5 +1,6 @@
-import Image from "next/image";
 import type { ReactNode } from "react";
+import type { ImageSet } from "@/lib/images";
+import { Picture } from "@/components/ui/Picture";
 import { Tilt } from "../motion/Tilt";
 
 /**
@@ -89,18 +90,20 @@ export function AvailableDot({ className = "", pulse = false }: { className?: st
 }
 
 /**
- * Thumbnail that is a neutral placeholder until its file exists: same size,
- * no layout change when it arrives. `tilt`: leans towards the cursor (Tilt).
+ * Thumbnail that is a neutral placeholder until its picture is generated:
+ * same size, no layout change when it arrives. The picture fades in over its
+ * blurred preview. `eager`: small pictures loaded with the window, not when
+ * scrolled to. `tilt`: leans towards the cursor (Tilt).
  */
 export function Thumb({
-  src,
+  image,
   className,
-  sizes,
+  eager = false,
   tilt = false,
 }: {
-  src: string | null;
+  image: ImageSet | null;
   className: string;
-  sizes: string;
+  eager?: boolean;
   tilt?: boolean;
 }) {
   const picture = (
@@ -108,7 +111,7 @@ export function Thumb({
       aria-hidden="true"
       className={`relative block overflow-hidden rounded-[12px] bg-win-fill shadow-[inset_0_0_0_1px_rgb(0_0_0/0.05)] ${tilt ? "size-full" : className}`}
     >
-      {src && <Image src={src} alt="" fill sizes={sizes} className="object-cover" />}
+      {image && <Picture image={image} className="absolute inset-0" loading={eager ? "eager" : "lazy"} />}
     </span>
   );
   return tilt ? <Tilt className={`block ${className}`}>{picture}</Tilt> : picture;

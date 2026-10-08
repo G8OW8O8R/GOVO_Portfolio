@@ -3,7 +3,8 @@ import { about } from "@/content/profile/about";
 import { skills } from "@/content/profile/skills";
 import type { Locale } from "@/lib/i18n";
 import { href } from "@/lib/routes";
-import { hasCv, optionalAsset } from "@/lib/site";
+import { imageSet } from "@/lib/image-manifest";
+import { hasCv } from "@/lib/site";
 import { LIVE_DATA_SKILL, isLiveThumb } from "../live/ids";
 import { LiveThumb } from "../live/LiveThumb";
 import { LiveTicker } from "../live/LiveTicker";
@@ -125,9 +126,9 @@ function SkillsPanel({ lang }: { lang: Locale }) {
                   </p>
                 </div>
                 {isLiveThumb(skill.id) ? (
-                  <LiveThumb id={skill.id} src={optionalAsset(`/skills/${skill.id}.png`)} sizes="72px" className="aspect-square w-full" />
+                  <LiveThumb id={skill.id} image={imageSet(`/skills/${skill.id}.png`)} className="aspect-square w-full" />
                 ) : (
-                  <Thumb src={optionalAsset(`/skills/${skill.id}.png`)} sizes="72px" className="aspect-square w-full" tilt />
+                  <Thumb image={imageSet(`/skills/${skill.id}.png`)} className="aspect-square w-full" eager tilt />
                 )}
               </li>
             ))}
@@ -143,7 +144,7 @@ function SkillsPanel({ lang }: { lang: Locale }) {
         <ol className={`${ui.surface} mt-5 grid gap-5 p-4 desk:grid-cols-3 desk:gap-4`}>
           {skills.workflow.steps.map((step, i) => (
             <li key={step.id}>
-              <Thumb src={optionalAsset(`/skills/${step.id}.png`)} sizes="(max-width: 767px) 90vw, 260px" className="aspect-[16/10] w-full" tilt />
+              <Thumb image={imageSet(`/skills/${step.id}.png`)} className="aspect-[16/10] w-full" tilt />
               <p className="mt-2.5 flex items-baseline gap-2.5 px-1">
                 <span className="font-mono text-13 tabular-nums text-ink-soft">{String(i + 1).padStart(2, "0")}</span>
                 <span className="text-15 font-medium text-ink">{step.title[lang]}</span>

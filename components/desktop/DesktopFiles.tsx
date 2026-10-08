@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import {
   useCallback,
@@ -18,6 +17,7 @@ import {
 import { animate, m, useMotionValue, useSpring, useTransform, type MotionValue } from "motion/react";
 import { characterGaze } from "@/lib/character/look-at";
 import { DESKTOP_MEDIA, computeCharacterBox } from "@/lib/character-box";
+import type { ImageRef, ImageSet } from "@/lib/images";
 import {
   POSITIONS_KEY,
   addScreenDelta,
@@ -35,6 +35,8 @@ import { pointer } from "@/lib/pointer";
 import type { WindowKey } from "@/lib/routes";
 import { computeWindowRect, overlaps } from "@/lib/window-layout";
 import { cursorFlags } from "@/components/cursor/store";
+import { Picture } from "@/components/ui/Picture";
+import { warmImages } from "@/components/ui/warm-images";
 import { REDUCED_MOTION } from "@/components/window/ghost";
 import { useOpenWindowKey } from "@/components/window/store";
 import { useWindowNav } from "@/components/window/useWindowNav";
@@ -45,9 +47,11 @@ export type DesktopFile = {
   key: WindowKey;
   label: string;
   href: string;
-  icon: string;
+  icon: ImageSet;
   slot: { x: number; y: number; depth: Depth };
   badge?: string;
+  /** Pictures of the window's first screen, loaded as soon as the file is hovered or focused. */
+  preload: ImageRef[];
   preview?: Preview;
 };
 
@@ -283,6 +287,7 @@ function FileItem({
   const releaseGaze = useRef<(() => void) | null>(null);
   const handBack = useRef<(() => void) | null>(null);
   const lookHere = () => {
+    warmImages(file.preload);
     if (!releaseGaze.current && icon.current) releaseGaze.current = characterGaze.lookAt(icon.current);
   };
   const lookAway = () => {
@@ -296,6 +301,7 @@ function FileItem({
   // keyboard focus, and the next mouse move off the file hands them back to the cursor
   // (otherwise they stayed on the file, deaf to the mouse, until something else took focus).
   const lookOnFocus = (e: ReactFocusEvent<HTMLAnchorElement>) => {
+    warmImages(file.preload);
     if (!e.currentTarget.matches(":focus-visible")) return;
     lookHere();
     handBack.current ??= pointer.subscribe((p) => {
@@ -497,7 +503,7 @@ function FileItem({
         >
           <span className={s.iconWrap}>
             <span ref={icon} className={s.squircle} data-file-icon="">
-              <Image src={file.icon} width={1024} height={1024} alt="" sizes="88px" loading="eager" draggable={false} />
+              <Picture image={file.icon} className="size-full" loading="eager" fade={false} draggable={false} />
             </span>
             {file.badge && <span className={s.badge}>{file.badge}</span>}
           </span>

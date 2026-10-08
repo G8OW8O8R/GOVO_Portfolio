@@ -1,6 +1,7 @@
 "use client";
 
-import Image from "next/image";
+import type { ImageSet } from "@/lib/images";
+import { Picture } from "@/components/ui/Picture";
 import { useWindowVideo } from "./useWindowVideo";
 
 const FRAME = "relative block aspect-[1280/634] overflow-hidden rounded-[10px] bg-white/5 shadow-[0_20px_50px_rgb(0_0_0/0.5)]";
@@ -9,17 +10,17 @@ const FRAME = "relative block aspect-[1280/634] overflow-hidden rounded-[10px] b
  * A project cover that turns into its preview loop once it is in view
  * (Pricing): muted, looping, inline, nothing loaded before (preload="none").
  * Playback follows the window (useWindowVideo); the video fades in over the
- * cover once it really plays. Reduced motion: the cover stays.
+ * cover once it really plays, so it needs no poster of its own (that one
+ * downloaded with the window even on a hidden tab). Reduced motion: the cover stays.
  */
-export function PreviewVideo({ slug, sizes, className = FRAME }: { slug: string; sizes: string; className?: string }) {
+export function PreviewVideo({ slug, cover, className = FRAME }: { slug: string; cover: ImageSet; className?: string }) {
   const { video, playing, onPlaying } = useWindowVideo(false);
   return (
     <span className={className}>
-      <Image src={`/projects/${slug}/cover.jpg`} alt="" fill sizes={sizes} className="object-cover" />
+      <Picture image={cover} className="absolute inset-0" />
       <video
         ref={video}
         src={`/projects/${slug}/preview.mp4`}
-        poster={`/projects/${slug}/preview-poster.jpg`}
         muted
         loop
         playsInline

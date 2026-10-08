@@ -10,6 +10,10 @@ pnpm test       # testy jednostkowe (lib/)
 pnpm e2e        # Playwright
 ```
 
+## Obrazki
+
+Obrazki okien i ikony plików są serwowane jako gotowe warianty AVIF/WebP z `public/img` (nazwy z hashem, cache na rok). Po dodaniu lub zmianie obrazka w `public/skills`, `public/services`, `public/icons` albo `public/projects/<slug>` uruchom `pnpm images` i zacommituj `public/img` oraz `lib/images.generated.json`. Grupy i rozmiary: `lib/image-groups.ts`.
+
 ## CV (PDF)
 
 `public/cv/CV-PL.pdf` i `CV-EN.pdf` generuje `scripts/build-cv.ts` z `/pl/cv?print` i `/en/cv?print` (Chromium przez Playwright). Na Vercelu/CI generowanie jest pomijane, używane są pliki z repozytorium.

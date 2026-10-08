@@ -2,7 +2,7 @@ import { getDictionary } from "@/content/dictionaries";
 import { offer } from "@/content/profile/offer";
 import type { Locale } from "@/lib/i18n";
 import { href } from "@/lib/routes";
-import { optionalAsset } from "@/lib/site";
+import { imageSet } from "@/lib/image-manifest";
 import { RevealHeading } from "../motion/RevealHeading";
 import { Tabs } from "../Tabs";
 import { WindowLink } from "../WindowLink";
@@ -39,8 +39,8 @@ function ServicesPanel({ lang }: { lang: Locale }) {
             aria-labelledby={`service-${service.id}`}
           >
             <Thumb
-              src={optionalAsset(`/services/${service.thumb}.png`)}
-              sizes="96px"
+              image={imageSet(`/services/${service.thumb}.png`)}
+              eager
               className="aspect-square w-20 desk:w-24"
               tilt
             />
