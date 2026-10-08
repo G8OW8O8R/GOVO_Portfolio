@@ -192,3 +192,54 @@ test("phone: windows are bottom sheets; swipe down closes", async ({ browser }) 
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
   await context.close();
 });
+
+test("pricing: content from content-pricing.md, motion ends crisp, reduced motion shows the end state", async ({ browser }) => {
+  for (const reducedMotion of ["no-preference", "reduce"] as const) {
+    const context = await browser.newContext({ viewport: { width: 1536, height: 864 }, reducedMotion });
+    const page = await context.newPage();
+    await page.goto("/pl");
+    await page.getByRole("navigation", { name: "Pliki na pulpicie" }).getByRole("link", { name: "Oferta" }).click();
+    await page.getByRole("tab", { name: "Cennik" }).click();
+    const panel = page.locator("#cennik");
+
+    if (reducedMotion === "reduce") {
+      // end state at once: words in place, strike drawn, plain prices, no crossfade, the dot stands still
+      await page.waitForTimeout(80);
+      const state = await page.evaluate(() => ({
+        words: [...document.querySelectorAll<HTMLElement>("#cennik [data-word]")].filter((w) => w.style.transform).length,
+        strike: document.querySelector<SVGLineElement>("#cennik svg line")!.style.strokeDashoffset,
+        reels: document.querySelectorAll("#cennik [data-reel]").length,
+        animations: document.getAnimations().filter((a) => (a.effect as KeyframeEffect)?.target?.closest?.("[data-app-window]")).length,
+      }));
+      expect(state).toEqual({ words: 0, strike: "", reels: 0, animations: 0 });
+      await context.close();
+      continue;
+    }
+
+    // the dark block opens the pricing; then the small-budget sentence; then the packages, special project last
+    await expect(panel.getByRole("heading", { name: /Szybko i dobrze./ })).toBeVisible();
+    const order = await panel.evaluate((root) =>
+      ["#soul-title", "p > strong", "ul[data-stagger]"].map((sel) => root.querySelector(sel)!.getBoundingClientRect().top),
+    );
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+    const rows = panel.locator("ul[data-stagger] > li");
+    await expect(rows).toHaveCount(7);
+    await expect(rows.nth(5)).toContainText("Projekt specjalny");
+    await expect(rows.nth(5)).toContainText("7 900");
+    await rows.nth(5).locator("summary").click();
+    await expect(rows.nth(5).getByRole("link", { name: "Zobacz Obok →" })).toBeVisible();
+    await expect(page.getByText("Strony z doświadczeniem")).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Tak wygląda pełna wersja – Obok →" })).toBeVisible();
+
+    // once the motion is over, nothing on the text keeps a transform or will-change (sharp text)
+    await page.waitForTimeout(1800);
+    const leftovers = await page.evaluate(() =>
+      [...document.querySelectorAll("[data-panel]:not([data-inactive]) *")].filter((n) => {
+        const cs = getComputedStyle(n);
+        return cs.transform !== "none" || cs.willChange !== "auto";
+      }).length,
+    );
+    expect(leftovers).toBe(0);
+    await context.close();
+  }
+});

@@ -8,22 +8,42 @@ const t = (pl: string, en = pl) => ({ pl, en });
  * EN translated. Net prices in PLN, always "from".
  */
 export const pricing = pricingSchema.parse({
-  // the lead of design/content-pricing.md, its first sentence as the heading
-  headline: t("Szybko i dobrze, nie długo i drogo.", "Fast and good, not slow and expensive."),
+  headline: {
+    strong: t("Szybko i dobrze.", "Fast and good."),
+    struck: t("Długo i drogo.", "Slow and expensive."),
+  },
   lead: t(
-    "Prostą stronę oddaję nawet w 2–3 dni robocze, a każdy projekt wyceniam indywidualnie – prostszy może kosztować mniej.",
-    "I can deliver a simple website in as little as 2–3 working days, and I price every project individually – a simpler one may cost less.",
+    "Prostą stronę oddaję nawet w 2–3 dni robocze. Każdy projekt wyceniam indywidualnie – prostszy może kosztować mniej.",
+    "I can deliver a simple website in as little as 2–3 working days. I price every project individually – a simpler one may cost less.",
   ),
   perks: [
     t("Gotowe nawet w 2–3 dni robocze", "Ready in as little as 2–3 working days"),
-    t("Widzisz postęp na bieżąco, nie dopiero na końcu", "You see progress as it happens, not only at the end"),
+    t("Widzisz postęp na bieżąco", "You see progress as it happens"),
     t("Poprawki w cenie", "Revisions included"),
   ],
-  // one sentence under the lead (task 5a), the link opens Contact with the budget preset
-  smallBudget: {
+  soul: {
+    title: t(
+      "Każda moja strona ma duszę – nie tylko ta najdroższa.",
+      "Every website I make has a soul – not just the most expensive one.",
+    ),
     text: t(
-      "Masz mniejszy budżet? Dopasuję zakres do kwoty, a stronę rozbudujesz później.",
-      "Have a smaller budget? I'll fit the scope to the amount, and you can grow the site later.",
+      "Nie składam stron z gotowych szablonów. W każdym pakiecie dostajesz dopracowany ruch, grafiki przygotowane pod Twoją markę i stronę, która działa szybko na każdym telefonie.",
+      "I don't put websites together from ready-made templates. In every package you get polished motion, graphics prepared for your brand and a website that runs fast on any phone.",
+    ),
+    points: [
+      t("animacje i przejścia w każdym pakiecie", "animations and transitions in every package"),
+      t("własne grafiki dopasowane do marki", "custom graphics matched to the brand"),
+      t("wynik 90+ w Lighthouse", "a 90+ Lighthouse score"),
+    ],
+    caption: t("Tak wygląda pełna wersja – Obok", "This is what the full version looks like – Obok"),
+    project: "obok",
+  },
+  // a plain sentence with a link above the packages; the link opens Contact with the budget preset
+  smallBudget: {
+    strong: t("Masz mniejszy budżet? Napisz śmiało.", "Have a smaller budget? Just write to me."),
+    text: t(
+      "Dopasuję zakres do kwoty – prosta strona na start też jest w porządku, a rozbudować ją można później.",
+      "I'll fit the scope to the amount – a simple website to start with is fine too, and it can be expanded later.",
     ),
     cta: t("Napisz, ile chcesz wydać", "Tell me how much you want to spend"),
   },
@@ -102,25 +122,24 @@ export const pricing = pricingSchema.parse({
       ],
       time: t("od 3–5 dni roboczych, zależnie od wielkości strony", "from 3–5 working days, depending on the size of the website"),
     },
+    {
+      id: "projekt-specjalny",
+      name: t("Projekt specjalny", "Special project"),
+      from: 7900,
+      description: t(
+        "Strona, która jest wydarzeniem: interaktywny świat, wideo, grafika w czasie rzeczywistym.",
+        "A website that is an event: an interactive world, video, real-time graphics.",
+      ),
+      features: [
+        t("koncept i art direction", "concept and art direction"),
+        t("własne grafiki i wideo przygotowane pod stronę", "custom graphics and video prepared for the website"),
+        t("ruch, interakcje, WebGL", "motion, interactions, WebGL"),
+        t("wydajność i dostępność mimo efektów", "performance and accessibility despite the effects"),
+      ],
+      time: t("zależnie od zakresu", "depending on the scope"),
+      link: { label: t("Zobacz Obok", "See Obok"), project: "obok" },
+    },
   ],
-  experience: {
-    id: "strony-z-doswiadczeniem",
-    name: t("Strony z doświadczeniem", "Experience websites"),
-    from: 7900,
-    description: t(
-      "Dla marek, które chcą, żeby strona była wydarzeniem. Własne wizualia i wideo, animacje, interakcje i grafika w czasie rzeczywistym – strona, którą się zapamiętuje i udostępnia.",
-      "For brands that want their website to be an event. Custom visuals and video, animations, interactions and real-time graphics – a website people remember and share.",
-    ),
-    features: [
-      t("koncept i art direction", "concept and art direction"),
-      t("własne grafiki i wideo przygotowane pod stronę", "custom graphics and video prepared for the website"),
-      t("ruch, interakcje, WebGL", "motion, interactions, WebGL"),
-      t("wydajność i dostępność mimo efektów", "performance and accessibility despite the effects"),
-    ],
-    proofLabel: t("Dowód:", "Proof:"),
-    proofProject: "obok",
-    cta: t("Porozmawiajmy o projekcie", "Let's talk about your project"),
-  },
   care: {
     name: t("Opieka nad stroną", "Website care"),
     fromMonthly: 99,

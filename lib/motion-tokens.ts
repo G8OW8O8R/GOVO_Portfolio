@@ -51,3 +51,27 @@ export function springCss(property = "transform", spring: { visualDuration: numb
   const { easing, ms } = springEasing(spring.visualDuration, spring.bounce);
   return `${property} ${ms}ms ${easing}`;
 }
+
+/** A cubic-bezier tuple as a CSS / Web Animations easing string. */
+export const cssBezier = (curve: readonly [number, number, number, number]) => `cubic-bezier(${curve.join(", ")})`;
+
+/**
+ * Motion inside windows: transform/opacity
+ * only (stroke-dashoffset in SVG), 200–600 ms, each effect once per tab
+ * opening, all on EASE_OUT. Milliseconds (Web Animations API).
+ */
+export const CONTENT_MOTION = {
+  /** First visit of a tab in the session: crossfade + rise, list items one after another. */
+  enter: { ms: 220, shift: 8, stagger: 35, maxItems: 10 },
+  /** Tab heading revealed line by line from under a mask. */
+  reveal: { ms: 500, stagger: 60 },
+  /** Strike-through drawn from the left once the heading is in. */
+  draw: { ms: 600 },
+  /** Price digits rolling like an odometer. */
+  count: { ms: 500 },
+  /** Process line growing to the next step, the step number lighting up. */
+  segment: { ms: 320 },
+  light: { ms: 200 },
+  /** Thumbnail tilt towards the cursor. */
+  tilt: { ms: 200, maxDeg: 6, lift: 4, perspective: 600 },
+} as const;

@@ -58,7 +58,7 @@ const en: Dictionary = {
     },
   },
   about: { seeCv: "View CV.pdf" },
-  offer: { seeProject: "See Obok", time: "Timeline", moreThanWebsite: "Want more than a website?" },
+  offer: { seeProject: "See Obok", time: "Timeline" },
   contact: {
     lead: "Write a few sentences about your project or the role. I usually reply within a day.",
     name: "Name",

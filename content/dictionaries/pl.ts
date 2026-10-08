@@ -56,7 +56,7 @@ const pl = {
     },
   },
   about: { seeCv: "Zobacz CV.pdf" },
-  offer: { seeProject: "Zobacz Obok", time: "Czas realizacji", moreThanWebsite: "Chcesz czegoś więcej niż strony?" },
+  offer: { seeProject: "Zobacz Obok", time: "Czas realizacji" },
   contact: {
     lead: "Napisz kilka zdań o projekcie albo o stanowisku. Odpowiadam zwykle w ciągu doby.",
     name: "Imię",

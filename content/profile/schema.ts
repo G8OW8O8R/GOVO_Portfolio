@@ -53,26 +53,27 @@ const pkg = z.object({
   features: z.array(localized).min(1),
   time: localized,
   popular: z.boolean().default(false),
+  /** Optional link inside the expanded row (e.g. "Zobacz Obok →" for the special project). */
+  link: z.object({ label: localized, project: id }).optional(),
 });
 
 /** Source: design/content-pricing.md. Prices net, PLN, always "from". */
 export const pricingSchema = z.object({
-  headline: localized,
+  /** Two lines on purpose: large black, then smaller grey and struck through. */
+  headline: z.object({ strong: localized, struck: localized }),
   lead: localized,
   perks: z.array(localized).length(3),
-  smallBudget: z.object({ text: localized, cta: localized }),
+  /** Dark block at the top of Pricing, before the packages, with the Obok cover/preview. */
+  soul: z.object({
+    title: localized,
+    text: localized,
+    points: z.array(localized).length(3),
+    caption: localized,
+    project: id,
+  }),
+  smallBudget: z.object({ strong: localized, text: localized, cta: localized }),
   popularBadge: localized,
   packages: z.array(pkg).min(1),
-  experience: z.object({
-    id,
-    name: localized,
-    from: z.number().int().positive(),
-    description: localized,
-    features: z.array(localized).min(1),
-    proofLabel: localized,
-    proofProject: id,
-    cta: localized,
-  }),
   care: z.object({ name: localized, fromMonthly: z.number().int().positive(), description: localized }),
   footnote: localized,
 });
@@ -81,7 +82,7 @@ export const pricingSchema = z.object({
 export const offerSchema = z.object({
   servicesTitle: localized,
   servicesLead: localized,
-  // thumb: a picture from public/skills/<thumb>.png, a different one per service
+  // thumb: a picture from public/services/<thumb>.png, a different one per service
   services: z.array(z.object({ id, title: localized, text: localized, fit: localized, thumb: id })).length(4),
   processTitle: localized,
   process: z.array(z.object({ title: localized, text: localized })).min(1),

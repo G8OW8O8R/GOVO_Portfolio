@@ -187,6 +187,57 @@ body {
   background-color: rgb(17 17 17 / 0.36);
 }
 
+/*
+ * Inactive tab panels (after hydration): out of sight, focus and the
+ * accessibility tree, their contents skipped by rendering but kept, so the
+ * layout Tabs builds when a tab is about to be chosen ([data-warming]) is
+ * reused when it opens.
+ */
+[data-panel][data-inactive] {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  visibility: hidden;
+  content-visibility: hidden;
+}
+
+[data-panel][data-inactive][data-warming] {
+  content-visibility: visible;
+}
+
+/*
+ * Tab headings revealed line by line (RevealHeading): every word sits in its
+ * own mask, so the browser keeps wrapping, balance and centring. The padding
+ * (taken back by the negative margin) keeps descenders and Polish accents
+ * inside the mask.
+ */
+[data-mask] {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding: 0.14em 0.06em 0.18em;
+  margin: -0.14em -0.06em -0.18em;
+}
+
+[data-word] {
+  display: inline-block;
+}
+
+/* "Available" dot in About me: the one loop inside windows */
+[data-pulse] {
+  animation: available-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes available-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -195,4 +246,7 @@ body {
     animation-duration: 0.01ms !important;
   }
 
+  [data-pulse] {
+    animation: none !important;
+  }
 }

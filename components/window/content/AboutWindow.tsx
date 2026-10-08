@@ -4,6 +4,7 @@ import { skills } from "@/content/profile/skills";
 import type { Locale } from "@/lib/i18n";
 import { href } from "@/lib/routes";
 import { hasCv, optionalAsset } from "@/lib/site";
+import { RevealHeading } from "../motion/RevealHeading";
 import { Tabs } from "../Tabs";
 import { WindowLink } from "../WindowLink";
 import { AvailableDot, Steps, Thumb, ui } from "./ui";
@@ -34,7 +35,10 @@ function AboutPanel({ lang }: { lang: Locale }) {
     <div className={ui.page}>
       <div className="grid items-start gap-6 desk:grid-cols-[1.2fr_1fr] desk:gap-8">
         <header>
-          <h2 className={ui.display}>{about.name}</h2>
+          <RevealHeading
+            text={about.name}
+            className="text-balance text-40 font-semibold tracking-[-0.035em] text-ink desk:text-56"
+          />
           <p className="mt-1 text-15 text-ink-soft">{about.role[lang]}</p>
           <p className={`mt-3 ${ui.mono}`}>{about.facts.map((f) => f[lang]).join("  ·  ")}</p>
           <p className={`mt-5 ${ui.lead}`}>{about.lead[lang]}</p>
@@ -46,7 +50,7 @@ function AboutPanel({ lang }: { lang: Locale }) {
               {about.seeking.label[lang]}
             </h3>
             <p className="flex items-center gap-2 text-13 font-medium text-ink">
-              <AvailableDot className="size-2" />
+              <AvailableDot className="size-2" pulse />
               {about.seeking.status[lang]}
             </p>
           </div>
@@ -90,7 +94,7 @@ function SkillsPanel({ lang }: { lang: Locale }) {
   return (
     <div className={ui.page}>
       <header>
-        <h2 className={ui.intro}>{skills.title[lang]}</h2>
+        <RevealHeading text={skills.title[lang]} className={ui.title} />
         <p className={ui.introText}>{skills.lead[lang]}</p>
       </header>
 
@@ -100,7 +104,7 @@ function SkillsPanel({ lang }: { lang: Locale }) {
             <span className="font-mono text-13 tabular-nums text-ink-soft">{String(ci + 1).padStart(2, "0")}</span>
             <span className={ui.label}>{category.label[lang]}</span>
           </h3>
-          <ul className={`${ui.surface} divide-y divide-win-line`}>
+          <ul data-stagger="" className={`${ui.surface} divide-y divide-win-line`}>
             {category.skills.map((skill) => (
               <li
                 key={skill.id}
@@ -114,7 +118,7 @@ function SkillsPanel({ lang }: { lang: Locale }) {
                     {skill.tags.map((tag) => tag[lang]).join("  ·  ")}
                   </p>
                 </div>
-                <Thumb src={optionalAsset(`/skills/${skill.id}.png`)} sizes="72px" className="aspect-square w-full" />
+                <Thumb src={optionalAsset(`/skills/${skill.id}.png`)} sizes="72px" className="aspect-square w-full" tilt />
               </li>
             ))}
           </ul>
@@ -129,7 +133,7 @@ function SkillsPanel({ lang }: { lang: Locale }) {
         <ol className={`${ui.surface} mt-5 grid gap-5 p-4 desk:grid-cols-3 desk:gap-4`}>
           {skills.workflow.steps.map((step, i) => (
             <li key={step.id}>
-              <Thumb src={optionalAsset(`/skills/${step.id}.png`)} sizes="(max-width: 767px) 90vw, 260px" className="aspect-[16/10] w-full" />
+              <Thumb src={optionalAsset(`/skills/${step.id}.png`)} sizes="(max-width: 767px) 90vw, 260px" className="aspect-[16/10] w-full" tilt />
               <p className="mt-2.5 flex items-baseline gap-2.5 px-1">
                 <span className="font-mono text-13 tabular-nums text-ink-soft">{String(i + 1).padStart(2, "0")}</span>
                 <span className="text-15 font-medium text-ink">{step.title[lang]}</span>

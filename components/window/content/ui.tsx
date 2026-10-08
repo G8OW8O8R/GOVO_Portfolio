@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Tilt } from "../motion/Tilt";
 
 /**
  * Shared look of window content: white surfaces on the light
@@ -16,6 +17,8 @@ export const ui = {
   fill: "rounded-surface bg-win-fill",
   /** Dark surface (Experience websites) */
   dark: "rounded-surface bg-ink text-white shadow-[0_24px_60px_-24px_rgb(0_0_0/0.55)]",
+  /** Main heading of a tab: centred, 56 px on desktop, revealed line by line (RevealHeading) */
+  title: "mx-auto max-w-[20ch] text-balance text-center text-40 font-semibold tracking-[-0.035em] text-ink desk:text-56",
   /** Centred lead that opens a tab */
   intro: "mx-auto max-w-[34ch] text-balance text-center text-22 font-semibold tracking-[-0.025em] text-ink desk:text-28",
   introText: "mx-auto mt-3 max-w-[58ch] text-balance text-center text-17 text-ink-soft",
@@ -37,55 +40,43 @@ export const ui = {
   link: "font-medium text-ink underline decoration-ink/30 decoration-1 underline-offset-[5px] transition-colors hover:decoration-ink",
 } as const;
 
-/**
- * Numbered path on one surface (How I work, Process): step numbers on a thin
- * line that joins them, not separate cards.
- */
-export function Steps({ items, className = "" }: { items: { title: string; text: string }[]; className?: string }) {
-  return (
-    <ol className={`${ui.surface} px-5 py-6 desk:px-8 desk:py-8 ${className}`}>
-      {items.map((item, i) => (
-        <li key={item.title} className="relative grid grid-cols-[40px_1fr] gap-x-4 pb-7 last:pb-0">
-          {i < items.length - 1 && (
-            <span className="absolute bottom-1 left-[19.5px] top-11 w-px bg-ink/12" aria-hidden="true" />
-          )}
-          <span
-            className="grid size-10 place-items-center rounded-full bg-win-fill font-mono text-13 tabular-nums text-ink"
-            aria-hidden="true"
-          >
-            {String(i + 1).padStart(2, "0")}
-          </span>
-          <div className="pt-2">
-            <h4 className="text-17 font-semibold tracking-[-0.01em] text-ink">{item.title}</h4>
-            <p className="mt-1 text-15 text-ink-soft">{item.text}</p>
-          </div>
-        </li>
-      ))}
-    </ol>
-  );
-}
+export { Steps } from "../motion/Steps";
 
-/** Green "available" dot (the only colour besides the focus blue). */
-export function AvailableDot({ className = "" }: { className?: string }) {
+/**
+ * Green "available" dot (the only colour besides the focus blue). `pulse`:
+ * its halo breathes slowly (opacity, 2.4 s) – the one loop inside windows;
+ * it stands still with reduced motion (globals.css `[data-pulse]`).
+ */
+export function AvailableDot({ className = "", pulse = false }: { className?: string; pulse?: boolean }) {
   return (
-    <span
-      aria-hidden="true"
-      className={`inline-block size-2.5 shrink-0 rounded-full bg-available shadow-[0_0_0_4px_rgb(47_191_90/0.16)] ${className}`}
-    />
+    <span aria-hidden="true" className={`relative inline-block size-2.5 shrink-0 rounded-full bg-available ${className}`}>
+      <span data-pulse={pulse || undefined} className="absolute -inset-1 rounded-full bg-available/20" />
+    </span>
   );
 }
 
 /**
- * Thumbnail that is a neutral placeholder until its file exists
- * (public/skills/<id>.png): same size, no layout change when it arrives.
+ * Thumbnail that is a neutral placeholder until its file exists: same size,
+ * no layout change when it arrives. `tilt`: leans towards the cursor (Tilt).
  */
-export function Thumb({ src, className, sizes }: { src: string | null; className: string; sizes: string }) {
-  return (
+export function Thumb({
+  src,
+  className,
+  sizes,
+  tilt = false,
+}: {
+  src: string | null;
+  className: string;
+  sizes: string;
+  tilt?: boolean;
+}) {
+  const picture = (
     <span
       aria-hidden="true"
-      className={`relative block overflow-hidden rounded-[12px] bg-win-fill shadow-[inset_0_0_0_1px_rgb(0_0_0/0.05)] ${className}`}
+      className={`relative block overflow-hidden rounded-[12px] bg-win-fill shadow-[inset_0_0_0_1px_rgb(0_0_0/0.05)] ${tilt ? "size-full" : className}`}
     >
       {src && <Image src={src} alt="" fill sizes={sizes} className="object-cover" />}
     </span>
   );
+  return tilt ? <Tilt className={`block ${className}`}>{picture}</Tilt> : picture;
 }
