@@ -1,0 +1,184 @@
+/*
+ * Intro "Przebudzenie" (lib/intro.ts). The overlay is in the HTML from the
+ * start but shows only under html[data-intro] set by the head script for
+ * people (bots and Lighthouse get the page as is). What can start before
+ * hydration starts in CSS: the logo outline (full) and the whole short
+ * version (repeat / window). Transform, opacity and stroke-dashoffset only.
+ * Durations come from lib/intro.ts as custom properties on .overlay.
+ */
+
+.overlay,
+.flash {
+  display: none;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  place-items: center;
+  background: #0a0a0a;
+  color: #f4f4f4;
+  /* not quite opaque: the page beneath is rasterised while the assets load,
+     not all at once in the frame the dark starts lifting (occlusion culling) */
+  opacity: 0.998;
+  /* never stuck: without the director (no JS, an error) the overlay leaves by itself */
+  animation: intro-leave 0.3s ease-out 3.4s both;
+}
+
+.flash {
+  /* a soft disc on the pendant (character box, lib/intro.ts FLASH_FROM) that grows over the screen */
+  position: fixed;
+  left: var(--fx);
+  top: var(--fy);
+  z-index: 81;
+  width: 40vmax;
+  height: 40vmax;
+  margin: -20vmax 0 0 -20vmax;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  /* its own layer, rasterised once at this size behind the black screen – not
+     at the moment the flash starts (scaling a soft gradient stays smooth) */
+  will-change: transform, opacity;
+  background: radial-gradient(
+    circle closest-side,
+    #fff 0,
+    rgb(255 255 255 / 0.92) 14%,
+    rgb(246 248 255 / 0.5) 46%,
+    rgb(246 248 255 / 0) 100%
+  );
+}
+
+:global(html:is([data-intro="full"], [data-intro="repeat"], [data-intro="window"]):not([data-intro-done])) .overlay {
+  display: grid;
+}
+
+:global(html:is([data-intro="full"], [data-intro="repeat"], [data-intro="window"]):not([data-intro-done])) .flash {
+  display: block;
+}
+
+/* the director runs: it decides when the overlay leaves */
+:global(html[data-intro-run]) .overlay {
+  animation: none;
+}
+
+.center {
+  display: grid;
+  justify-items: center;
+  gap: 30px;
+}
+
+.logo {
+  position: relative;
+  display: block;
+  width: clamp(150px, 17vw, 240px);
+  aspect-ratio: 1067 / 450;
+}
+
+.logo > span {
+  position: absolute;
+  inset: 0;
+}
+
+/* outline drawn from the first paint, then the filled logo fades in over it */
+.stroke :global(path) {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.25px;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+}
+
+:global(html[data-intro="full"]) .stroke :global(path) {
+  animation: intro-draw var(--draw) cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
+.fill {
+  opacity: 0;
+}
+
+:global(html[data-intro="full"]) .fill {
+  animation: intro-in 0.32s ease-out calc(var(--draw) - 0.12s) both;
+}
+
+/* short version: the logo is simply there */
+:global(html:is([data-intro="repeat"], [data-intro="window"])) .fill {
+  opacity: 1;
+}
+
+:global(html:is([data-intro="repeat"], [data-intro="window"])) .stroke {
+  display: none;
+}
+
+/* real loading: the director scales the bar with the assets that arrived */
+.line {
+  position: relative;
+  width: 112px;
+  height: 1px;
+  overflow: hidden;
+  background: rgb(255 255 255 / 0.14);
+}
+
+:global(html:not([data-intro="full"])) .line {
+  visibility: hidden;
+}
+
+.bar {
+  position: absolute;
+  inset: 0;
+  background: rgb(255 255 255 / 0.85);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.24s ease-out;
+}
+
+/* ---------- short version (repeat visit, window address): CSS only, from the first paint ---------- */
+
+:global(html:is([data-intro="repeat"], [data-intro="window"])) .overlay {
+  animation: intro-leave var(--fade) ease-out var(--fade-at) both;
+}
+
+:global(html:is([data-intro="repeat"], [data-intro="window"])) .flash {
+  animation: intro-flash var(--short-flash) cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+@keyframes intro-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes intro-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes intro-leave {
+  from {
+    opacity: 0.998;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes intro-flash {
+  0% {
+    opacity: 0;
+    transform: scale(0.05);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(5);
+  }
+}

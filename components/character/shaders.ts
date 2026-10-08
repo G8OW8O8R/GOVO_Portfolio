@@ -53,6 +53,7 @@ uniform int u_glintCount;
 uniform vec4 u_glints[${MAX_GLINTS}];  // x, y, size, intensity
 uniform vec2 u_glintsB[${MAX_GLINTS}]; // rotation, hue
 uniform int u_debug;         // 1 = iris-only (mask containment check)
+uniform float u_develop;     // intro: 0 = black … 1 = normal
 
 out vec4 outColor;
 
@@ -189,6 +190,14 @@ void main() {
       vec3 tint = mix(vec3(1.0), hue(u_glintsB[i].y), 0.35);
       c += 1.4 * g.w * (rays + core) * tint;
     }
+  }
+
+  // intro: the print develops from black – highlights first, shadows last – with fading grain
+  if (u_develop < 1.0) {
+    float lum = dot(c, vec3(0.299, 0.587, 0.114));
+    c *= smoothstep(0.0, 1.0, clamp(u_develop * 1.7 - (1.0 - lum) * 0.7, 0.0, 1.0));
+    float grain = fract(sin(dot(gl_FragCoord.xy + u_develop * 517.0, vec2(12.9898, 78.233))) * 43758.5453);
+    c = max(c + (grain - 0.5) * 0.09 * (1.0 - u_develop), 0.0);
   }
 
   outColor = vec4(min(c, 1.0), 1.0);

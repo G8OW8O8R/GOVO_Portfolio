@@ -3,6 +3,7 @@ import { JetBrains_Mono, Schibsted_Grotesk } from "next/font/google";
 import { notFound } from "next/navigation";
 import { getDictionary } from "@/content/dictionaries";
 import { isLocale, locales } from "@/lib/i18n";
+import { introScript } from "@/lib/intro";
 import { alternates } from "@/lib/routes";
 import { SITE_URL } from "@/lib/site";
 import "../globals.css";
@@ -54,7 +55,11 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
   if (!isLocale(lang)) notFound();
 
   return (
-    <html lang={lang} className={`${sans.variable} ${mono.variable} antialiased`}>
+    // data-intro is set by the head script before the first paint (lib/intro.ts)
+    <html lang={lang} className={`${sans.variable} ${mono.variable} antialiased`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: introScript() }} />
+      </head>
       <body className="font-sans">{children}</body>
     </html>
   );

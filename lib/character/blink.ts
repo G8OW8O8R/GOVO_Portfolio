@@ -27,10 +27,16 @@ export class Blinker {
     this.next = now + between(rng, EYES.blink.interval_s);
   }
 
-  /** Start a blink now (debug, wake-up blink in task 6). */
+  /** Start a blink now (debug). */
   trigger(now: number) {
     this.start = now;
     this.next = now + BLINK_DURATION + between(this.rng, EYES.blink.interval_s);
+  }
+
+  /** Play only the opening part of a blink, starting now (eyes held closed until now – the intro). */
+  openFrom(now: number) {
+    this.start = now - CLOSE - HOLD;
+    this.next = now + OPEN + between(this.rng, EYES.blink.interval_s);
   }
 
   /** `auto` = random blinks on; triggered blinks always play. */

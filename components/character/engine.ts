@@ -1,19 +1,26 @@
 import { computeCharacterBox, isDesktopViewport } from "@/lib/character-box";
-import { DERIVED, EYES, EYE_MIDPOINT, type Vec2 } from "@/lib/character/config";
+import { DERIVED, EYES, EYE_MIDPOINT, TUNING, type Vec2 } from "@/lib/character/config";
 import { GazeDirector, pointToGaze } from "@/lib/character/gaze";
 import { VIEWER, characterGaze, type ClientPoint } from "@/lib/character/look-at";
 import { clamp, seededRng, type Rng } from "@/lib/character/motion";
 import { CharacterSim, REST_FRAME, type CharacterFrame } from "@/lib/character/sim";
+import { characterPulse, type PulseTarget } from "@/lib/character/pulse";
+import { characterStage, developAt, type StageDirection } from "@/lib/character/stage";
 import { FpsWatchdog } from "@/lib/character/watchdog";
 import { pointer as pointerSource, type PointerState } from "@/lib/pointer";
 import { CROP_MEDIA, MOBILE_CROP, cropFits, visibleImageRect, type Rect } from "@/lib/character/mobile-crop";
-import { CharacterRenderer, loadBase, loadCharacterAssets, type CharacterAssets, type PixelMap } from "./renderer";
+import { CHARACTER_FILES } from "@/lib/character/stage";
+import { loadBase, underived, type CharacterAssets } from "./assets";
+import { loadAssetFullBase, loadAssetLayers, loadAssets, posterBase } from "./load";
+import { CharacterRenderer, type PixelMap } from "./renderer";
 
 /**
  * Runs the living character: input → gaze director → simulation → renderer,
  * on requestAnimationFrame, paused off screen / on a hidden tab / while
  * printing (and resumed after), with the FPS watchdog and recovery from a
  * lost WebGL context. React only mounts and unmounts it.
+ * Each rendered frame is also a pulse (lib/character/pulse.ts) for the logo's
+ * owl eyes; the intro directs it through lib/character/stage.ts.
  */
 
 /** Old sessionStorage flag (kept the poster across reloads); removed on start. */
@@ -41,6 +48,12 @@ type Options = {
   seed?: number;
   /** debug: force the full image or the phone crop as the base */
   forceBase?: "full" | "crop";
+  /**
+   * The intro's quick start: the poster is the base and the derived data
+   * waits, so the character is ready in time on a first visit; the
+   * full-resolution base, the chain weight and the glints follow after the intro.
+   */
+  quick?: boolean;
 };
 
 export function webgl2Supported(): boolean {
@@ -66,7 +79,10 @@ export class CharacterEngine {
   private onScreen = true;
   private printing = false;
   private destroyed = false;
-  private pointer: { gaze: Vec2; at: number } | null = null;
+  /** last pointer as gaze; `client` is missing when the scroll (phones) moved the gaze */
+  private pointer: { gaze: Vec2; at: number; client?: ClientPoint } | null = null;
+  /** the gaze target of the current frame, for the pulse */
+  private pulseTarget: PulseTarget = { kind: "gaze", gaze: [0, 0] };
   private poster = { left: 0, top: 0, scale: 1 };
   private size = { width: 0, height: 0, map: [1, 0, -1, H] as PixelMap };
   private lastScrollY = 0;
@@ -92,15 +108,39 @@ export class CharacterEngine {
     });
     if (!gl) return this.fail("error");
     this.gl = gl;
+    characterStage.report({ status: "loading", loaded: 0, total: CHARACTER_FILES });
+    // timings for the performance panel / measurements
+    performance.mark("character:start");
+    // the shader compiles while the textures load
+    const program = CharacterRenderer.compile(gl);
+    program.catch(() => {}); // reported where it is awaited
 
     try {
       // phones: the full-resolution crop when everything visible (plus the warp reach) is inside it
       const crop = this.o.forceBase ? this.o.forceBase === "crop" : cropFits(this.visibleImage());
-      const assets = await loadCharacterAssets(this.abort.signal, { crop });
+      // decoded and prepared in a worker: the page (and the intro) keep their frames
+      const report = (loaded: number) => !this.destroyed && characterStage.report({ loaded: Math.min(loaded, CHARACTER_FILES) });
+      let assets: CharacterAssets;
+      if (this.o.quick) {
+        let loaded = 0;
+        const tick = () => report(++loaded);
+        const [base, layers] = await Promise.all([
+          posterBase(this.o.poster).then((b) => (tick(), b)),
+          loadAssetLayers(this.abort.signal, tick),
+        ]);
+        assets = { ...base, ...layers, ...underived() };
+      } else {
+        assets = await loadAssets(this.abort.signal, { crop, onProgress: report });
+      }
       if (this.destroyed) return;
+      performance.mark("character:assets");
       this.assets = assets;
-      this.renderer = new CharacterRenderer(gl, assets);
+      await characterStage.undeferred();
+      if (this.destroyed) return;
+      this.renderer = await CharacterRenderer.create(gl, assets, program);
+      if (this.destroyed) return;
       this.sim = new CharacterSim(this.rng, assets.glintPoints);
+      this.sim.lidsHeld = characterStage.direction().lidsHeld;
     } catch (e) {
       if (!this.destroyed) {
         console.error(e);
@@ -137,12 +177,16 @@ export class CharacterEngine {
     signal.addEventListener("abort", () => (ro.disconnect(), io.disconnect()));
     const offFlash = characterGaze.onFlash(() => this.sim?.sparkles.flash(this.sim.t));
     signal.addEventListener("abort", offFlash);
+    signal.addEventListener("abort", characterStage.onDirection(this.onDirection));
 
     this.lastScrollY = scrollY;
     this.measure();
     this.render(REST_FRAME);
     if (this.o.debug) this.exposeDebug();
     this.o.onLive(true);
+    characterStage.report({ status: "live" });
+    performance.mark("character:live");
+    if (this.o.quick) void this.upgrade();
     this.schedule();
   }
 
@@ -157,6 +201,7 @@ export class CharacterEngine {
   private fail(reason: FallbackReason) {
     if (this.destroyed) return;
     if (reason === "slow") slowDevice = true;
+    characterStage.report({ status: "poster" });
     this.o.onFallback(reason);
     this.destroy();
   }
@@ -169,19 +214,59 @@ export class CharacterEngine {
   };
 
   /** Everything on the GPU is gone: rebuild the renderer from the decoded images (kept in memory). */
-  private onContextRestored = () => {
+  private onContextRestored = async () => {
     if (this.destroyed || !this.gl || !this.assets) return;
     try {
-      this.renderer = new CharacterRenderer(this.gl, this.assets);
+      this.renderer = await CharacterRenderer.create(this.gl, this.assets);
     } catch (e) {
       console.error(e);
       return this.fail("error");
     }
+    if (this.destroyed) return;
     this.measure();
     this.renderCurrent();
     this.o.onLive(true);
     this.schedule();
   };
+
+  /** The intro holds the eyes closed / opens them; a paused loop still shows the change. */
+  private onDirection = (d: StageDirection) => {
+    const sim = this.sim;
+    if (!sim) return;
+    if (d.lidsHeld) sim.lidsHeld = true;
+    else sim.wake();
+    if (!this.raf) this.renderCurrent();
+  };
+
+  /**
+   * After the intro's quick start: the full-resolution base, the chain warp
+   * weight and the glint candidates, swapped in once the intro is over (the
+   * texture upload stays out of its frames). On failure the poster stays the base.
+   */
+  private async upgrade() {
+    await characterStage.until((d) => !d.hold);
+    if (this.destroyed) return;
+    const crop = this.o.forceBase ? this.o.forceBase === "crop" : cropFits(this.visibleImage());
+    try {
+      const full = await loadAssetFullBase(this.abort.signal, crop);
+      if (this.destroyed || !this.assets) return full.base.close();
+      if (this.renderer) {
+        this.renderer.replaceBase(full);
+        this.renderer.setDerived(full);
+      } else {
+        // context lost meanwhile: the rebuilt renderer takes them from the assets
+        this.assets.base.close();
+        Object.assign(this.assets, { base: full.base, baseRect: full.baseRect, chainWeight: full.chainWeight });
+      }
+      this.assets.glintPoints = full.glintPoints;
+      this.sim?.sparkles.setPoints(full.glintPoints);
+      performance.mark("character:full");
+      this.measure();
+      if (!this.raf) this.renderCurrent();
+    } catch (e) {
+      if (!this.destroyed) console.error(e);
+    }
+  }
 
   private onPrint = (e: Event) => {
     this.printing = e.type === "beforeprint";
@@ -293,7 +378,8 @@ export class CharacterEngine {
 
   private onPointer = (p: PointerState) => {
     if (p.phase !== "move" && p.phase !== "down") return;
-    this.pointer = { gaze: this.gazeAt({ x: p.x, y: p.y }), at: this.now() };
+    const client = { x: p.x, y: p.y };
+    this.pointer = { gaze: this.gazeAt(client), at: this.now(), client };
   };
 
   /** Phones: the gaze follows the scroll direction, then settles. */
@@ -318,7 +404,7 @@ export class CharacterEngine {
   private target(): Vec2 {
     if (this.targetOverride) return this.targetOverride;
     const look = characterGaze.current();
-    return this.director.update({
+    const gaze = this.director.update({
       now: this.now(),
       pointer: this.pointer,
       lookAt: look === VIEWER ? [0, 0] : look ? this.gazeAt(look) : null,
@@ -327,6 +413,13 @@ export class CharacterEngine {
         return files.length ? this.gazeAt(files[Math.floor(this.rng() * files.length)]) : null;
       },
     });
+    // the same target as a point when there is one, so other eyes (the logo) can aim at it themselves
+    const point =
+      this.director.source === "lookAt" ? (look !== VIEWER ? look : null) : this.director.source === "pointer" ? this.pointer?.client : null;
+    this.pulseTarget = point
+      ? { kind: "point", x: point.x, y: point.y, reach: TUNING.gazeReach * this.poster.scale }
+      : { kind: "gaze", gaze };
+    return gaze;
   }
 
   // ---------- loop ----------
@@ -355,14 +448,18 @@ export class CharacterEngine {
       this.frameTimes.push(dtMs);
       if (this.frameTimes.length > 600) this.frameTimes.shift();
     }
-    if (this.watchdog.push(ts, dtMs)) return this.fail("slow");
+    // the intro's heavy frames are not the device's fault: the measurement starts after it
+    if (characterStage.direction().hold) this.watchdog.reset(ts);
+    else if (this.watchdog.push(ts, dtMs)) return this.fail("slow");
     this.advance(Math.min(dtMs / 1000, 1 / 30));
   };
 
   private advance(dt: number) {
     const sim = this.sim!;
     sim.step(dt, this.target());
-    this.render(sim.frame());
+    const frame = sim.frame();
+    this.render(frame);
+    if (characterPulse.size) characterPulse.emit({ t: frame.t, dt, target: this.pulseTarget, blink: frame.blink, sweep: frame.sweep });
   }
 
   private renderCurrent() {
@@ -372,6 +469,7 @@ export class CharacterEngine {
   private render(frame: CharacterFrame) {
     const { width, height, map } = this.size;
     if (!this.renderer || !width) return;
+    this.renderer.develop = developAt(characterStage.direction().develop, performance.now());
     this.renderer.draw(frame, map, width, height);
   }
 

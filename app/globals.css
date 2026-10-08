@@ -324,3 +324,30 @@ body {
     transition: none !important;
   }
 }
+
+/*
+ * Intro (components/intro, lib/intro.ts): files, the capsule and the dock
+ * wait for their drop in the full intro; reduced motion gets a plain fade.
+ */
+html[data-intro="full"]:not([data-intro-files]):not([data-intro-done]) [data-intro-drop=""],
+html[data-intro="full"]:not([data-intro-late]):not([data-intro-done]) [data-intro-drop="late"] {
+  /* invisible, yet painted: rasterised before the drop, not in its first frame */
+  opacity: 0.001;
+}
+
+/* their layers exist (and are rasterised) before the drop; gone after the intro – sharp text */
+html[data-intro="full"]:not([data-intro-done]) [data-intro-drop] {
+  will-change: transform, opacity;
+}
+
+html[data-intro="fade"] body {
+  animation: page-fade-in 0.3s ease-out both;
+  /* an opacity fade is fine with reduced motion (the global rule shortens every animation) */
+  animation-duration: 0.3s !important;
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+  }
+}

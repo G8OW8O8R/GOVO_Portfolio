@@ -18,6 +18,8 @@ export type CharacterFrame = {
   eyeBlend: number;
   /** eyelid layer alpha */
   lid: number;
+  /** blink alone (0 open … 1 closed), without the droop – the logo's owl eyes blink with it */
+  blink: number;
   /** head offset, image px */
   head: Vec2;
   /** head sway, radians */
@@ -36,6 +38,7 @@ export const REST_FRAME: CharacterFrame = {
   iris: [0, 0],
   eyeBlend: 0,
   lid: 0,
+  blink: 0,
   head: [0, 0],
   sway: 0,
   chain: 0,
@@ -56,6 +59,8 @@ export class CharacterSim {
   readonly blinker: Blinker;
   readonly sparkles: Sparkles;
   blinksEnabled = true;
+  /** Eyes held closed (intro: the character develops with closed eyes); wake() opens them. */
+  lidsHeld = false;
 
   constructor(rng: Rng, glintPoints: Float32Array) {
     this.blinker = new Blinker(rng);
@@ -74,11 +79,18 @@ export class CharacterSim {
     this.sparkles.update(this.t, dt, this.pendulum.omega);
   }
 
+  /** Open held eyes with the opening part of a blink (same timing as every blink). */
+  wake() {
+    if (!this.lidsHeld) return;
+    this.lidsHeld = false;
+    this.blinker.openFrom(this.t);
+  }
+
   frame(): CharacterFrame {
     const t = this.t;
     const gaze: Vec2 = [this.gaze.x, this.gaze.y];
     const iris = irisOffset(gaze);
-    const blink = this.blinker.value(t, this.blinksEnabled);
+    const blink = this.lidsHeld ? 1 : this.blinker.value(t, this.blinksEnabled);
     const lid = Math.max(blink, DERIVED.lidDroop * Math.max(gaze[1], 0));
     return {
       t,
@@ -87,6 +99,7 @@ export class CharacterSim {
       iris,
       eyeBlend: eyeBlend(iris, blink),
       lid,
+      blink,
       head: [this.headSpring.x * L.head.follow_gaze_px.x, this.headSpring.y * L.head.follow_gaze_px.y],
       sway: L.head.sway_rad * Math.sin((2 * Math.PI * t) / L.head.sway_period_s),
       chain: softLimit(this.pendulum.theta, TUNING.chainMaxAngle),

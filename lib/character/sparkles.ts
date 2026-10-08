@@ -36,8 +36,13 @@ export class Sparkles {
   /** `points`: candidate glint centres [x0, y0, x1, y1, …] in image px. */
   constructor(
     private readonly rng: Rng,
-    private readonly points: Float32Array,
+    private points: Float32Array,
   ) {}
+
+  /** Glint candidates arrive after the intro's quick start (computed from the full-resolution base). */
+  setPoints(points: Float32Array) {
+    this.points = points;
+  }
 
   flash(now: number) {
     this.flashAt = now;

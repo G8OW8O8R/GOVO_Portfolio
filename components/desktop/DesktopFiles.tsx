@@ -466,6 +466,7 @@ function FileItem({
           scroll={false}
           className={s.file}
           draggable={false}
+          data-intro-drop=""
           data-cursor="open"
           aria-describedby={file.preview ? "file-hint-project" : "file-hint"}
           onClick={onClick}
