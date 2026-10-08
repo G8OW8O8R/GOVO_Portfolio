@@ -102,6 +102,9 @@ const pl = {
     availability: "Dostępny do nowych projektów",
   },
   language: { switchTo: "EN", switchLabel: "English version" },
+  cursor: { open: "Otwórz", play: "Odtwórz", pause: "Pauza" },
+  video: { play: "Odtwórz podgląd", pause: "Zatrzymaj podgląd" },
+  live: { live: "na żywo" },
   files: {
     about: "O mnie",
     offer: "Oferta",

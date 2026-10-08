@@ -75,3 +75,16 @@ export const CONTENT_MOTION = {
   /** Thumbnail tilt towards the cursor. */
   tilt: { ms: 200, maxDeg: 6, lift: 4, perspective: 600 },
 } as const;
+
+/**
+ * Custom cursor: an 8 px dot on a spring (no overshoot), stretched along
+ * the motion while a file is dragged. Stiffness/damping per second².
+ */
+export const CURSOR = {
+  spring: { stiffness: 1400, damping: 75 },
+  stretch: { perSpeed: 1 / 1800, max: 0.8 },
+  stateMs: 160,
+} as const;
+
+/** Live skills: the demo crossfades over its thumbnail; data refreshes every 30 s. */
+export const LIVE = { crossfadeMs: 200, refreshMs: 30_000 } as const;

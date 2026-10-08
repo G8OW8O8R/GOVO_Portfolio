@@ -30,8 +30,10 @@ import {
   type Sample,
 } from "@/lib/desktop-positions";
 import type { Depth } from "@/lib/desktop-slots";
+import { pointer } from "@/lib/pointer";
 import type { WindowKey } from "@/lib/routes";
 import { computeWindowRect, overlaps } from "@/lib/window-layout";
+import { cursorFlags } from "@/components/cursor/store";
 import { REDUCED_MOTION } from "@/components/window/ghost";
 import { useOpenWindowKey } from "@/components/window/store";
 import { useWindowNav } from "@/components/window/useWindowNav";
@@ -129,13 +131,11 @@ export function DesktopFiles({ files, labels }: { files: DesktopFile[]; labels: 
 
   useEffect(() => {
     if (matchMedia(REDUCED_MOTION).matches) return;
-    const onMove = (e: PointerEvent) => {
-      if (e.pointerType !== "mouse" || !isDesktop()) return;
-      px.set((e.clientX / innerWidth - 0.5) * 2);
-      py.set((e.clientY / innerHeight - 0.5) * 2);
-    };
-    window.addEventListener("pointermove", onMove, { passive: true });
-    return () => window.removeEventListener("pointermove", onMove);
+    return pointer.subscribe((p) => {
+      if (p.phase !== "move" || p.kind !== "mouse" || !isDesktop()) return;
+      px.set((p.x / innerWidth - 0.5) * 2);
+      py.set((p.y / innerHeight - 0.5) * 2);
+    });
   }, [px, py]);
 
   // Files the open window would cover hide (CSS: [data-covered]); the rest dim.
@@ -361,6 +361,7 @@ function FileItem({
         return;
       }
       p.dragging = true;
+      cursorFlags.dragging = true;
       clearHover();
       e.currentTarget.setPointerCapture(e.pointerId);
       li.current?.setAttribute("data-dragging", "");
@@ -378,6 +379,7 @@ function FileItem({
     window.clearTimeout(p.timer);
     press.current = null;
     if (!p.dragging) return;
+    cursorFlags.dragging = false;
     suppressClick.current = true;
     li.current?.removeAttribute("data-dragging");
     const { vx, vy } = releaseVelocity(p.samples);
@@ -446,6 +448,7 @@ function FileItem({
           scroll={false}
           className={s.file}
           draggable={false}
+          data-cursor="open"
           aria-describedby={file.preview ? "file-hint-project" : "file-hint"}
           onClick={onClick}
           onKeyDown={onKeyDown}

@@ -250,3 +250,18 @@ body {
     animation: none !important;
   }
 }
+
+/* Live skills: a digit of the live price that just changed blinks once (TickerDemo). */
+.live-blink {
+  animation: live-blink 0.45s ease-out;
+}
+
+@keyframes live-blink {
+  0%,
+  30% {
+    opacity: 0.15;
+  }
+  100% {
+    opacity: 1;
+  }
+}

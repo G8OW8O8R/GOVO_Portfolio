@@ -1,0 +1,100 @@
+/*
+ * Custom cursor: one fixed layer above the windows (its states work inside
+ * them), never catching the pointer. Its children only change opacity and
+ * transform; the layer itself only moves.
+ */
+
+.cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 60;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.16s ease-out;
+  will-change: transform;
+}
+
+.cursor[data-visible] {
+  opacity: 1;
+}
+
+.dotWrap {
+  position: absolute;
+  left: -4px;
+  top: -4px;
+  width: 8px;
+  height: 8px;
+  transition:
+    opacity 0.16s ease-out,
+    transform 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dot {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #111;
+  box-shadow: 0 0 0 1.5px rgb(255 255 255 / 0.7);
+}
+
+/* The labelled states sit just below-right of the pointer, so they never cover what is being pointed at. */
+.tag,
+.arrow {
+  position: absolute;
+  left: 14px;
+  top: 16px;
+  opacity: 0;
+  transform: scale(0.6);
+  transform-origin: 0 0;
+  transition:
+    opacity 0.16s ease-out,
+    transform 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tag {
+  padding: 3px 9px 4px;
+  border-radius: 999px;
+  background: #111;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px -4px rgb(0 0 0 / 0.35);
+}
+
+.arrow {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #111;
+  color: #fff;
+  box-shadow: 0 4px 14px -4px rgb(0 0 0 / 0.35);
+}
+
+.cursor[data-state="open"] .open,
+.cursor[data-state="play"] .play,
+.cursor[data-state="pause"] .pause,
+.cursor[data-state="link"] .arrow {
+  opacity: 1;
+  transform: none;
+}
+
+/* the dot hands over to the label / arrow and hides over fields */
+.cursor:is([data-state="open"], [data-state="play"], [data-state="pause"], [data-state="link"], [data-state="hidden"])
+  .dotWrap {
+  opacity: 0;
+  transform: scale(0.3);
+}
+
+/* stretched by script while dragging: no lag on top of the spring */
+.cursor[data-drag] .dotWrap {
+  transition: none;
+}

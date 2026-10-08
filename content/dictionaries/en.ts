@@ -104,6 +104,9 @@ const en: Dictionary = {
     availability: "Available for new projects",
   },
   language: { switchTo: "PL", switchLabel: "Wersja polska" },
+  cursor: { open: "Open", play: "Play", pause: "Pause" },
+  video: { play: "Play preview", pause: "Pause preview" },
+  live: { live: "live" },
   files: {
     about: "About me",
     offer: "Services",

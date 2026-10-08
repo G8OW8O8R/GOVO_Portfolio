@@ -8,6 +8,7 @@ import { href, windowHref } from "@/lib/routes";
 import { hasCv, optionalAsset } from "@/lib/site";
 import { windowLayoutCss } from "@/lib/window-layout";
 import { Character } from "@/components/character/Character";
+import { Cursor } from "@/components/cursor/Cursor";
 import { MotionProvider } from "@/components/ui/MotionProvider";
 import { DesktopLayer, WindowBackdrop } from "@/components/window/WindowBackdrop";
 import { DesktopFiles, type DesktopFile } from "./DesktopFiles";
@@ -71,6 +72,7 @@ export function Desktop({ lang, children }: { lang: Locale; children?: ReactNode
         <WindowBackdrop />
         {children}
         <Dock lang={lang} dict={dict} />
+        <Cursor labels={dict.cursor} />
       </MotionProvider>
     </div>
   );

@@ -5,6 +5,7 @@ import { VIEWER, characterGaze, type ClientPoint } from "@/lib/character/look-at
 import { clamp, seededRng, type Rng } from "@/lib/character/motion";
 import { CharacterSim, REST_FRAME, type CharacterFrame } from "@/lib/character/sim";
 import { FpsWatchdog } from "@/lib/character/watchdog";
+import { pointer as pointerSource, type PointerState } from "@/lib/pointer";
 import { CROP_MEDIA, MOBILE_CROP, cropFits, visibleImageRect, type Rect } from "@/lib/character/mobile-crop";
 import { CharacterRenderer, loadBase, loadCharacterAssets, type PixelMap } from "./renderer";
 
@@ -97,8 +98,8 @@ export class CharacterEngine {
 
     const signal = this.abort.signal;
     canvas.addEventListener("webglcontextlost", (e) => (e.preventDefault(), this.fail("context-lost")), { signal });
-    window.addEventListener("pointermove", this.onPointer, { passive: true, signal });
-    window.addEventListener("pointerdown", this.onPointer, { passive: true, signal });
+    // the same cursor position as the custom cursor and the files (lib/pointer.ts)
+    signal.addEventListener("abort", pointerSource.subscribe(this.onPointer));
     window.addEventListener("scroll", this.onScroll, { passive: true, signal });
     window.addEventListener("resize", this.measure, { signal });
     document.addEventListener("visibilitychange", this.onVisibility, { signal });
@@ -249,8 +250,9 @@ export class CharacterEngine {
 
   // ---------- input ----------
 
-  private onPointer = (e: PointerEvent) => {
-    this.pointer = { gaze: this.gazeAt({ x: e.clientX, y: e.clientY }), at: this.now() };
+  private onPointer = (p: PointerState) => {
+    if (p.phase !== "move" && p.phase !== "down") return;
+    this.pointer = { gaze: this.gazeAt({ x: p.x, y: p.y }), at: this.now() };
   };
 
   /** Phones: the gaze follows the scroll direction, then settles. */

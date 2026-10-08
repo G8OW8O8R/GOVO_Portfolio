@@ -4,6 +4,9 @@ import { skills } from "@/content/profile/skills";
 import type { Locale } from "@/lib/i18n";
 import { href } from "@/lib/routes";
 import { hasCv, optionalAsset } from "@/lib/site";
+import { LIVE_DATA_SKILL, isLiveThumb } from "../live/ids";
+import { LiveThumb } from "../live/LiveThumb";
+import { LiveTicker } from "../live/LiveTicker";
 import { RevealHeading } from "../motion/RevealHeading";
 import { Tabs } from "../Tabs";
 import { WindowLink } from "../WindowLink";
@@ -111,14 +114,21 @@ function SkillsPanel({ lang }: { lang: Locale }) {
                 className="grid grid-cols-[1fr_56px] items-center gap-x-5 px-5 py-4 desk:grid-cols-[1fr_72px] desk:px-6"
               >
                 <div className="min-w-0">
-                  <p className="text-17 font-semibold tracking-[-0.01em] text-ink desk:text-22">{skill.name[lang]}</p>
+                  <p className="flex items-baseline justify-between gap-4">
+                    <span className="text-17 font-semibold tracking-[-0.01em] text-ink desk:text-22">{skill.name[lang]}</span>
+                    {skill.id === LIVE_DATA_SKILL && <LiveTicker id={skill.id} lang={lang} label={dict.live.live} />}
+                  </p>
                   <p className="mt-0.5 text-15 text-ink-soft">{skill.note[lang]}</p>
                   <p className={`mt-2 ${ui.mono}`}>
                     <span className="sr-only">{skill.name[lang]}: </span>
                     {skill.tags.map((tag) => tag[lang]).join("  ·  ")}
                   </p>
                 </div>
-                <Thumb src={optionalAsset(`/skills/${skill.id}.png`)} sizes="72px" className="aspect-square w-full" tilt />
+                {isLiveThumb(skill.id) ? (
+                  <LiveThumb id={skill.id} src={optionalAsset(`/skills/${skill.id}.png`)} sizes="72px" className="aspect-square w-full" />
+                ) : (
+                  <Thumb src={optionalAsset(`/skills/${skill.id}.png`)} sizes="72px" className="aspect-square w-full" tilt />
+                )}
               </li>
             ))}
           </ul>
