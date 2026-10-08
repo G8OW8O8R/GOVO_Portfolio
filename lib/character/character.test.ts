@@ -249,6 +249,36 @@ describe("watchdog", () => {
     }
     expect(slow).toBe(false);
   });
+
+  it("a single long gap (print dialog, frozen tab) is a pause, not a slow device", () => {
+    const w = new FpsWatchdog();
+    w.reset(0);
+    let slow = false;
+    let t = 0;
+    for (; t < 6000; t += 16.7) slow ||= w.push(t, 16.7);
+    // the page was blocked for 6 s, then renders normally again
+    t += 6000;
+    slow ||= w.push(t, 6000);
+    for (const end = t + 6000; t < end; t += 16.7) slow ||= w.push(t, 16.7);
+    expect(slow).toBe(false);
+  });
+
+  it("measures again after a gap: slow frames still count", () => {
+    const w = new FpsWatchdog();
+    w.reset(0);
+    expect(w.push(5000, 5000)).toBe(false);
+    let slow = false;
+    for (let t = 5000; t < 11000; t += 40) slow ||= w.push(t, 40);
+    expect(slow).toBe(true);
+  });
+
+  it("gaps in a row are a device that can't render: slow", () => {
+    const w = new FpsWatchdog();
+    w.reset(0);
+    expect(w.push(400, 400)).toBe(false);
+    expect(w.push(800, 400)).toBe(false);
+    expect(w.push(1200, 400)).toBe(true);
+  });
 });
 
 describe("look-at bus", () => {

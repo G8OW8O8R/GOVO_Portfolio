@@ -14,6 +14,7 @@ declare global {
       geometry(): { poster: { left: number; top: number; scale: number } };
       fps(): { frames: number; medianMs: number };
       resetFps(): void;
+      running(): boolean;
     };
   }
 }
@@ -75,5 +76,100 @@ test.describe("living character", () => {
     await page.waitForTimeout(2000);
     await expect(live(page)).toHaveCount(0);
     await context.close();
+  });
+});
+
+/**
+ * The character keeps living through everything that stops rendering for a
+ * while (task 5d bug: one long gap after Print made the watchdog call the
+ * device slow, and sessionStorage kept the poster even after a reload).
+ */
+test.describe("character stays alive", () => {
+  test.use({ viewport: { width: 1536, height: 864 } });
+
+  /** Eyes follow the mouse: left of the face → iris left, right → iris right; no fallback. */
+  async function expectAlive(page: Page) {
+    await expect(live(page)).toHaveCount(1);
+    expect(await page.evaluate(() => window.__character?.running())).toBe(true);
+    await page.mouse.move(80, 120, { steps: 3 });
+    await expect.poll(() => page.evaluate(() => window.__character.frame().iris[0])).toBeLessThan(-5);
+    await page.mouse.move(1460, 700, { steps: 3 });
+    await expect.poll(() => page.evaluate(() => window.__character.frame().iris[0])).toBeGreaterThan(5);
+  }
+
+  async function open(page: Page) {
+    await page.goto("/pl?character=debug");
+    await expect(live(page)).toHaveCount(1, { timeout: 30_000 });
+    await page.waitForFunction(() => !!window.__character);
+  }
+
+  /** The main thread blocked like in an open print dialog (no frames at all). */
+  const block = (page: Page, ms: number) =>
+    page.evaluate((ms) => {
+      const t = performance.now();
+      while (performance.now() - t < ms);
+    }, ms);
+
+  test("(a) fresh visit: the eyes follow the mouse", async ({ page }) => {
+    await open(page);
+    await expectAlive(page);
+  });
+
+  test("(b) beforeprint / afterprint: paused while printing, alive after", async ({ page }) => {
+    await open(page);
+    await page.evaluate(() => dispatchEvent(new Event("beforeprint")));
+    expect(await page.evaluate(() => window.__character.running())).toBe(false);
+    await block(page, 3000);
+    await page.evaluate(() => dispatchEvent(new Event("afterprint")));
+    // a long gap without the print events (e.g. a frozen tab) must not count as slow either
+    await page.waitForTimeout(1500);
+    await block(page, 3000);
+    await page.waitForTimeout(4500); // past the watchdog's warm-up and measuring window
+    await expectAlive(page);
+    // the old flag is gone and nothing new is stored
+    expect(await page.evaluate(() => sessionStorage.getItem("character:fallback"))).toBeNull();
+  });
+
+  test("(c) tab hidden for 5 s and back: the loop resumes", async ({ page }) => {
+    await open(page);
+    const setHidden = (hidden: boolean) =>
+      page.evaluate((hidden) => {
+        if (hidden) {
+          Object.defineProperty(document, "hidden", { configurable: true, get: () => true });
+          Object.defineProperty(document, "visibilityState", { configurable: true, get: () => "hidden" });
+        } else {
+          // back to the real getters on Document.prototype
+          delete (document as { hidden?: boolean }).hidden;
+          delete (document as { visibilityState?: string }).visibilityState;
+        }
+        document.dispatchEvent(new Event("visibilitychange"));
+      }, hidden);
+    await setHidden(true);
+    expect(await page.evaluate(() => window.__character.running())).toBe(false);
+    await page.waitForTimeout(5000);
+    await setHidden(false);
+    await page.waitForTimeout(4500);
+    await expectAlive(page);
+  });
+
+  test("(d) the Skills tab with its WebGL demo doesn't take the character's context", async ({ page }) => {
+    await open(page);
+    await page.locator('[data-file-key="about"] a').click();
+    const dialog = page.getByRole("dialog", { name: "O mnie" });
+    await dialog.getByRole("tab", { name: "Umiejętności" }).click();
+    const row = dialog.locator('li:has(img[src*="grafika-realtime"])');
+    await row.scrollIntoViewIfNeeded();
+    const rb = (await row.boundingBox())!;
+    await page.mouse.move(rb.x + 40, rb.y + rb.height / 2, { steps: 4 });
+    await expect(row.locator("canvas")).toHaveCount(1);
+    await page.waitForTimeout(1500);
+    await page.mouse.move(rb.x + 40, rb.y - 200, { steps: 4 });
+    await expect(row.locator("canvas")).toHaveCount(0);
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    expect(
+      await page.evaluate(() => document.querySelector<HTMLCanvasElement>("canvas[data-live]")!.getContext("webgl2")!.isContextLost()),
+    ).toBe(false);
+    await expectAlive(page);
   });
 });

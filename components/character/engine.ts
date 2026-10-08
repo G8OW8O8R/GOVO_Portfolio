@@ -7,19 +7,29 @@ import { CharacterSim, REST_FRAME, type CharacterFrame } from "@/lib/character/s
 import { FpsWatchdog } from "@/lib/character/watchdog";
 import { pointer as pointerSource, type PointerState } from "@/lib/pointer";
 import { CROP_MEDIA, MOBILE_CROP, cropFits, visibleImageRect, type Rect } from "@/lib/character/mobile-crop";
-import { CharacterRenderer, loadBase, loadCharacterAssets, type PixelMap } from "./renderer";
+import { CharacterRenderer, loadBase, loadCharacterAssets, type CharacterAssets, type PixelMap } from "./renderer";
 
 /**
  * Runs the living character: input → gaze director → simulation → renderer,
- * on requestAnimationFrame, paused off screen / on a hidden tab, with the FPS
- * watchdog and context-loss fallback. React only mounts and unmounts it.
+ * on requestAnimationFrame, paused off screen / on a hidden tab / while
+ * printing (and resumed after), with the FPS watchdog and recovery from a
+ * lost WebGL context. React only mounts and unmounts it.
  */
 
-export const FALLBACK_KEY = "character:fallback";
+/** Old sessionStorage flag (kept the poster across reloads); removed on start. */
+export const LEGACY_FALLBACK_KEY = "character:fallback";
 const MAX_DPR = 2;
+
+/**
+ * "Slow device" holds for the life of the page only: a remount (window
+ * routes keep the desktop, but a language switch remounts it) stays on the
+ * poster, a reload measures again.
+ */
+let slowDevice = false;
+export const isSlowDevice = () => slowDevice;
 const [W, H] = EYES.image;
 
-export type FallbackReason = "slow" | "context-lost" | "error" | "reduced-motion";
+export type FallbackReason = "slow" | "error" | "reduced-motion";
 
 type Options = {
   canvas: HTMLCanvasElement;
@@ -43,6 +53,7 @@ export function webgl2Supported(): boolean {
 
 export class CharacterEngine {
   private gl: WebGL2RenderingContext | null = null;
+  private assets: CharacterAssets | null = null;
   private renderer: CharacterRenderer | null = null;
   private sim: CharacterSim | null = null;
   private director: GazeDirector;
@@ -53,6 +64,7 @@ export class CharacterEngine {
   private last = -1;
   private visible = !document.hidden;
   private onScreen = true;
+  private printing = false;
   private destroyed = false;
   private pointer: { gaze: Vec2; at: number } | null = null;
   private poster = { left: 0, top: 0, scale: 1 };
@@ -86,6 +98,7 @@ export class CharacterEngine {
       const crop = this.o.forceBase ? this.o.forceBase === "crop" : cropFits(this.visibleImage());
       const assets = await loadCharacterAssets(this.abort.signal, { crop });
       if (this.destroyed) return;
+      this.assets = assets;
       this.renderer = new CharacterRenderer(gl, assets);
       this.sim = new CharacterSim(this.rng, assets.glintPoints);
     } catch (e) {
@@ -97,7 +110,12 @@ export class CharacterEngine {
     }
 
     const signal = this.abort.signal;
-    canvas.addEventListener("webglcontextlost", (e) => (e.preventDefault(), this.fail("context-lost")), { signal });
+    // a lost context (GPU reset, too many contexts) comes back: the poster shows meanwhile
+    canvas.addEventListener("webglcontextlost", this.onContextLost, { signal });
+    canvas.addEventListener("webglcontextrestored", this.onContextRestored, { signal });
+    // printing: the canvas isn't printed and the page may stall in the dialog – pause, then resume
+    window.addEventListener("beforeprint", this.onPrint, { signal });
+    window.addEventListener("afterprint", this.onPrint, { signal });
     // the same cursor position as the custom cursor and the files (lib/pointer.ts)
     signal.addEventListener("abort", pointerSource.subscribe(this.onPointer));
     window.addEventListener("scroll", this.onScroll, { passive: true, signal });
@@ -138,14 +156,37 @@ export class CharacterEngine {
 
   private fail(reason: FallbackReason) {
     if (this.destroyed) return;
-    if (reason === "slow") {
-      try {
-        sessionStorage.setItem(FALLBACK_KEY, reason);
-      } catch {}
-    }
+    if (reason === "slow") slowDevice = true;
     this.o.onFallback(reason);
     this.destroy();
   }
+
+  private onContextLost = (e: Event) => {
+    e.preventDefault(); // allows webglcontextrestored
+    this.renderer = null;
+    this.schedule();
+    this.o.onLive(false);
+  };
+
+  /** Everything on the GPU is gone: rebuild the renderer from the decoded images (kept in memory). */
+  private onContextRestored = () => {
+    if (this.destroyed || !this.gl || !this.assets) return;
+    try {
+      this.renderer = new CharacterRenderer(this.gl, this.assets);
+    } catch (e) {
+      console.error(e);
+      return this.fail("error");
+    }
+    this.measure();
+    this.renderCurrent();
+    this.o.onLive(true);
+    this.schedule();
+  };
+
+  private onPrint = (e: Event) => {
+    this.printing = e.type === "beforeprint";
+    this.schedule();
+  };
 
   // ---------- geometry ----------
 
@@ -291,7 +332,7 @@ export class CharacterEngine {
   // ---------- loop ----------
 
   private schedule() {
-    const run = this.visible && this.onScreen && !this.manual && !this.destroyed && !!this.sim;
+    const run = this.visible && this.onScreen && !this.printing && !this.manual && !this.destroyed && !!this.sim && !!this.renderer;
     if (run && !this.raf) {
       this.last = -1;
       this.raf = requestAnimationFrame(this.tick);

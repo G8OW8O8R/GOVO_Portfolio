@@ -10,6 +10,7 @@ import {
   useState,
   useSyncExternalStore,
   type CSSProperties,
+  type FocusEvent as ReactFocusEvent,
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
@@ -68,6 +69,7 @@ const AREA_MARGIN = { top: 64, side: 8, bottom: 96 };
 /** A file this close to the window counts as covered. */
 const COVER_MARGIN = 12;
 
+const noSubscribe = () => () => {};
 const isDesktop = () => matchMedia(DESKTOP_MEDIA).matches;
 const desktopScale = () => computeCharacterBox({ width: innerWidth, height: innerHeight }, "desktop").scale;
 const area = () => ({
@@ -163,6 +165,9 @@ export function DesktopFiles({ files, labels }: { files: DesktopFile[]; labels: 
   };
 
   const tidyNeeded = !isTidy(offsets);
+  // server HTML (and its hydration) only: a client-side mount (language switch) already has the
+  // positions from the store, and React reports scripts rendered on the client (dev "Issue")
+  const serverHtml = useSyncExternalStore(noSubscribe, () => false, () => true);
   const preHydrate = `(function(){try{var d=JSON.parse(localStorage.getItem(${JSON.stringify(POSITIONS_KEY)})||"{}");for(var k in d){var e=document.querySelector('[data-file-key="'+k+'"]');if(e&&d[k]){e.style.setProperty("--dx",d[k].dx);e.style.setProperty("--dy",d[k].dy)}}}catch(_){}})()`;
 
   return (
@@ -191,7 +196,7 @@ export function DesktopFiles({ files, labels }: { files: DesktopFile[]; labels: 
         <p id="file-hint" hidden>
           {labels.moveHint}
         </p>
-        <script dangerouslySetInnerHTML={{ __html: preHydrate }} />
+        {serverHtml && <script dangerouslySetInnerHTML={{ __html: preHydrate }} />}
       </nav>
 
       {tidyNeeded && (
@@ -274,16 +279,29 @@ function FileItem({
   // Idle glances of the character include this file.
   useEffect(() => (icon.current ? characterGaze.registerGlanceTarget(icon.current) : undefined), []);
 
-  // Gaze: look at the file while hovered or focused.
+  // Gaze: look at the file while hovered or focused from the keyboard.
   const releaseGaze = useRef<(() => void) | null>(null);
+  const handBack = useRef<(() => void) | null>(null);
   const lookHere = () => {
     if (!releaseGaze.current && icon.current) releaseGaze.current = characterGaze.lookAt(icon.current);
   };
   const lookAway = () => {
+    handBack.current?.();
+    handBack.current = null;
     releaseGaze.current?.();
     releaseGaze.current = null;
   };
   useEffect(() => lookAway, []);
+  // Focus returns to the file when its window closes: the eyes follow that only for
+  // keyboard focus, and the next mouse move off the file hands them back to the cursor
+  // (otherwise they stayed on the file, deaf to the mouse, until something else took focus).
+  const lookOnFocus = (e: ReactFocusEvent<HTMLAnchorElement>) => {
+    if (!e.currentTarget.matches(":focus-visible")) return;
+    lookHere();
+    handBack.current ??= pointer.subscribe((p) => {
+      if (p.phase === "move" && !link.current?.matches(":hover")) lookAway();
+    });
+  };
 
   // Hover preview after 600 ms (desktop mouse, projects only)
   const hoverTimer = useRef<number | undefined>(undefined);
@@ -471,7 +489,7 @@ function FileItem({
             if (!press.current?.dragging && document.activeElement !== link.current) lookAway();
             clearHover();
           }}
-          onFocus={lookHere}
+          onFocus={lookOnFocus}
           onBlur={() => {
             if (!link.current?.matches(":hover")) lookAway();
           }}
