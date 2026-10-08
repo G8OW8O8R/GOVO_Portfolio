@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { nextRedirects } from "./lib/redirects";
 import { localizedSegmentRules } from "./lib/routes";
 
 const nextConfig: NextConfig = {
@@ -19,11 +20,15 @@ const nextConfig: NextConfig = {
     }));
   },
   async redirects() {
-    return localizedSegmentRules().map(({ english, internal }) => ({
-      source: internal,
-      destination: english,
-      permanent: true,
-    }));
+    return [
+      ...localizedSegmentRules().map(({ english, internal }) => ({
+        source: internal,
+        destination: english,
+        permanent: true,
+      })),
+      // addresses of the previous site (lib/redirects.ts)
+      ...nextRedirects(),
+    ];
   },
 };
 

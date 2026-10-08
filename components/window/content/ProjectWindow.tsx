@@ -1,30 +1,193 @@
+import Image from "next/image";
+import type { ReactNode } from "react";
 import { getDictionary } from "@/content/dictionaries";
+import { SUBJECT_PARAM } from "@/content/profile/contact";
 import type { Project } from "@/content/projects/schema";
 import type { Locale } from "@/lib/i18n";
-import { PreviewVideo } from "../motion/PreviewVideo";
+import { href } from "@/lib/routes";
+import { PlayOnOpen } from "../motion/PlayOnOpen";
+import { RevealHeading } from "../motion/RevealHeading";
+import { ShowreelVideo } from "../motion/ShowreelVideo";
+import { WindowLink } from "../WindowLink";
 import { ui } from "./ui";
 
+/** Obok's orange with near-black text (contrast ~9:1), only on the live link. */
+const amber =
+  "inline-flex h-11 items-center justify-center gap-2 rounded-full bg-amber px-5 text-15 font-medium text-ink transition-[filter] hover:brightness-105";
+
+function External({ url, className, label, newTab }: { url: string; className: string; label: string; newTab: string }) {
+  return (
+    <a href={url} target="_blank" rel="noopener" className={className}>
+      {label}
+      <span aria-hidden="true">↗</span>
+      <span className="sr-only"> ({newTab})</span>
+    </a>
+  );
+}
+
+/** A case study section: its heading above the content, or beside it on wide windows (`side`). */
+function Section({ id, title, side = false, children }: { id: string; title: string; side?: boolean; children: ReactNode }) {
+  return (
+    <section
+      aria-labelledby={id}
+      className={`mt-16 desk:mt-24 ${side ? "desk:grid desk:grid-cols-[200px_minmax(0,1fr)] desk:gap-10" : ""}`}
+    >
+      <h3 id={id} className={side ? `${ui.h3} desk:pt-1` : ui.display}>
+        {title}
+      </h3>
+      <div className={side ? "mt-4 desk:mt-0" : "mt-6 desk:mt-8"}>{children}</div>
+    </section>
+  );
+}
+
 /**
- * Case study window – for now title, summary and the cover, which turns
- * into the preview loop once in view (play/pause on click). The full showreel and the sections of
- * the case study spec (and the footer navigation) arrive with their content in
- * task 4; until then they stay hidden (no placeholders on production).
+ * Case study window, content from content/projects/<slug>:
+ * title, subtitle, mono meta and the two links; the showreel with a warm
+ * glow; then In short (three columns of one surface), the challenge, the
+ * solutions (text and a still of the showreel, alternating sides), assets
+ * with the scene gallery, technologies, numbers, what I learned and the
+ * way to contact. Motion: the content enters once per opening of the
+ * window and the title rises line by line from under its mask.
  */
 export function ProjectWindow({ project, lang }: { project: Project; lang: Locale }) {
   const dict = getDictionary(lang);
-  return (
-    <article className={`${ui.page} max-w-[860px]`}>
-      <header className="text-center">
-        <h2 className="text-balance text-40 font-semibold tracking-[-0.035em] text-ink desk:text-56">{project.title[lang]}</h2>
-        <p className={`mx-auto mt-4 max-w-[40ch] ${ui.body} desk:text-22`}>{project.summary[lang]}</p>
-      </header>
+  const s = dict.project.sections;
+  const cs = project.caseStudy;
+  const sid = (name: string) => `${project.slug}-${name}`;
 
-      <PreviewVideo
-        slug={project.slug}
-        sizes="(max-width: 767px) 92vw, 780px"
-        labels={dict.video}
-        className="relative mt-10 block aspect-[1280/634] w-full overflow-hidden rounded-[14px] bg-win-fill shadow-[0_24px_60px_-12px_rgb(0_0_0/0.35)]"
-      />
-    </article>
+  return (
+    <PlayOnOpen className={`${ui.page} max-w-[920px]`}>
+      <article>
+        <header className="text-center">
+          <RevealHeading text={project.title[lang]} className={ui.title} />
+          <p className={`${ui.introText} mt-4 desk:text-22`}>{project.summary[lang]}</p>
+          <p className="mt-4 text-balance font-mono text-13 text-ink-soft">{cs.meta[lang]}</p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <External url={cs.live.url} label={cs.live.label[lang]} newTab={dict.project.newTab} className={amber} />
+            {cs.code && (
+              <External url={cs.code.url} label={cs.code.label[lang]} newTab={dict.project.newTab} className={ui.secondary} />
+            )}
+          </div>
+        </header>
+
+        {/* warm glow of Obok's light around the frame (static shadow, nothing animates) */}
+        <ShowreelVideo
+          {...cs.showreel}
+          labels={dict.project.showreel}
+          className="mt-10 shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_36px_90px_-24px_rgb(242_164_71/0.75),0_18px_40px_-18px_rgb(0_0_0/0.45)] desk:mt-12"
+        />
+
+        <Section id={sid("brief")} title={s.brief}>
+          <div className={`${ui.surface} grid divide-y divide-win-line desk:grid-cols-3 desk:divide-x desk:divide-y-0`}>
+            {cs.brief.map((item) => (
+              <div key={item.title.pl} className="p-6 desk:p-7">
+                <h4 className={ui.label}>{item.title[lang]}</h4>
+                <p className="mt-2 text-pretty text-15 text-ink-soft">{item.text[lang]}</p>
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        <Section id={sid("challenge")} title={s.challenge} side>
+          <p className={`${ui.lead} desk:text-28 desk:tracking-[-0.025em]`}>{cs.challenge[lang]}</p>
+        </Section>
+
+        <Section id={sid("solutions")} title={s.solutions}>
+          <ol className="grid gap-12 desk:gap-16">
+            {cs.solutions.map((item, i) => (
+              <li key={item.title.pl} className="grid items-center gap-5 desk:grid-cols-2 desk:gap-10">
+                <figure className={i % 2 ? "desk:order-2" : ""}>
+                  <Image
+                    src={item.shot.src}
+                    alt={item.shot.alt[lang]}
+                    width={1200}
+                    height={750}
+                    sizes="(max-width: 767px) 92vw, 420px"
+                    className="aspect-[16/10] w-full rounded-[12px] bg-[#16181c] object-cover shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_18px_40px_-20px_rgb(0_0_0/0.45)]"
+                  />
+                </figure>
+                <div>
+                  <span className="font-mono text-13 text-ink-soft">{String(i + 1).padStart(2, "0")}</span>
+                  <h4 className={`${ui.h3} mt-1`}>{item.title[lang]}</h4>
+                  <p className={`${ui.body} mt-3 text-pretty`}>{item.text[lang]}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </Section>
+
+        <Section id={sid("assets")} title={s.assets}>
+          <p className={`${ui.body} max-w-[62ch] text-pretty`}>{cs.assets.text[lang]}</p>
+          {/* phone: a row that scrolls sideways inside the window; desktop: all five side by side */}
+          <ul className="-mx-5 mt-7 flex snap-x snap-mandatory scroll-px-5 gap-3 overflow-x-auto px-5 pb-2 desk:mx-0 desk:grid desk:grid-cols-5 desk:overflow-visible desk:px-0 desk:pb-0">
+            {cs.assets.gallery.map((scene) => (
+              <li key={scene.src} className="w-[38%] shrink-0 snap-start desk:w-auto">
+                <figure>
+                  <Image
+                    src={scene.src}
+                    alt={scene.alt[lang]}
+                    width={1280}
+                    height={720}
+                    sizes="(max-width: 767px) 38vw, 170px"
+                    className="aspect-[4/5] w-full rounded-[12px] bg-[#16181c] object-cover object-[64%_50%] shadow-[0_0_0_1px_rgb(0_0_0/0.06)]"
+                  />
+                  {scene.caption && (
+                    <figcaption className="mt-2 font-mono text-13 text-ink-soft">{scene.caption[lang]}</figcaption>
+                  )}
+                </figure>
+              </li>
+            ))}
+          </ul>
+        </Section>
+
+        <Section id={sid("stack")} title={s.stack} side>
+          <p className="font-mono text-15 leading-[1.7] text-ink">{cs.stack.join("  ·  ")}</p>
+        </Section>
+
+        {cs.numbers.length > 0 && (
+          <Section id={sid("numbers")} title={s.numbers} side>
+            <ul className={`${ui.fill} divide-y divide-win-line px-6`}>
+              {cs.numbers.map((n) => (
+                <li key={n.label.pl} className="grid grid-cols-[88px_minmax(0,1fr)] items-baseline gap-4 py-4 desk:grid-cols-[132px_minmax(0,1fr)]">
+                  {n.value ? (
+                    <span className="text-28 font-semibold tracking-[-0.03em] tabular-nums text-ink desk:text-40">{n.value}</span>
+                  ) : (
+                    <span aria-hidden="true" />
+                  )}
+                  <span className="text-pretty text-17 text-ink-soft">{n.label[lang]}</span>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )}
+
+        <Section id={sid("learned")} title={s.learned} side>
+          <p className={`${ui.lead} desk:text-28 desk:tracking-[-0.025em]`}>{cs.learned[lang]}</p>
+        </Section>
+
+        <section
+          aria-labelledby={sid("cta")}
+          className={`${ui.dark} mt-16 grid gap-6 p-7 desk:mt-24 desk:grid-cols-[minmax(0,1fr)_auto] desk:items-end desk:p-10`}
+        >
+          <h3 id={sid("cta")} className="max-w-[22ch] text-balance text-28 font-semibold tracking-[-0.03em] desk:text-40">
+            {cs.cta.title[lang]}
+          </h3>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+            <WindowLink
+              href={`${href(lang, "contact")}?${SUBJECT_PARAM}=strona`}
+              className="inline-flex h-11 items-center justify-center rounded-full bg-white px-5 text-15 font-medium text-ink transition-colors hover:bg-white/90"
+            >
+              {cs.cta.button[lang]}
+            </WindowLink>
+            <WindowLink
+              href={`${href(lang, "offer")}#${dict.tabs.offer.pricing.id}`}
+              className="text-15 font-medium text-white underline decoration-white/40 underline-offset-[5px] transition-colors hover:decoration-white"
+            >
+              {cs.cta.pricing[lang]}&nbsp;→
+            </WindowLink>
+          </div>
+        </section>
+      </article>
+    </PlayOnOpen>
   );
 }

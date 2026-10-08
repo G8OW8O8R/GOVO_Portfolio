@@ -37,6 +37,8 @@
   --focus: #6f8fe0;
   --selection: rgb(111 143 224 / 0.26);
   --danger: #b3261e;
+  /* Obok's own orange: only the case study's live button and showreel glow */
+  --amber: #f2a447;
 
   /* Windows (light macOS style): white surfaces on a light window ground */
   --win-bg: #f6f6f4;
@@ -89,6 +91,7 @@
   --color-focus: var(--focus);
   --color-danger: var(--danger);
   --color-available: var(--available);
+  --color-amber: var(--amber);
   --shadow-window: var(--shadow-window);
   --shadow-glass: var(--shadow-glass);
   --shadow-surface: var(--shadow-surface);

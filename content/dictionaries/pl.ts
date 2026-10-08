@@ -1,6 +1,7 @@
 const pl = {
   meta: {
     siteName: "GOVO DIGITAL",
+    ogAlt: "Czarno-biała figurka 3D Piotra Goworka i logo GOVO DIGITAL",
     title: "Piotr Goworek – frontend developer i strony premium | GOVO DIGITAL",
     description:
       "Portfolio Piotra Goworka (GOVO DIGITAL): szybkie strony i aplikacje w Next.js, ruch, WebGL i interakcje, które robią wrażenie. Zobacz projekty i porozmawiajmy o Twoim.",
@@ -22,7 +23,6 @@ const pl = {
       title: "CV – Piotr Goworek | GOVO DIGITAL",
       description: "CV Piotra Goworka, frontend developera: podgląd i pobranie PDF.",
     },
-    project: { titleSuffix: "Projekt | GOVO DIGITAL" },
   },
   desktop: {
     heading: "Piotr Goworek – frontend developer. Strony premium, ruch i interakcje.",
@@ -96,6 +96,17 @@ const pl = {
   cv: { download: "Pobierz PDF", print: "Drukuj", actions: "Pobierz lub wydrukuj CV" },
   project: {
     cover: "Okładka projektu",
+    sections: {
+      brief: "W skrócie",
+      challenge: "Wyzwanie",
+      solutions: "Najciekawsze rozwiązania",
+      assets: "Assety",
+      stack: "Technologie",
+      numbers: "Liczby",
+      learned: "Czego się nauczyłem",
+    },
+    showreel: { play: "Odtwórz showreel", pause: "Zatrzymaj showreel" },
+    newTab: "otwiera się w nowej karcie",
   },
   workWithMe: {
     label: "Współpracujmy",
@@ -103,7 +114,6 @@ const pl = {
   },
   language: { switchTo: "EN", switchLabel: "English version" },
   cursor: { open: "Otwórz", play: "Odtwórz", pause: "Pauza" },
-  video: { play: "Odtwórz podgląd", pause: "Zatrzymaj podgląd" },
   live: { live: "na żywo" },
   files: {
     about: "O mnie",

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { getDictionary } from "@/content/dictionaries";
 import { isLocale, locales } from "@/lib/i18n";
 import { introScript } from "@/lib/intro";
-import { alternates } from "@/lib/routes";
+import { pageMetadata } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";
 import "../globals.css";
 
@@ -33,20 +33,14 @@ export const viewport: Viewport = {
   colorScheme: "light",
 };
 
+/** Defaults and the home page; every window page sets its own (lib/seo.ts). */
 export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Promise<Metadata> {
   const { lang } = await params;
   if (!isLocale(lang)) return {};
   const dict = getDictionary(lang);
   return {
     metadataBase: new URL(SITE_URL),
-    title: dict.meta.title,
-    description: dict.meta.description,
-    alternates: alternates(lang, "home"),
-    openGraph: {
-      siteName: dict.meta.siteName,
-      locale: lang === "pl" ? "pl_PL" : "en_US",
-      type: "website",
-    },
+    ...pageMetadata({ lang, route: "home", title: dict.meta.title, description: dict.meta.description }),
   };
 }
 

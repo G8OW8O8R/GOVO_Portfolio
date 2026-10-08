@@ -3,6 +3,7 @@ import type { Dictionary } from "./pl";
 const en: Dictionary = {
   meta: {
     siteName: "GOVO DIGITAL",
+    ogAlt: "Black-and-white 3D figure of Piotr Goworek and the GOVO DIGITAL logo",
     title: "Piotr Goworek – frontend developer & premium websites | GOVO DIGITAL",
     description:
       "Portfolio of Piotr Goworek (GOVO DIGITAL): fast Next.js websites and apps with motion, WebGL and interactions that leave an impression. See the work and let's talk about yours.",
@@ -24,7 +25,6 @@ const en: Dictionary = {
       title: "CV – Piotr Goworek | GOVO DIGITAL",
       description: "CV of Piotr Goworek, frontend developer: preview and PDF download.",
     },
-    project: { titleSuffix: "Project | GOVO DIGITAL" },
   },
   desktop: {
     heading: "Piotr Goworek – frontend developer. Premium websites, motion and interaction.",
@@ -98,6 +98,17 @@ const en: Dictionary = {
   cv: { download: "Download PDF", print: "Print", actions: "Download or print the CV" },
   project: {
     cover: "Project cover",
+    sections: {
+      brief: "In short",
+      challenge: "The challenge",
+      solutions: "Most interesting solutions",
+      assets: "Assets",
+      stack: "Technologies",
+      numbers: "Numbers",
+      learned: "What I learned",
+    },
+    showreel: { play: "Play the showreel", pause: "Pause the showreel" },
+    newTab: "opens in a new tab",
   },
   workWithMe: {
     label: "Work with me",
@@ -105,7 +116,6 @@ const en: Dictionary = {
   },
   language: { switchTo: "PL", switchLabel: "Wersja polska" },
   cursor: { open: "Open", play: "Play", pause: "Pause" },
-  video: { play: "Play preview", pause: "Pause preview" },
   live: { live: "live" },
   files: {
     about: "About me",
