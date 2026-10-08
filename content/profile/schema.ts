@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { serviceIds, type ServiceId } from "@/lib/routes";
 
 /** Text in both languages. */
 export const localized = z.object({ pl: z.string().min(1), en: z.string().min(1) });
@@ -93,8 +94,19 @@ export const pricingSchema = z.object({
 export const offerSchema = z.object({
   servicesTitle: localized,
   servicesLead: localized,
-  // thumb: a picture from public/services/<thumb>.png, a different one per service
-  services: z.array(z.object({ id, title: localized, text: localized, fit: localized, thumb: id })).length(4),
+  // thumb: a picture from public/services/<thumb>.png, a different one per service; page: its service page
+  services: z
+    .array(
+      z.object({
+        id,
+        title: localized,
+        text: localized,
+        fit: localized,
+        thumb: id,
+        page: z.enum(serviceIds as [ServiceId, ...ServiceId[]]),
+      }),
+    )
+    .length(4),
   processTitle: localized,
   process: z.array(z.object({ title: localized, text: localized })).min(1),
 });

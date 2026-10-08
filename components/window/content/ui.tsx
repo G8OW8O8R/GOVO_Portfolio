@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { ReactNode } from "react";
 import { Tilt } from "../motion/Tilt";
 
 /**
@@ -41,6 +42,38 @@ export const ui = {
 } as const;
 
 export { Steps } from "../motion/Steps";
+
+/**
+ * A content section: its heading above the content, or beside it on wide
+ * windows (`side`). `level`: h3 inside a window whose title is the h2, h2 on
+ * a page with its own h1 (service, pricing and local pages).
+ */
+export function Section({
+  id,
+  title,
+  side = false,
+  level = 3,
+  children,
+}: {
+  id: string;
+  title: string;
+  side?: boolean;
+  level?: 2 | 3;
+  children: ReactNode;
+}) {
+  const Heading = level === 2 ? "h2" : "h3";
+  return (
+    <section
+      aria-labelledby={id}
+      className={`mt-16 desk:mt-24 ${side ? "desk:grid desk:grid-cols-[200px_minmax(0,1fr)] desk:gap-10" : ""}`}
+    >
+      <Heading id={id} className={side ? `${ui.h3} desk:pt-1` : ui.display}>
+        {title}
+      </Heading>
+      <div className={side ? "mt-4 desk:mt-0" : "mt-6 desk:mt-8"}>{children}</div>
+    </section>
+  );
+}
 
 /**
  * Green "available" dot (the only colour besides the focus blue). `pulse`:

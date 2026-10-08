@@ -20,7 +20,7 @@ import { Maximize2, Minimize2, Minus, X } from "lucide-react";
 import { DESKTOP_MEDIA } from "@/lib/character-box";
 import { characterGaze } from "@/lib/character/look-at";
 import { DURATION, SHEET_SPRING, SPRING } from "@/lib/motion-tokens";
-import type { WindowKey } from "@/lib/routes";
+import { fileKeyForWindow, type WindowKey } from "@/lib/routes";
 import { clampWindowOffset } from "@/lib/window-layout";
 import { REDUCED_MOTION, flip, playExit, windowAnchor } from "./ghost";
 import { windowStore } from "./store";
@@ -167,7 +167,7 @@ export function AppWindow({
         if (!document.querySelector("[data-app-window]")) {
           const target =
             windowStore.takeReturnFocus() ??
-            document.querySelector<HTMLElement>(`[data-file-key="${windowKey}"] a`) ??
+            document.querySelector<HTMLElement>(`[data-file-key="${fileKeyForWindow(windowKey)}"] a`) ??
             document.querySelector<HTMLElement>(`[data-window-anchor="${windowKey}"]`);
           target?.focus({ preventScroll: true });
         }

@@ -1,7 +1,20 @@
 import { describe, expect, it } from "vitest";
 import { getProject } from "@/content/projects";
 import { SITE_URL } from "@/content/profile/contact";
-import { breadcrumbJsonLd, creativeWorkJsonLd, pageMetadata, personJsonLd, serializeJsonLd } from "./seo";
+import { pricing } from "@/content/profile/pricing";
+import { formatPriceFrom } from "./format";
+import {
+  breadcrumbJsonLd,
+  creativeWorkJsonLd,
+  packagesById,
+  pageMetadata,
+  personJsonLd,
+  pricingJsonLd,
+  serializeJsonLd,
+  serviceJsonLd,
+  titleWithPrice,
+  withPrice,
+} from "./seo";
 
 describe("pageMetadata", () => {
   it("has canonical, hreflang and a full Open Graph block", () => {
@@ -53,5 +66,61 @@ describe("structured data", () => {
 
   it("serialises without a way to close the script", () => {
     expect(serializeJsonLd({ name: "</script><script>x" })).not.toContain("<");
+  });
+});
+
+describe("prices from pricing.ts", () => {
+  const pkgs = packagesById(["strona-firmowa", "wizytowka"]);
+  const lowest = Math.min(...pkgs.map((p) => p.from));
+
+  it("fills the lowest price and the first package's time", () => {
+    expect(withPrice("Strony {price}, gotowe {time}.", pkgs, "pl")).toBe(
+      `Strony ${formatPriceFrom(lowest, "pl")}, gotowe ${pkgs[0].time.pl}.`,
+    );
+    expect(withPrice("{price}", pkgs, "en")).toMatch(/^from PLN\s\d/);
+  });
+
+  it("puts the price in the title before the site name", () => {
+    expect(titleWithPrice("Landing page", packagesById(["landing-page"]), "en")).toMatch(/^Landing page – from PLN\s[\d,]+ \| GOVO DIGITAL$/);
+  });
+
+  it("refuses an unknown package", () => {
+    expect(() => packagesById(["nope"])).toThrow();
+  });
+});
+
+describe("service structured data", () => {
+  it("offers each package from its net price, served in Poland (and the city)", () => {
+    const data = serviceJsonLd({
+      lang: "pl",
+      name: "Strony",
+      description: "D",
+      path: "/pl/strony-internetowe-warszawa",
+      packages: packagesById(["wizytowka"]),
+      city: "Warszawa",
+    });
+    expect(data).toMatchObject({
+      "@type": "Service",
+      url: `${SITE_URL}/pl/strony-internetowe-warszawa`,
+      provider: { "@id": `${SITE_URL}/#person` },
+      areaServed: [
+        { "@type": "Country", name: "Polska" },
+        { "@type": "City", name: "Warszawa" },
+      ],
+    });
+    expect(data.offers).toEqual([
+      expect.objectContaining({
+        "@type": "Offer",
+        priceSpecification: expect.objectContaining({ minPrice: pricing.packages[0].from, priceCurrency: "PLN", valueAddedTaxIncluded: false }),
+      }),
+    ]);
+  });
+
+  it("lists every package and the care plan in the pricing catalogue", () => {
+    const data = pricingJsonLd("en", "/en/pricing", (id) => (id === "redesign" ? "/en/services/website-redesign" : undefined));
+    const items = data.itemListElement as Record<string, unknown>[];
+    expect(items).toHaveLength(pricing.packages.length + 1);
+    expect(items.find((i) => i.url === `${SITE_URL}/en/services/website-redesign`)).toBeTruthy();
+    expect(items.at(-1)?.priceSpecification).toMatchObject({ "@type": "UnitPriceSpecification", unitCode: "MON" });
   });
 });

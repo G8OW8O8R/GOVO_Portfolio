@@ -1,65 +1,51 @@
 /**
  * Redirects from the previous site on this domain, wired in
- * next.config.ts. Addresses that exist in both sites (/pl, /en, /pl/o-mnie,
- * /en/about, /pl/kontakt, /en/contact, /en/services) need nothing.
+ * next.config.ts, all 301. Addresses that exist in both sites need nothing:
+ * the home pages, About me, Contact, /en/services and the service and local
+ * pages, which kept their addresses (/pl/uslugi/landing-page,
+ * /pl/strony-internetowe-warszawa …).
  *
- * 301: gone for good – the concept projects, the blog, the skills page
- * (now a tab of About me) and the old unprefixed routes.
- * 307 (temporary, `replacedBy: "service-pages"`): service, process, pricing
- * and city pages that the new SEO service pages will replace – DO ZAMIANY:
- * then drop the rule (or point it at the new page with 301).
+ * Redirected: the concept projects, the blog, the skills page (now a tab of
+ * About me), the old unprefixed routes, the service list, the pricing page
+ * (now /pl/cennik) and the process page (a tab of the Offer).
  *
  * First matching rule wins (as in Next), so specific rules come first.
  * Patterns: `:name` = one segment, `:name*` = zero or more, `:name+` = one or more.
  */
-export type Redirect = {
-  source: string;
-  destination: string;
-  status: 301 | 307;
-  replacedBy?: "service-pages";
-};
+export type Redirect = { source: string; destination: string };
 
-const gone = (source: string, destination: string): Redirect => ({ source, destination, status: 301 });
-const untilServicePages = (source: string, destination: string): Redirect => ({
-  source,
-  destination,
-  status: 307,
-  replacedBy: "service-pages",
-});
+const moved = (source: string, destination: string): Redirect => ({ source, destination });
 
 export const legacyRedirects: Redirect[] = [
   // concept projects (one list page, no detail pages) → the desktop with Obok
-  gone("/pl/projekty", "/pl"),
-  gone("/en/projects", "/en"),
-  gone("/projects", "/pl"),
+  moved("/pl/projekty", "/pl"),
+  moved("/en/projects", "/en"),
+  moved("/projects", "/pl"),
   // blog: articles, categories and the list → Offer
-  gone("/pl/blog/:path*", "/pl/oferta"),
-  gone("/en/blog/:path*", "/en/services"),
+  moved("/pl/blog/:path*", "/pl/oferta"),
+  moved("/en/blog/:path*", "/en/services"),
   // skills → the Skills tab of About me
-  gone("/pl/umiejetnosci", "/pl/o-mnie#umiejetnosci"),
-  gone("/en/skills", "/en/about#skills"),
-  gone("/skills", "/pl/o-mnie#umiejetnosci"),
+  moved("/pl/umiejetnosci", "/pl/o-mnie#umiejetnosci"),
+  moved("/en/skills", "/en/about#skills"),
+  moved("/skills", "/pl/o-mnie#umiejetnosci"),
   // old unprefixed routes and private pages (never indexed)
-  gone("/contact", "/pl/kontakt"),
-  gone("/me", "/pl"),
-  gone("/auth", "/pl"),
-  gone("/stats", "/pl"),
-  // DO ZAMIANY (nowe strony usług): services, pricing, process and city pages
-  untilServicePages("/pl/uslugi/cennik", "/pl/oferta#cennik"),
-  untilServicePages("/pl/uslugi/:path*", "/pl/oferta"),
-  untilServicePages("/en/services/pricing", "/en/services#pricing"),
-  untilServicePages("/en/services/:path+", "/en/services"),
-  untilServicePages("/pl/proces", "/pl/oferta#proces"),
-  untilServicePages("/en/process", "/en/services#process"),
-  untilServicePages("/process", "/pl/oferta#proces"),
-  untilServicePages("/pl/strony-internetowe-:city", "/pl/oferta"),
+  moved("/contact", "/pl/kontakt"),
+  moved("/me", "/pl"),
+  moved("/auth", "/pl"),
+  moved("/stats", "/pl"),
+  // the service list and the pricing page; the service pages themselves kept their addresses
+  moved("/pl/uslugi", "/pl/oferta"),
+  moved("/pl/uslugi/cennik", "/pl/cennik"),
+  moved("/en/services/pricing", "/en/pricing"),
+  // process → the Process tab of the Offer
+  moved("/pl/proces", "/pl/oferta#proces"),
+  moved("/en/process", "/en/services#process"),
+  moved("/process", "/pl/oferta#proces"),
 ];
 
-/** For next.config.ts: 301 as such (Next's `permanent` would give 308), 307 as `permanent: false`. */
+/** For next.config.ts: a real 301 (Next's `permanent: true` would give 308). */
 export function nextRedirects(rules: Redirect[] = legacyRedirects) {
-  return rules.map(({ source, destination, status }) =>
-    status === 301 ? { source, destination, statusCode: 301 as const } : { source, destination, permanent: false as const },
-  );
+  return rules.map(({ source, destination }) => ({ source, destination, statusCode: 301 as const }));
 }
 
 function patternToRegExp(source: string): RegExp {
@@ -88,7 +74,7 @@ export function matchRedirect(path: string, rules: Redirect[] = legacyRedirects)
  * 2026-10-08) with where it must end up. `status: 200` = the same address
  * exists in the new site. The unit test and e2e/seo.spec.ts check each one.
  */
-export const legacyUrls: { path: string; status: 200 | 301 | 307; to?: string }[] = [
+export const legacyUrls: { path: string; status: 200 | 301; to?: string }[] = [
   { path: "/pl", status: 200 },
   { path: "/en", status: 200 },
   { path: "/pl/o-mnie", status: 200 },
@@ -122,19 +108,19 @@ export const legacyUrls: { path: string; status: 200 | 301 | 307; to?: string }[
   { path: "/en/blog/business-outgrew-its-website", status: 301, to: "/en/services" },
   { path: "/en/blog/why-websites-have-different-prices", status: 301, to: "/en/services" },
   { path: "/en/blog/traffic-but-no-clients", status: 301, to: "/en/services" },
-  { path: "/pl/uslugi", status: 307, to: "/pl/oferta" },
-  { path: "/pl/uslugi/strony-internetowe", status: 307, to: "/pl/oferta" },
-  { path: "/pl/uslugi/landing-page", status: 307, to: "/pl/oferta" },
-  { path: "/pl/uslugi/sklep-internetowy", status: 307, to: "/pl/oferta" },
-  { path: "/pl/uslugi/redesign-strony", status: 307, to: "/pl/oferta" },
-  { path: "/pl/uslugi/cennik", status: 307, to: "/pl/oferta#cennik" },
-  { path: "/en/services/website-development", status: 307, to: "/en/services" },
-  { path: "/en/services/landing-pages", status: 307, to: "/en/services" },
-  { path: "/en/services/ecommerce-development", status: 307, to: "/en/services" },
-  { path: "/en/services/website-redesign", status: 307, to: "/en/services" },
-  { path: "/en/services/pricing", status: 307, to: "/en/services#pricing" },
-  { path: "/pl/proces", status: 307, to: "/pl/oferta#proces" },
-  { path: "/en/process", status: 307, to: "/en/services#process" },
-  { path: "/process", status: 307, to: "/pl/oferta#proces" },
-  { path: "/pl/strony-internetowe-warszawa", status: 307, to: "/pl/oferta" },
+  { path: "/pl/uslugi", status: 301, to: "/pl/oferta" },
+  { path: "/pl/uslugi/strony-internetowe", status: 200 },
+  { path: "/pl/uslugi/landing-page", status: 200 },
+  { path: "/pl/uslugi/sklep-internetowy", status: 200 },
+  { path: "/pl/uslugi/redesign-strony", status: 200 },
+  { path: "/pl/uslugi/cennik", status: 301, to: "/pl/cennik" },
+  { path: "/en/services/website-development", status: 200 },
+  { path: "/en/services/landing-pages", status: 200 },
+  { path: "/en/services/ecommerce-development", status: 200 },
+  { path: "/en/services/website-redesign", status: 200 },
+  { path: "/en/services/pricing", status: 301, to: "/en/pricing" },
+  { path: "/pl/proces", status: 301, to: "/pl/oferta#proces" },
+  { path: "/en/process", status: 301, to: "/en/services#process" },
+  { path: "/process", status: 301, to: "/pl/oferta#proces" },
+  { path: "/pl/strony-internetowe-warszawa", status: 200 },
 ];

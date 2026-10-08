@@ -3,7 +3,7 @@
 import { animate } from "motion/react";
 import { DESKTOP_MEDIA } from "@/lib/character-box";
 import { DURATION, EASE_IN } from "@/lib/motion-tokens";
-import type { WindowKey } from "@/lib/routes";
+import { fileKeyForWindow, type WindowKey } from "@/lib/routes";
 import type { ExitMode } from "./store";
 
 export const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
@@ -11,7 +11,7 @@ export const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
 /** Where a window minimises to and grows from: its desktop file, or the element that opens it. */
 export function windowAnchor(key: WindowKey): Element | null {
   return (
-    document.querySelector(`[data-file-key="${key}"] [data-file-icon]`) ??
+    document.querySelector(`[data-file-key="${fileKeyForWindow(key)}"] [data-file-icon]`) ??
     document.querySelector(`[data-window-anchor="${key}"]`)
   );
 }

@@ -30,20 +30,20 @@ describe("selectCvProjects", () => {
 
 describe("cv links", () => {
   it("links a project to its case study in the page language and a CV-only entry to the home page", () => {
-    expect(cvProjectUrl({ slug: "obok", listed: true }, "pl", "https://govodigital.vercel.app")).toBe(
-      "https://govodigital.vercel.app/pl/projekty/obok",
+    expect(cvProjectUrl({ slug: "obok", listed: true }, "pl", "https://www.govodigital.com")).toBe(
+      "https://www.govodigital.com/pl/projekty/obok",
     );
-    expect(cvProjectUrl({ slug: "obok", listed: true }, "en", "https://govodigital.vercel.app/")).toBe(
-      "https://govodigital.vercel.app/en/projects/obok",
+    expect(cvProjectUrl({ slug: "obok", listed: true }, "en", "https://www.govodigital.com/")).toBe(
+      "https://www.govodigital.com/en/projects/obok",
     );
-    expect(cvProjectUrl({ slug: "portfolio", listed: false }, "en", "https://govodigital.vercel.app")).toBe(
-      "https://govodigital.vercel.app",
+    expect(cvProjectUrl({ slug: "portfolio", listed: false }, "en", "https://www.govodigital.com")).toBe(
+      "https://www.govodigital.com",
     );
   });
 
   it("prints URLs without protocol, www and trailing slash", () => {
     expect(displayUrl("https://www.linkedin.com/in/piotrgoworek/")).toBe("linkedin.com/in/piotrgoworek");
-    expect(displayUrl("https://govodigital.vercel.app/pl/cv")).toBe("govodigital.vercel.app/pl/cv");
+    expect(displayUrl("https://www.govodigital.com/pl/cv")).toBe("govodigital.com/pl/cv");
   });
 });
 

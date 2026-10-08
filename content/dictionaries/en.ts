@@ -25,6 +25,11 @@ const en: Dictionary = {
       title: "CV – Piotr Goworek | GOVO DIGITAL",
       description: "CV of Piotr Goworek, frontend developer: preview and PDF download.",
     },
+    pricing: {
+      title: "Website pricing",
+      description:
+        "Pricing for a one-page site, landing page, company website, online shop, redesign and special project. Net prices {price}, with the timeline of each package.",
+    },
   },
   desktop: {
     heading: "Piotr Goworek – frontend developer. Premium websites, motion and interaction.",
@@ -59,6 +64,19 @@ const en: Dictionary = {
   },
   about: { seeCv: "View CV.pdf" },
   offer: { seeProject: "See Obok", time: "Timeline" },
+  seo: {
+    includes: "What you get",
+    fit: "A good fit for, e.g.…",
+    packages: "Packages",
+    proof: "Proof: Obok",
+    proofLink: "See the Obok case study",
+    remote: "I work remotely with companies from all over Poland.",
+    talk: "Let's talk",
+    seeAlso: "See also",
+    pricing: "Pricing for every package",
+    packageDetails: "What exactly you get",
+    country: "Poland",
+  },
   contact: {
     lead: "Write a few sentences about your project or the role. I usually reply within a day.",
     name: "Name",
@@ -122,6 +140,7 @@ const en: Dictionary = {
     offer: "Services",
     cv: "CV.pdf",
     contact: "Contact",
+    pricing: "Pricing",
     projectLabel: "Project",
     badgeNew: "New",
   },

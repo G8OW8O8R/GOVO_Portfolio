@@ -13,6 +13,7 @@ import { Intro } from "@/components/intro/Intro";
 import { MotionProvider } from "@/components/ui/MotionProvider";
 import { DesktopLayer, WindowBackdrop } from "@/components/window/WindowBackdrop";
 import { DesktopFiles, type DesktopFile } from "./DesktopFiles";
+import { DesktopHeading } from "./DesktopHeading";
 import { Dock } from "./Dock";
 import { Pendant } from "./Pendant";
 import { TopBar } from "./TopBar";
@@ -52,7 +53,7 @@ export function Desktop({ lang, children }: { lang: Locale; children?: ReactNode
         <DesktopLayer className="contents">
           <TopBar lang={lang} dict={dict} />
           <main className={s.main}>
-            <h1 className="sr-only">{dict.desktop.heading}</h1>
+            <DesktopHeading text={dict.desktop.heading} />
             <div className={s.stage}>
               <Character alt={dict.desktop.characterAlt} />
               <Pendant href={href(lang, "contact")} label={dict.desktop.pendantLabel} />

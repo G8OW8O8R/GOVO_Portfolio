@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { projects } from "@/content/projects";
 import { locales } from "@/lib/i18n";
-import { alternates, type RouteKey } from "@/lib/routes";
+import { alternates, localIds, serviceIds, type RouteKey } from "@/lib/routes";
 import { absolute } from "@/lib/seo";
 
 /** Every page in both languages, each with its hreflang alternates. */
@@ -10,6 +10,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { route: "home", priority: 1 },
     ...projects.map(({ slug }) => ({ route: "project" as const, slug, priority: 0.9 })),
     { route: "offer", priority: 0.8 },
+    ...serviceIds.map((slug) => ({ route: "service" as const, slug, priority: 0.8 })),
+    { route: "pricing", priority: 0.8 },
+    ...localIds.map((slug) => ({ route: "local" as const, slug, priority: 0.7 })),
     { route: "about", priority: 0.7 },
     { route: "contact", priority: 0.6 },
     { route: "cv", priority: 0.5 },

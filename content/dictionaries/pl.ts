@@ -23,6 +23,12 @@ const pl = {
       title: "CV – Piotr Goworek | GOVO DIGITAL",
       description: "CV Piotra Goworka, frontend developera: podgląd i pobranie PDF.",
     },
+    // {price} = the lowest package price from pricing.ts
+    pricing: {
+      title: "Cennik stron internetowych",
+      description:
+        "Cennik: wizytówka, landing page, strona firmowa, sklep internetowy, redesign i projekt specjalny. Ceny netto {price}, czas realizacji przy każdym pakiecie.",
+    },
   },
   desktop: {
     heading: "Piotr Goworek – frontend developer. Strony premium, ruch i interakcje.",
@@ -57,6 +63,19 @@ const pl = {
   },
   about: { seeCv: "Zobacz CV.pdf" },
   offer: { seeProject: "Zobacz Obok", time: "Czas realizacji" },
+  seo: {
+    includes: "Co dostajesz",
+    fit: "Sprawdzi się np. dla…",
+    packages: "Pakiety",
+    proof: "Dowód: Obok",
+    proofLink: "Zobacz case study Obok",
+    remote: "Pracuję zdalnie z firmami z całej Polski.",
+    talk: "Porozmawiajmy",
+    seeAlso: "Zobacz też",
+    pricing: "Cennik wszystkich pakietów",
+    packageDetails: "Co dokładnie dostajesz",
+    country: "Polska",
+  },
   contact: {
     lead: "Napisz kilka zdań o projekcie albo o stanowisku. Odpowiadam zwykle w ciągu doby.",
     name: "Imię",
@@ -120,6 +139,7 @@ const pl = {
     offer: "Oferta",
     cv: "CV.pdf",
     contact: "Kontakt",
+    pricing: "Cennik",
     projectLabel: "Projekt",
     badgeNew: "Nowy",
   },

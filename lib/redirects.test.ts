@@ -13,12 +13,11 @@ describe("legacy redirects", () => {
       expect(isNewPage(path)).toBe(true);
       return;
     }
-    expect(rule?.status).toBe(status);
     expect(rule?.destination).toBe(to);
   });
 
   it("never touches the new pages", () => {
-    for (const path of ["/pl", "/en", "/pl/projekty/obok", "/en/projects/obok", "/pl/oferta", "/en/services", "/pl/o-mnie", "/en/about", "/pl/cv"]) {
+    for (const path of ["/pl", "/en", "/pl/projekty/obok", "/en/projects/obok", "/pl/oferta", "/en/services", "/pl/o-mnie", "/en/about", "/pl/cv", "/pl/cennik", "/en/pricing", "/en/services/special-project", "/en/web-design-warsaw"]) {
       expect(matchRedirect(path), path).toBeNull();
     }
   });
@@ -30,26 +29,17 @@ describe("legacy redirects", () => {
     }
   });
 
-  it("only the pages the service pages will replace are temporary", () => {
-    for (const rule of legacyRedirects) expect(rule.status === 307, rule.source).toBe(rule.replacedBy === "service-pages");
-  });
-
-  it("maps 301 to statusCode and 307 to permanent: false for Next", () => {
-    const rules = nextRedirects([
-      { source: "/a", destination: "/pl", status: 301 },
-      { source: "/b", destination: "/pl", status: 307, replacedBy: "service-pages" },
-    ]);
-    expect(rules).toEqual([
-      { source: "/a", destination: "/pl", statusCode: 301 },
-      { source: "/b", destination: "/pl", permanent: false },
-    ]);
+  it("is permanent: a real 301 for Next", () => {
+    expect(nextRedirects([{ source: "/a", destination: "/pl" }])).toEqual([{ source: "/a", destination: "/pl", statusCode: 301 }]);
+    expect(legacyUrls.every(({ status }) => status === 200 || status === 301)).toBe(true);
   });
 
   it("matches segment patterns like Next", () => {
     const rules = legacyRedirects;
-    expect(matchRedirect("/pl/strony-internetowe-krakow", rules)?.destination).toBe("/pl/oferta");
-    expect(matchRedirect("/pl/strony-internetowe", rules)).toBeNull();
-    expect(matchRedirect("/en/services/a/b", rules)?.destination).toBe("/en/services");
+    expect(matchRedirect("/pl/uslugi", rules)?.destination).toBe("/pl/oferta");
+    expect(matchRedirect("/pl/uslugi/landing-page", rules)).toBeNull();
+    expect(matchRedirect("/pl/strony-internetowe-warszawa", rules)).toBeNull();
     expect(matchRedirect("/pl/blog/kategoria/x", rules)?.destination).toBe("/pl/oferta");
+    expect(matchRedirect("/pl/blog", rules)?.destination).toBe("/pl/oferta");
   });
 });

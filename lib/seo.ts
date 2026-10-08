@@ -3,7 +3,10 @@ import { getDictionary } from "@/content/dictionaries";
 import { about } from "@/content/profile/about";
 import { SITE_URL } from "@/content/profile/contact";
 import { links } from "@/content/profile/links";
+import { pricing } from "@/content/profile/pricing";
+import type { Pricing } from "@/content/profile/schema";
 import type { Project } from "@/content/projects/schema";
+import { formatPriceFrom } from "./format";
 import { locales, type Locale } from "./i18n";
 import { alternates, href, type RouteKey } from "./routes";
 
@@ -111,6 +114,116 @@ export function breadcrumbJsonLd(lang: Locale, trail: { name: string; path: stri
       name: item.name,
       item: absolute(item.path),
     })),
+  };
+}
+
+type Package = Pricing["packages"][number];
+
+/** Packages of pricing.ts by id, in the given order (unknown ids fail loudly). */
+export function packagesById(ids: readonly string[], source: Pricing = pricing): Package[] {
+  return ids.map((id) => {
+    const pkg = source.packages.find((p) => p.id === id);
+    if (!pkg) throw new Error(`Unknown package "${id}"`);
+    return pkg;
+  });
+}
+
+/**
+ * Fills `{price}` (the lowest "from" price of the packages: "od 990 zł") and
+ * `{time}` (the first package's time) in a title or description, so no page
+ * carries a price of its own.
+ */
+export function withPrice(text: string, packages: readonly Package[], lang: Locale): string {
+  const lowest = Math.min(...packages.map((p) => p.from));
+  return text.replaceAll("{price}", formatPriceFrom(lowest, lang)).replaceAll("{time}", packages[0].time[lang]);
+}
+
+/** Page title with the lowest price: "Landing page – od 1 490 zł | GOVO DIGITAL". */
+export function titleWithPrice(title: string, packages: readonly Package[], lang: Locale): string {
+  return `${title} ${withPrice("– {price}", packages, lang)} | ${getDictionary(lang).meta.siteName}`;
+}
+
+/** Net "from" price in PLN; per month for care. */
+function priceSpecification(from: number, perMonth = false): JsonLd {
+  return {
+    "@type": perMonth ? "UnitPriceSpecification" : "PriceSpecification",
+    minPrice: from,
+    priceCurrency: "PLN",
+    valueAddedTaxIncluded: false,
+    ...(perMonth ? { unitCode: "MON" } : {}),
+  };
+}
+
+const provider = (lang: Locale): JsonLd => ({
+  "@type": "Person",
+  "@id": PERSON_ID,
+  name: about.name,
+  url: absolute(href(lang, "home")),
+});
+
+/**
+ * schema.org Service with one Offer per package (service and local pages).
+ * `areaServed`: Poland, plus the city on a local page.
+ */
+export function serviceJsonLd({
+  lang,
+  name,
+  description,
+  path,
+  packages,
+  city,
+}: {
+  lang: Locale;
+  name: string;
+  description: string;
+  path: string;
+  packages: readonly Package[];
+  city?: string;
+}): JsonLd {
+  const url = absolute(path);
+  const areaServed: JsonLd[] = [{ "@type": "Country", name: getDictionary(lang).seo.country }];
+  if (city) areaServed.push({ "@type": "City", name: city });
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name,
+    serviceType: name,
+    description,
+    url,
+    inLanguage: lang,
+    provider: provider(lang),
+    areaServed,
+    offers: packages.map((p) => ({
+      "@type": "Offer",
+      name: p.name[lang],
+      description: p.description[lang],
+      url,
+      priceCurrency: "PLN",
+      priceSpecification: priceSpecification(p.from),
+    })),
+  };
+}
+
+/** schema.org OfferCatalog of every package and the care plan (pricing page); `pageFor` = a package's service page. */
+export function pricingJsonLd(lang: Locale, path: string, pageFor: (packageId: string) => string | undefined): JsonLd {
+  const dict = getDictionary(lang);
+  const url = absolute(path);
+  const offer = (name: string, description: string, spec: JsonLd, page?: string): JsonLd => ({
+    "@type": "Offer",
+    url: page ? absolute(page) : url,
+    priceCurrency: "PLN",
+    priceSpecification: spec,
+    itemOffered: { "@type": "Service", name, description, provider: provider(lang), ...(page ? { url: absolute(page) } : {}) },
+  });
+  return {
+    "@context": "https://schema.org",
+    "@type": "OfferCatalog",
+    name: dict.pages.pricing.title,
+    url,
+    itemListElement: [
+      ...pricing.packages.map((p) => offer(p.name[lang], p.description[lang], priceSpecification(p.from), pageFor(p.id))),
+      offer(pricing.care.name[lang], pricing.care.description[lang], priceSpecification(pricing.care.fromMonthly, true)),
+    ],
   };
 }
 

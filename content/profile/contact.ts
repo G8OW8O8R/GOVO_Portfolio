@@ -3,7 +3,7 @@
  * the CV (window, /cv, the PDFs) and the contact e-mail use it. After a change,
  * rebuild locally so public/cv/CV-*.pdf get the new address.
  */
-export const SITE_URL = "https://govodigital.vercel.app";
+export const SITE_URL = "https://www.govodigital.com";
 
 /**
  * Contact details. The e-mail address is stored in parts and assembled in

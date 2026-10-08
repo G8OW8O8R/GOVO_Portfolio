@@ -13,8 +13,8 @@ import { pathToFileURL } from "node:url";
 
 const OUT = "public/og.jpg";
 const root = pathToFileURL(`${process.cwd()}/`).href;
-// the one site address (content/profile/contact.ts), without the protocol
-const site = /SITE_URL = "https?:\/\/([^"]+)"/.exec(fs.readFileSync("content/profile/contact.ts", "utf8"))![1];
+// the one site address (content/profile/contact.ts), without the protocol and "www." (as on the CV)
+const site = /SITE_URL = "https?:\/\/(?:www\.)?([^"]+)"/.exec(fs.readFileSync("content/profile/contact.ts", "utf8"))![1];
 
 const html = `<!doctype html><html><head><meta charset="utf-8"><style>
 @font-face{font-family:"Schibsted";src:url("${root}public/fonts/cv/SchibstedGrotesk-Medium.ttf")}

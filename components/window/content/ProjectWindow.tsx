@@ -1,5 +1,4 @@
 import Image from "next/image";
-import type { ReactNode } from "react";
 import { getDictionary } from "@/content/dictionaries";
 import { SUBJECT_PARAM } from "@/content/profile/contact";
 import type { Project } from "@/content/projects/schema";
@@ -9,7 +8,7 @@ import { PlayOnOpen } from "../motion/PlayOnOpen";
 import { RevealHeading } from "../motion/RevealHeading";
 import { ShowreelVideo } from "../motion/ShowreelVideo";
 import { WindowLink } from "../WindowLink";
-import { ui } from "./ui";
+import { Section, ui } from "./ui";
 
 /** Obok's orange with near-black text (contrast ~9:1), only on the live link. */
 const amber =
@@ -22,21 +21,6 @@ function External({ url, className, label, newTab }: { url: string; className: s
       <span aria-hidden="true">↗</span>
       <span className="sr-only"> ({newTab})</span>
     </a>
-  );
-}
-
-/** A case study section: its heading above the content, or beside it on wide windows (`side`). */
-function Section({ id, title, side = false, children }: { id: string; title: string; side?: boolean; children: ReactNode }) {
-  return (
-    <section
-      aria-labelledby={id}
-      className={`mt-16 desk:mt-24 ${side ? "desk:grid desk:grid-cols-[200px_minmax(0,1fr)] desk:gap-10" : ""}`}
-    >
-      <h3 id={id} className={side ? `${ui.h3} desk:pt-1` : ui.display}>
-        {title}
-      </h3>
-      <div className={side ? "mt-4 desk:mt-0" : "mt-6 desk:mt-8"}>{children}</div>
-    </section>
   );
 }
 
