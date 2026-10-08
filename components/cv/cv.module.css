@@ -1,0 +1,568 @@
+/*
+ * CV sheet (design/cv-mockup.html, fonts of the site). Sizes in mm/pt: the
+ * same sheet is the A4 page. Print: @page and the isolation of the sheet in
+ * globals.css. A narrow window (phone) reflows it to one column (container query).
+ */
+
+.frame {
+  container: cv / inline-size;
+  padding: 24px 24px 8px;
+}
+
+.sheet {
+  --line: #e4e3e0;
+  --text: #2b2a28;
+  --mut: var(--ink-soft);
+  display: flex;
+  flex-direction: column;
+  width: 210mm;
+  max-width: 100%;
+  min-height: 297mm;
+  margin: 0 auto;
+  padding: 12mm 13mm;
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--font-schibsted), ui-sans-serif, sans-serif;
+  font-size: 8.6pt;
+  line-height: 1.5;
+  border-radius: 6px;
+  box-shadow: var(--shadow-surface);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.sheet a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.sheet a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.sheet ul,
+.sheet ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.contact,
+.meta,
+.tags,
+.detail,
+.groupTags,
+.footerRow,
+.stepNumber {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Header ---------- */
+
+.header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8mm;
+  align-items: start;
+  padding-bottom: 5mm;
+  border-bottom: 1.5px solid var(--ink);
+}
+
+.logo {
+  display: block;
+  width: 26mm;
+  height: auto;
+  margin-bottom: 5mm;
+}
+
+.name {
+  font-size: 34pt;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+}
+
+.role {
+  margin-top: 2.2mm;
+  font-size: 11pt;
+  color: var(--mut);
+}
+
+.available {
+  display: inline-flex;
+  align-items: center;
+  gap: 2mm;
+  margin-top: 3mm;
+  padding: 1.2mm 3mm;
+  border-radius: 99px;
+  background: rgb(47 191 90 / 0.12);
+  font-size: 8.5pt;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.dot {
+  width: 2mm;
+  height: 2mm;
+  border-radius: 50%;
+  background: var(--available);
+  box-shadow: 0 0 0 0.9mm rgb(47 191 90 / 0.2);
+}
+
+.contact {
+  margin-top: 3.5mm;
+  font-size: 7.2pt;
+  line-height: 1.7;
+  color: var(--mut);
+}
+
+.contact > * {
+  white-space: nowrap;
+}
+
+.lineSep {
+  display: none;
+}
+
+.strong {
+  color: var(--ink) !important;
+}
+
+/* Colour photo, 4:5 – never desaturated */
+.photo {
+  display: block;
+  width: 34mm;
+  height: 42.5mm;
+  object-fit: cover;
+  border-radius: 3.5mm;
+  /* soft and downwards only: nothing reaches past the printable area (it would be clipped at the page margin) */
+  box-shadow:
+    0 2.6mm 4.5mm -2.4mm rgb(0 0 0 / 0.26),
+    0 0.4mm 0.8mm -0.3mm rgb(0 0 0 / 0.1);
+}
+
+/* ---------- Columns ---------- */
+
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 70mm;
+  gap: 8mm;
+  flex: 1;
+  padding-top: 5mm;
+}
+
+.lead {
+  margin-bottom: 7mm;
+  font-size: 11.5pt;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
+}
+
+/* Section heading: small grey title with a hairline running to the edge */
+.heading {
+  display: flex;
+  align-items: center;
+  gap: 2mm;
+  margin-bottom: 2.4mm;
+  font-size: 8pt;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--mut);
+}
+
+.heading::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.context {
+  font-weight: 400;
+}
+
+/* ---------- Project timeline (Steps) ---------- */
+
+.timeline {
+  margin-bottom: 6mm !important;
+}
+
+.step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 5.4mm 1fr;
+  column-gap: 3.6mm;
+  padding-bottom: 5mm;
+}
+
+.step:last-child {
+  padding-bottom: 0;
+}
+
+.stepLine {
+  position: absolute;
+  top: 6.4mm;
+  bottom: 1mm;
+  left: calc(2.7mm - 0.75px);
+  width: 1.5px;
+  background: var(--ink);
+  transform-origin: top;
+}
+
+.stepNumber {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 5.4mm;
+  height: 5.4mm;
+  margin-top: 0.2mm;
+  border-radius: 50%;
+  background: var(--win-fill);
+  font-size: 6.5pt;
+  font-variant-numeric: tabular-nums;
+}
+
+.stepLight {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+}
+
+.stepHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  column-gap: 3mm;
+}
+
+.stepTitle {
+  font-size: 12.5pt;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.meta,
+.tags {
+  font-size: 6.8pt;
+  color: var(--mut);
+}
+
+.stepText {
+  margin-top: 1.4mm;
+  color: var(--text);
+  text-wrap: pretty;
+}
+
+.tags {
+  margin-top: 1.6mm;
+}
+
+/* ---------- Rows (other experience, certificates) ---------- */
+
+.rows li {
+  padding: 1.3mm 0;
+  border-top: 1px solid var(--line);
+  font-size: 8pt;
+  line-height: 1.4;
+}
+
+.detail {
+  display: block;
+  font-size: 6.6pt;
+  color: var(--mut);
+}
+
+/* ---------- Right column ---------- */
+
+.aside section + section {
+  margin-top: 4mm;
+}
+
+.groupItem + .groupItem {
+  margin-top: 2mm;
+}
+
+.group {
+  margin-bottom: 0.5mm;
+  font-size: 8.6pt;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.groupTags {
+  font-size: 6.6pt;
+  line-height: 1.5;
+  color: var(--mut);
+}
+
+.small,
+.list li {
+  font-size: 8.2pt;
+  line-height: 1.38;
+}
+
+.list li + li {
+  margin-top: 0.6mm;
+}
+
+/* ---------- Footer ---------- */
+
+.footer {
+  margin-top: 4mm;
+  padding-top: 2.5mm;
+  border-top: 1px solid var(--line);
+}
+
+.footerRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1mm 4mm;
+  font-size: 6.3pt;
+  color: var(--mut);
+}
+
+.consent {
+  margin-top: 1.5mm;
+  font-size: 5.8pt;
+  line-height: 1.4;
+  color: #8f8c88;
+}
+
+/* ---------- Wide window: the sheet a little larger than paper (mono details stay legible) ---------- */
+
+@container cv (min-width: 920px) {
+  .sheet {
+    zoom: 1.12;
+  }
+}
+
+@container cv (min-width: 1120px) {
+  .sheet {
+    zoom: 1.3;
+  }
+}
+
+/* ---------- Narrow window (phone): one column, screen sizes ---------- */
+
+@container cv (max-width: 600px) {
+  .sheet {
+    min-height: 0;
+    padding: 22px 18px 20px;
+    border-radius: var(--radius-surface);
+    font-size: 15px;
+  }
+
+  /* photo beside the logo and the name; role, availability and contact take the full width */
+  .header {
+    gap: 0 14px;
+    padding-bottom: 20px;
+  }
+
+  .intro {
+    display: contents;
+  }
+
+  .photo {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .role,
+  .available,
+  .contact {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .contact br {
+    display: none;
+  }
+
+  .lineSep {
+    display: inline;
+  }
+
+  .logo {
+    width: 84px;
+    margin-bottom: 18px;
+  }
+
+  .name {
+    font-size: 30px;
+  }
+
+  .role {
+    margin-top: 8px;
+    font-size: 15px;
+  }
+
+  .available {
+    gap: 8px;
+    margin-top: 12px;
+    padding: 5px 12px;
+    font-size: 13px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    box-shadow: 0 0 0 3px rgb(47 191 90 / 0.2);
+  }
+
+  .contact {
+    margin-top: 14px;
+    font-size: 12px;
+  }
+
+  .photo {
+    width: 72px;
+    height: 90px;
+    border-radius: 10px;
+    box-shadow:
+      0 9px 16px -8px rgb(0 0 0 / 0.26),
+      0 1px 3px -1px rgb(0 0 0 / 0.1);
+  }
+
+  .columns {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding-top: 22px;
+  }
+
+  .lead {
+    margin-bottom: 28px;
+    font-size: 17px;
+    line-height: 1.5;
+  }
+
+  .heading {
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 13px;
+  }
+
+  .timeline {
+    margin-bottom: 28px !important;
+  }
+
+  .step {
+    grid-template-columns: 26px 1fr;
+    column-gap: 14px;
+    padding-bottom: 22px;
+  }
+
+  .stepLine {
+    top: 32px;
+    bottom: 4px;
+    left: 12.25px;
+  }
+
+  .stepNumber {
+    width: 26px;
+    height: 26px;
+    margin-top: 0;
+    font-size: 11px;
+  }
+
+  .stepTitle {
+    font-size: 19px;
+  }
+
+  .tags,
+  .detail,
+  .groupTags {
+    font-size: 12px;
+  }
+
+  .meta {
+    font-size: 11px;
+  }
+
+  .stepText {
+    margin-top: 6px;
+  }
+
+  .tags {
+    margin-top: 6px;
+  }
+
+  .rows li {
+    padding: 8px 0;
+    font-size: 15px;
+  }
+
+  .aside section + section {
+    margin-top: 24px;
+  }
+
+  .groupItem + .groupItem {
+    margin-top: 12px;
+  }
+
+  .group {
+    margin-bottom: 2px;
+    font-size: 15px;
+  }
+
+  .small,
+  .list li {
+    font-size: 15px;
+  }
+
+  .list li + li {
+    margin-top: 4px;
+  }
+
+  .footer {
+    margin-top: 28px;
+    padding-top: 10px;
+  }
+
+  .footerRow {
+    flex-direction: column;
+    font-size: 11px;
+  }
+
+  .consent {
+    margin-top: 8px;
+    font-size: 11px;
+  }
+}
+
+/* ---------- Print: exactly one A4 page ---------- */
+
+@media print {
+  .frame {
+    padding: 0;
+  }
+
+  /* the printable area of the page (297 − 2 × 12 mm), with a hair of room against rounding */
+  .sheet {
+    width: auto;
+    max-width: none;
+    min-height: 0;
+    height: 272.5mm;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .sheet {
+    zoom: 1;
+  }
+
+  .sheet a:hover {
+    text-decoration: none;
+  }
+}

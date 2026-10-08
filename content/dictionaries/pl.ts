@@ -93,7 +93,7 @@ const pl = {
     copy: "Kopiuj",
     copied: "Skopiowano",
   },
-  cv: { download: "Pobierz CV.pdf", openTab: "Otwórz w nowej karcie", preview: "Podgląd CV" },
+  cv: { download: "Pobierz PDF", print: "Drukuj", actions: "Pobierz lub wydrukuj CV" },
   project: {
     cover: "Okładka projektu",
   },

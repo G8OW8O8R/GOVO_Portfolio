@@ -21,12 +21,16 @@ export const aboutSchema = z.object({
   closing: localized,
 });
 
+/** `cv: false` keeps a tag (or a whole skill) off the CV; the website still shows it. */
+const skillTag = localized.extend({ cv: z.boolean().default(true) });
+
 const skill = z.object({
   /** Thumbnail: public/skills/<id>.png, square (512 px), neutral placeholder until the file exists. */
   id,
   name: localized,
   note: localized,
-  tags: z.array(localized).min(1),
+  tags: z.array(skillTag).min(1),
+  cv: z.boolean().default(true),
   /** Optional link to a case study section, e.g. "/projekty/obok#rozwiazania". */
   seeInProject: z.string().optional(),
 });
@@ -88,7 +92,43 @@ export const offerSchema = z.object({
   process: z.array(z.object({ title: localized, text: localized })).min(1),
 });
 
+/**
+ * Source: design/content-cv.md. Only what lives nowhere else: name, e-mail,
+ * links, skills and the site address are imported from the other profile
+ * files, so the CV and the website never drift apart.
+ */
+export const cvSchema = z.object({
+  available: localized,
+  location: localized,
+  /** Colour photo, 4:5 – never desaturated. */
+  photo: z.string().regex(/^\/cv\/[a-z0-9-]+\.(jpe?g|png|webp)$/),
+  profile: localized,
+  headings: z.object({
+    projects: localized,
+    other: localized,
+    skills: localized,
+    certificates: localized,
+    education: localized,
+    languages: localized,
+    extra: localized,
+  }),
+  /** Context of the project timeline, after its heading. */
+  projectsContext: localized,
+  other: z.array(z.object({ role: localized, place: z.string().min(1), period: localized, note: localized })).min(1),
+  /** CV only, plain text (no links); the website doesn't show them. */
+  certificates: z.array(z.object({ name: localized, issuer: z.string().min(1), year: z.number().int() })),
+  education: z.array(z.object({ school: localized, years: z.string().min(1) })).min(1),
+  languages: z.array(localized).min(1),
+  extra: z.array(localized),
+  footer: z.object({
+    interactive: localized,
+    /** GDPR consent: Polish CV only. */
+    consentPl: z.string().min(1),
+  }),
+});
+
 export type About = z.output<typeof aboutSchema>;
 export type Skills = z.output<typeof skillsSchema>;
 export type Pricing = z.output<typeof pricingSchema>;
 export type Offer = z.output<typeof offerSchema>;
+export type Cv = z.output<typeof cvSchema>;

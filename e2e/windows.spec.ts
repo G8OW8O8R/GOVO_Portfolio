@@ -26,9 +26,8 @@ test.describe("desktop windows", () => {
     // The e-mail is never plain text in the server HTML.
     const html = await (await page.request.get("/pl/kontakt")).text();
     expect(html).not.toContain("@gmail.com");
-    // CV window only when the PDF exists.
-    const cv = (await page.request.head("/cv/CV.pdf")).ok();
-    expect((await page.request.get("/pl/cv")).status()).toBe(cv ? 200 : 404);
+    // The CV is a page of its own (e2e/cv.spec.ts); only its file and download need the PDF.
+    expect((await page.request.get("/pl/cv")).status()).toBe(200);
   });
 
   test("tabs live in the hash; without JS the hashed tab shows too", async ({ page, browser }) => {

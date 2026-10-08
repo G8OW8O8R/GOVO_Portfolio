@@ -1,17 +1,49 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, type ReactNode } from "react";
 import { CONTENT_MOTION } from "@/lib/motion-tokens";
 import { EASE, observeInWindow, usePanelPlay, useWindowScroller } from "./shared";
 
+export type StepItem = { title: string; text: string; meta?: ReactNode; tags?: string[] };
+
+/** Class names of each part; the CV passes its own (printed sizes), the windows use SURFACE. */
+export type StepsLook = {
+  list: string;
+  item: string;
+  line: string;
+  number: string;
+  light: string;
+  body: string;
+  head?: string;
+  title: string;
+  meta?: string;
+  text: string;
+  tags?: string;
+  heading: "h3" | "h4";
+  /** The number is printed once, on the lit layer (no "0101" in the CV's text layer). */
+  litNumberOnly?: boolean;
+};
+
+const SURFACE: StepsLook = {
+  list: "rounded-surface bg-surface px-5 py-6 shadow-surface desk:px-8 desk:py-8",
+  item: "relative grid grid-cols-[40px_1fr] gap-x-4 pb-7 last:pb-0",
+  line: "absolute bottom-1 left-[19.5px] top-11 w-px origin-top bg-ink/25",
+  number: "relative grid size-10 place-items-center rounded-full bg-win-fill font-mono text-13 tabular-nums text-ink",
+  light: "absolute inset-0 grid place-items-center rounded-full bg-ink text-white",
+  body: "pt-2",
+  title: "text-17 font-semibold tracking-[-0.01em] text-ink",
+  text: "mt-1 text-15 text-ink-soft",
+  heading: "h4",
+};
+
 /**
- * Numbered path on one surface (How I work, Process): step numbers on a thin
- * line that joins them, not separate cards. Each time the tab opens the line
+ * Numbered path (How I work, Process, the CV's projects): step numbers on a
+ * thin line that joins them, not separate cards. Each time the tab opens the line
  * draws itself downwards (scaleY from the top) as the steps come into view,
  * and every step number turns black when the line reaches it. Final state
  * (no JS, hydration, reduced motion): full line, all numbers black.
  */
-export function Steps({ items, className = "" }: { items: { title: string; text: string }[]; className?: string }) {
+export function Steps({ items, className = "", look = SURFACE }: { items: StepItem[]; className?: string; look?: StepsLook }) {
   const token = usePanelPlay();
   const scroller = useWindowScroller();
   const ref = useRef<HTMLOListElement>(null);
@@ -77,28 +109,31 @@ export function Steps({ items, className = "" }: { items: { title: string; text:
     };
   }, [token, scroller]);
 
+  const Heading = look.heading;
   return (
-    <ol ref={ref} data-stagger="" className={`rounded-surface bg-surface px-5 py-6 shadow-surface desk:px-8 desk:py-8 ${className}`}>
-      {items.map((item, i) => (
-        <li key={item.title} data-step="" className="relative grid grid-cols-[40px_1fr] gap-x-4 pb-7 last:pb-0">
-          {i < items.length - 1 && (
-            <span data-step-line="" className="absolute bottom-1 left-[19.5px] top-11 w-px origin-top bg-ink/25" aria-hidden="true" />
-          )}
-          <span
-            className="relative grid size-10 place-items-center rounded-full bg-win-fill font-mono text-13 tabular-nums text-ink"
-            aria-hidden="true"
-          >
-            {String(i + 1).padStart(2, "0")}
-            <span data-step-light="" className="absolute inset-0 grid place-items-center rounded-full bg-ink text-white">
-              {String(i + 1).padStart(2, "0")}
+    <ol ref={ref} data-stagger="" className={`${look.list} ${className}`}>
+      {items.map((item, i) => {
+        const n = String(i + 1).padStart(2, "0");
+        return (
+          <li key={item.title} data-step="" className={look.item}>
+            {i < items.length - 1 && <span data-step-line="" className={look.line} aria-hidden="true" />}
+            <span className={look.number} aria-hidden="true">
+              {!look.litNumberOnly && n}
+              <span data-step-light="" className={look.light}>
+                {n}
+              </span>
             </span>
-          </span>
-          <div className="pt-2">
-            <h4 className="text-17 font-semibold tracking-[-0.01em] text-ink">{item.title}</h4>
-            <p className="mt-1 text-15 text-ink-soft">{item.text}</p>
-          </div>
-        </li>
-      ))}
+            <div className={look.body}>
+              <div className={look.head}>
+                <Heading className={look.title}>{item.title}</Heading>
+                {item.meta && <p className={look.meta}>{item.meta}</p>}
+              </div>
+              <p className={look.text}>{item.text}</p>
+              {item.tags && <p className={look.tags}>{item.tags.join(" · ")}</p>}
+            </div>
+          </li>
+        );
+      })}
     </ol>
   );
 }

@@ -265,3 +265,62 @@ body {
     opacity: 1;
   }
 }
+
+/*
+ * Print (CV): when the page holds the CV sheet, only the sheet
+ * is printed – one A4 page, colours kept, no window chrome and no motion.
+ * Everything that doesn't contain the sheet is dropped; its ancestors lose
+ * their box (position, transform, size, overflow), so the sheet starts at
+ * the top of the page. scripts/build-cv.ts prints /pl/cv?print and /en/cv?print.
+ */
+@page {
+  size: A4;
+  margin: 12mm 13mm;
+}
+
+@media print {
+  html:has([data-cv-sheet]),
+  html:has([data-cv-sheet]) body {
+    background: #fff !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  body:has([data-cv-sheet]) :not(:has([data-cv-sheet])):not([data-cv-sheet]):not([data-cv-sheet] *) {
+    display: none !important;
+  }
+
+  body :has([data-cv-sheet]) {
+    position: static !important;
+    display: block !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    contain: none !important;
+  }
+
+  body :has([data-cv-sheet])::before,
+  body :has([data-cv-sheet])::after {
+    display: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

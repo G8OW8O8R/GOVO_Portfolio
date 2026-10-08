@@ -110,6 +110,8 @@ export const skills = skillsSchema.parse({
         },
         {
           id: "funkcje-ai",
+          // CV without AI (design/content-cv.md)
+          cv: false,
           name: t("Funkcje AI w produkcie", "AI features in the product"),
           note: t("asystent i komendy w języku naturalnym", "an assistant and natural-language commands"),
           tags: [
@@ -135,7 +137,7 @@ export const skills = skillsSchema.parse({
           name: t("Assety wizualne", "Visual assets"),
           note: t("grafika i wideo przygotowane pod web", "graphics and video prepared for the web"),
           tags: [
-            t("generowanie obrazu i wideo AI", "AI image and video generation"),
+            { ...t("generowanie obrazu i wideo AI", "AI image and video generation"), cv: false },
             t("bezszwowe pętle", "seamless loops"),
             t("optymalizacja mediów", "media optimisation"),
           ],

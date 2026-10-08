@@ -43,7 +43,7 @@ test.describe("static desktop", () => {
 
     await expect(files.getByRole("link", { name: "O mnie" })).toHaveAttribute("href", "/pl/o-mnie");
     await expect(files.getByRole("link", { name: "Oferta" })).toHaveAttribute("href", "/pl/oferta");
-    const cvExists = (await page.request.head("/cv/CV.pdf")).ok();
+    const cvExists = (await page.request.head("/cv/CV-PL.pdf")).ok();
     await expect(files.getByRole("link", { name: "CV.pdf" })).toHaveCount(cvExists ? 1 : 0);
 
     await expect(page.getByRole("link", { name: /Współpracujmy/ })).toHaveAttribute("href", "/pl/kontakt");

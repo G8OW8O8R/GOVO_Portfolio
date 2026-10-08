@@ -11,9 +11,8 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
-import { CONTENT_MOTION } from "@/lib/motion-tokens";
 import { useAppWindow } from "./AppWindow";
-import { EASE, PanelPlayContext, prefersReducedMotion } from "./motion/shared";
+import { PanelPlayContext, playEnter, prefersReducedMotion } from "./motion/shared";
 import { windowStore } from "./store";
 
 type Tab = { id: string; label: string };
@@ -99,18 +98,9 @@ export function Tabs({ tabs, label, children }: { tabs: Tab[]; label: string; ch
   useLayoutEffect(() => {
     const root = panelsRef.current;
     if (!leaving || !root) return;
-    const { ms, shift, stagger, maxItems } = CONTENT_MOTION.enter;
     const from = root.querySelector<HTMLElement>(`[data-panel="${leaving}"]`);
     const to = root.querySelector<HTMLElement>(`[data-panel="${active}"]`);
-    const items = [...(to?.querySelectorAll<HTMLElement>("[data-stagger] > *") ?? [])].slice(0, maxItems);
-    const anims = [
-      // the old panel stays faded out until it unmounts (the list items may still be coming in)
-      from?.animate({ opacity: [1, 0] }, { duration: ms, easing: EASE, fill: "forwards" }),
-      to?.animate({ opacity: [0, 1], transform: [`translateY(${shift}px)`, "none"] }, { duration: ms, easing: EASE }),
-      ...items.map((item, i) =>
-        item.animate({ opacity: [0, 1] }, { duration: ms, delay: (i + 1) * stagger, easing: EASE, fill: "backwards" }),
-      ),
-    ].filter((a): a is Animation => !!a);
+    const anims = playEnter(to, from);
     // no fill forwards on the new panel: once finished, nothing is left on it (crisp text)
     Promise.all(anims.map((a) => a.finished))
       .then(() => setLeaving(null))

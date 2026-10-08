@@ -37,7 +37,7 @@ export function Desktop({ lang, children }: { lang: Locale; children?: ReactNode
       video: optionalAsset(`/projects/${item.slug}/preview.mp4`),
     },
   }));
-  const info = (["about", "offer", "cv"] as const).filter((key) => key !== "cv" || hasCv());
+  const info = (["about", "offer", "cv"] as const).filter((key) => key !== "cv" || hasCv(lang));
   for (const key of info) {
     files.push({ key, label: dict.files[key], href: windowHref(lang, key), icon: INFO_ICONS[key], slot: INFO_SLOTS[key] });
   }

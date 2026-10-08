@@ -95,7 +95,7 @@ const en: Dictionary = {
     copy: "Copy",
     copied: "Copied",
   },
-  cv: { download: "Download CV.pdf", openTab: "Open in a new tab", preview: "CV preview" },
+  cv: { download: "Download PDF", print: "Print", actions: "Download or print the CV" },
   project: {
     cover: "Project cover",
   },

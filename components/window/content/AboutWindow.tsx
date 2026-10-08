@@ -24,7 +24,7 @@ export function AboutWindow({ lang }: { lang: Locale }) {
 }
 
 function CvLink({ lang, label, className }: { lang: Locale; label: string; className: string }) {
-  if (!hasCv()) return null;
+  if (!hasCv(lang)) return null;
   return (
     <WindowLink href={href(lang, "cv")} className={className}>
       {label}
