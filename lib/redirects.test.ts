@@ -30,14 +30,14 @@ describe("legacy redirects", () => {
     }
   });
 
-  it("only the pages task 4b replaces are temporary", () => {
-    for (const rule of legacyRedirects) expect(rule.status === 307, rule.source).toBe(rule.replacedIn === "4b");
+  it("only the pages the service pages will replace are temporary", () => {
+    for (const rule of legacyRedirects) expect(rule.status === 307, rule.source).toBe(rule.replacedBy === "service-pages");
   });
 
   it("maps 301 to statusCode and 307 to permanent: false for Next", () => {
     const rules = nextRedirects([
       { source: "/a", destination: "/pl", status: 301 },
-      { source: "/b", destination: "/pl", status: 307, replacedIn: "4b" },
+      { source: "/b", destination: "/pl", status: 307, replacedBy: "service-pages" },
     ]);
     expect(rules).toEqual([
       { source: "/a", destination: "/pl", statusCode: 301 },

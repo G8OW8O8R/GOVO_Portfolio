@@ -3,9 +3,9 @@ import { skillsSchema } from "./schema";
 const t = (pl: string, en = pl) => ({ pl, en });
 
 /**
- * „Umiejętności” tab. PL 1:1 from design/content-skills.md, EN translated.
+ * „Umiejętności” tab. PL is the source copy, EN translated.
  * Changing skills is a content change: thumbnails live in public/skills/<id>.png.
- * `cvTags`: the CV's short list per group (no AI tools – design/content-cv.md).
+ * `cvTags`: the CV's short list per group (no AI tools).
  */
 export const skills = skillsSchema.parse({
   title: t("Umiejętności", "Skills"),

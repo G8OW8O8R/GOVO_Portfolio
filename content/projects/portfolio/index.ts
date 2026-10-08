@@ -5,7 +5,6 @@ const portfolio: CvEntryInput = {
   slug: "portfolio",
   year: 2026,
   title: { pl: "Portfolio GOVO DIGITAL", en: "GOVO DIGITAL portfolio" },
-  // design/content-cv.md
   cv: {
     summary: {
       pl: "Strona jako pulpit z żywą postacią w WebGL2 – wzrok za kursorem, mruganie, oddech, fizyka łańcucha – okna z treściami, PL/EN, SEO i formularz kontaktowy.",

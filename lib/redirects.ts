@@ -5,9 +5,9 @@
  *
  * 301: gone for good – the concept projects, the blog, the skills page
  * (now a tab of About me) and the old unprefixed routes.
- * 307 (temporary, `replacedIn: "4b"`): service, process, pricing and city
- * pages that task 4b replaces with real SEO pages – DO ZAMIANY W 4B: then
- * drop the rule (or point it at the new page with 301).
+ * 307 (temporary, `replacedBy: "service-pages"`): service, process, pricing
+ * and city pages that the new SEO service pages will replace – DO ZAMIANY:
+ * then drop the rule (or point it at the new page with 301).
  *
  * First matching rule wins (as in Next), so specific rules come first.
  * Patterns: `:name` = one segment, `:name*` = zero or more, `:name+` = one or more.
@@ -16,11 +16,16 @@ export type Redirect = {
   source: string;
   destination: string;
   status: 301 | 307;
-  replacedIn?: "4b";
+  replacedBy?: "service-pages";
 };
 
 const gone = (source: string, destination: string): Redirect => ({ source, destination, status: 301 });
-const until4b = (source: string, destination: string): Redirect => ({ source, destination, status: 307, replacedIn: "4b" });
+const untilServicePages = (source: string, destination: string): Redirect => ({
+  source,
+  destination,
+  status: 307,
+  replacedBy: "service-pages",
+});
 
 export const legacyRedirects: Redirect[] = [
   // concept projects (one list page, no detail pages) → the desktop with Obok
@@ -39,15 +44,15 @@ export const legacyRedirects: Redirect[] = [
   gone("/me", "/pl"),
   gone("/auth", "/pl"),
   gone("/stats", "/pl"),
-  // DO ZAMIANY W 4B: services, pricing, process and city pages
-  until4b("/pl/uslugi/cennik", "/pl/oferta#cennik"),
-  until4b("/pl/uslugi/:path*", "/pl/oferta"),
-  until4b("/en/services/pricing", "/en/services#pricing"),
-  until4b("/en/services/:path+", "/en/services"),
-  until4b("/pl/proces", "/pl/oferta#proces"),
-  until4b("/en/process", "/en/services#process"),
-  until4b("/process", "/pl/oferta#proces"),
-  until4b("/pl/strony-internetowe-:city", "/pl/oferta"),
+  // DO ZAMIANY (nowe strony usług): services, pricing, process and city pages
+  untilServicePages("/pl/uslugi/cennik", "/pl/oferta#cennik"),
+  untilServicePages("/pl/uslugi/:path*", "/pl/oferta"),
+  untilServicePages("/en/services/pricing", "/en/services#pricing"),
+  untilServicePages("/en/services/:path+", "/en/services"),
+  untilServicePages("/pl/proces", "/pl/oferta#proces"),
+  untilServicePages("/en/process", "/en/services#process"),
+  untilServicePages("/process", "/pl/oferta#proces"),
+  untilServicePages("/pl/strony-internetowe-:city", "/pl/oferta"),
 ];
 
 /** For next.config.ts: 301 as such (Next's `permanent` would give 308), 307 as `permanent: false`. */

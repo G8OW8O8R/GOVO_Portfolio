@@ -3,8 +3,8 @@ import { cvSchema } from "./schema";
 const t = (pl: string, en = pl) => ({ pl, en });
 
 /**
- * CV (window "CV.pdf", /pl/cv, /en/cv and the generated PDFs). PL 1:1 from
- * design/content-cv.md, EN translated. Name, role, e-mail, links, skills and
+ * CV (window "CV.pdf", /pl/cv, /en/cv and the generated PDFs). PL is the
+ * source copy, EN translated. Name, role, e-mail, links, skills and
  * the site address are not here: they come from about.ts, contact.ts, links.ts
  * and skills.ts. Projects come from content/projects (field `cv`).
  * After a change: build locally (scripts/build-cv.ts) and commit public/cv/CV-*.pdf.

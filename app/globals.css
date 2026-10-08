@@ -130,7 +130,7 @@ body {
  * Desktop pieces behind an open window (files, logo, capsule) fade on top of
  * the shared blur (WindowBackdrop), so they recede more than the character.
  * No filter of their own: a blur switching on these layers costs 75–200 ms
- * frames (measured in task 5a); a single backdrop layer + opacity is free.
+ * frames (measured); a single backdrop layer + opacity is free.
  * Small, so they are layers from the start: promoting them when the fade
  * begins cost a ~40 ms frame.
  */

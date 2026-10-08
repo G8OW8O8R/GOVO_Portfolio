@@ -10,7 +10,7 @@ import { WindowHistory } from "./WindowHistory";
  * the character stays clear enough to be seen watching the window; files and
  * top bar get the rest from a static blur of their own ([data-dim],
  * app/globals.css). Only opacity animates: one top-level backdrop layer is
- * composited cheaply, animated filters are not (measured, task 5a).
+ * composited cheaply, animated filters are not (measured).
  * Also hosts the history tracker and the layer for exit animations.
  */
 export function WindowBackdrop() {

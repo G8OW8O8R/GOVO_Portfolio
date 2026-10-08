@@ -4,8 +4,8 @@ const t = (pl: string, en = pl) => ({ pl, en });
 
 /**
  * Pricing – the only source of prices on the site (Offer window, service
- * pages in task 4b, the assistant). PL 1:1 from design/content-pricing.md,
- * EN translated. Net prices in PLN, always "from".
+ * pages, the assistant). PL is the source copy, EN translated. Net prices in
+ * PLN, always "from".
  */
 export const pricing = pricingSchema.parse({
   headline: {

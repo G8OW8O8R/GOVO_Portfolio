@@ -1,6 +1,6 @@
 import { aboutSchema } from "./schema";
 
-/** „O mnie” tab. PL 1:1 from design/content-about.md, EN translated. */
+/** „O mnie” tab. PL is the source copy, EN translated. */
 export const about = aboutSchema.parse({
   name: "Piotr Goworek",
   role: { pl: "Frontend developer · GOVO DIGITAL", en: "Frontend developer · GOVO DIGITAL" },

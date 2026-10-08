@@ -6,7 +6,6 @@ export type LocalizedText = z.infer<typeof localized>;
 
 const id = z.string().regex(/^[a-z0-9-]+$/);
 
-/** Source: design/content-about.md */
 export const aboutSchema = z.object({
   name: z.string().min(1),
   role: localized,
@@ -34,7 +33,6 @@ const skill = z.object({
 /** At most this many tags per skill group on the CV (one A4 page). */
 export const CV_TAGS_MAX = 7;
 
-/** Source: design/content-skills.md */
 export const skillsSchema = z.object({
   title: localized,
   lead: localized,
@@ -70,7 +68,7 @@ const pkg = z.object({
   link: z.object({ label: localized, project: id }).optional(),
 });
 
-/** Source: design/content-pricing.md. Prices net, PLN, always "from". */
+/** Prices net, PLN, always "from". */
 export const pricingSchema = z.object({
   /** Two lines on purpose: large black, then smaller grey and struck through. */
   headline: z.object({ strong: localized, struck: localized }),
@@ -102,7 +100,7 @@ export const offerSchema = z.object({
 });
 
 /**
- * Source: design/content-cv.md. Only what lives nowhere else: name, e-mail,
+ * Only what lives nowhere else: name, e-mail,
  * links, skills and the site address are imported from the other profile
  * files, so the CV and the website never drift apart.
  */

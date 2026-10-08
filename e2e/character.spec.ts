@@ -81,7 +81,7 @@ test.describe("living character", () => {
 
 /**
  * The character keeps living through everything that stops rendering for a
- * while (task 5d bug: one long gap after Print made the watchdog call the
+ * while (a past bug: one long gap after Print made the watchdog call the
  * device slow, and sessionStorage kept the poster even after a reload).
  */
 test.describe("character stays alive", () => {

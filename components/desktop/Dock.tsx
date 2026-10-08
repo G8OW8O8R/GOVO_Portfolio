@@ -53,7 +53,7 @@ export function Dock({ lang, dict }: { lang: Locale; dict: Dictionary }) {
           </EmailLink>
         </DockItem>
         <DockItem label={dict.dock.ask}>
-          {/* The assistant arrives in task 5; until then it opens Contact. */}
+          {/* Until the assistant exists, it opens Contact. */}
           <WindowLink className={item} href={href(lang, "contact")} aria-label={dict.dock.ask}>
             <Icon name="chat" className="size-6.5" />
           </WindowLink>

@@ -3,7 +3,7 @@ import { DESKTOP_MEDIA, computeCharacterBox, type Viewport } from "./character-b
 /**
  * Where a window sits on the desktop. It never covers the character's face:
  * the character stays where it is (no stepping aside, no scaling – it only
- * looks at the window), the window is centred and starts just below the chin
+ * looks at the window), the window is centred and starts just below the chin.
  * It reaches down to the bottom edge; the dock hides while a
  * window is open. On short screens the window keeps a minimum height and
  * slides up over the chin instead of shrinking further.

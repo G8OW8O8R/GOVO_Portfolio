@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { legacyUrls } from "../lib/redirects";
 
-/** Task 4: the Obok case study, SEO files and the redirects from the previous site. */
+/** The Obok case study, SEO files and the redirects from the previous site. */
 
 test.describe("addresses of the previous site", () => {
   for (const { path, status, to } of legacyUrls) {

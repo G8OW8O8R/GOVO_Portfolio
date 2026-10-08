@@ -1,5 +1,5 @@
 /**
- * "Look at this" API for the rest of the desktop (files in task 3).
+ * "Look at this" API for the rest of the desktop (files, windows).
  * Points are in client (viewport) CSS px; the character converts them to
  * gaze with the character box. Works before/without the WebGL character:
  * calls are cheap no-ops when nobody listens.

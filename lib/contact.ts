@@ -72,8 +72,8 @@ const str = (v: unknown) => (typeof v === "string" ? v : "");
 
 /**
  * Sliding-window rate limit per key (IP), in memory. Enough for one server
- * instance; on Vercel each instance counts on its own (a shared
- * store is a deployment TODO).
+ * instance; on Vercel each instance counts on its own (a shared store is a
+ * deployment TODO).
  */
 export function createRateLimiter({ limit, windowMs, maxKeys = 5000 }: { limit: number; windowMs: number; maxKeys?: number }) {
   const hits = new Map<string, number[]>();

@@ -1,5 +1,5 @@
 /*
- * CV sheet (design/cv-mockup.html, fonts of the site). Sizes in mm/pt: the
+ * CV sheet (an A4 sheet in the fonts of the site). Sizes in mm/pt: the
  * same sheet is the A4 page. Print: @page and the isolation of the sheet in
  * globals.css. A narrow window (phone) reflows it to one column (container query).
  */

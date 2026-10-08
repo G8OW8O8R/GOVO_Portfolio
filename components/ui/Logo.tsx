@@ -14,7 +14,7 @@ function raw(): string {
 }
 
 /**
- * Light sweep across the letters (task 6a): the letters drawn once more on
+ * Light sweep across the letters: the letters drawn once more on
  * top, filled with a light band whose gradientTransform LogoLink moves. No
  * mask – a mask over the wordmark re-rendered with every eye movement (+150 ms
  * TBT in Lighthouse). The owl eyes are not part of it, so they never repaint it.

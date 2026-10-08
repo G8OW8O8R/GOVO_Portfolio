@@ -11,7 +11,7 @@ const scene = (id: string, caption: Text, when: Text) => ({
   alt: { pl: `Scena Obok: latarnia ${when.pl}`, en: `Obok scene: the lighthouse ${when.en}` },
 });
 
-/** Case study copy 1:1 from design/content-obok.md (PL); EN translated. */
+/** Case study copy: PL is the source, EN translated. */
 const obok: ProjectInput = {
   slug: "obok",
   order: 1,
@@ -24,7 +24,6 @@ const obok: ProjectInput = {
   },
   icon: `${dir}/icon.png`,
   og: `${dir}/og.jpg`,
-  // design/content-cv.md
   cv: {
     summary: {
       pl: "Interaktywny pulpit z żywym światem zależnym od prawdziwej pogody. Dane na żywo z kilku API (pogoda, kursy walut i kryptowalut, wiadomości, muzyka) z cache i zapasowymi źródłami, aplikacje w oknach, Spotlight z szybkimi poleceniami, wideo i ruch dopracowane pod 60 fps.",
