@@ -17,7 +17,7 @@ import { MotionProvider } from "@/components/ui/MotionProvider";
 import { DesktopLayer, WindowBackdrop } from "@/components/window/WindowBackdrop";
 import { DesktopFiles, type DesktopFile } from "./DesktopFiles";
 import { DesktopHeading } from "./DesktopHeading";
-import { ImageWarmup } from "./ImageWarmup";
+import { LoadAhead } from "./LoadAhead";
 import { Dock } from "./Dock";
 import { Pendant } from "./Pendant";
 import { TopBar } from "./TopBar";
@@ -28,7 +28,7 @@ const INFO_ICONS = { about: "/icons/o-mnie.png", offer: "/icons/oferta.png", cv:
 
 /**
  * Pictures of each window. `first`: what its first screen shows, loaded when
- * the file is hovered or focused (About me shows none, so its skill
+ * the file is hovered, focused or touched (About me shows none, so its skill
  * thumbnails); `all`: everything, loaded ahead after the intro.
  */
 const skillThumbs = skills.categories.flatMap((c) => c.skills.map((s) => `/skills/${s.id}.png`));
@@ -75,6 +75,8 @@ export function Desktop({ lang, children }: { lang: Locale; children?: ReactNode
       preload: imageRefs(INFO_PICTURES[key].first),
     });
   }
+  // windows loaded ahead after the intro: the files, then Contact (capsule, pendant, dock)
+  const aheadWindows = [...files.map((f) => f.href), href(lang, "contact")];
   const ahead = imageRefs([...info.flatMap((key) => INFO_PICTURES[key].all), ...projects.flatMap((p) => projectPictures(p).all)]);
 
   return (
@@ -110,7 +112,7 @@ export function Desktop({ lang, children }: { lang: Locale; children?: ReactNode
         <Cursor labels={dict.cursor} />
       </MotionProvider>
       <Intro files={files.length} />
-      <ImageWarmup images={ahead} />
+      <LoadAhead windows={aheadWindows} images={ahead} />
     </div>
   );
 }

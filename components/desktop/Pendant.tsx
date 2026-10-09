@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { characterGaze } from "@/lib/character/look-at";
+import { usePrefetchWindow } from "@/components/window/prefetch";
 import { useWindowNav } from "@/components/window/useWindowNav";
 import s from "./desktop.module.css";
 
@@ -11,6 +12,7 @@ import s from "./desktop.module.css";
  */
 export function Pendant({ href, label }: { href: string; label: string }) {
   const { open } = useWindowNav();
+  const prefetch = usePrefetchWindow();
   const ref = useRef<HTMLAnchorElement>(null);
   return (
     <a
@@ -19,8 +21,14 @@ export function Pendant({ href, label }: { href: string; label: string }) {
       className={s.pendant}
       aria-label={label}
       title={label}
-      onPointerEnter={() => characterGaze.flash()}
-      onFocus={() => characterGaze.flash()}
+      onPointerEnter={() => {
+        prefetch(href);
+        characterGaze.flash();
+      }}
+      onFocus={() => {
+        prefetch(href);
+        characterGaze.flash();
+      }}
       onClick={(e) => {
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
         e.preventDefault();

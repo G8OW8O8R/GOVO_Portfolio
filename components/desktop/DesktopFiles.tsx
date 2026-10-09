@@ -38,6 +38,7 @@ import { cursorFlags } from "@/components/cursor/store";
 import { Picture } from "@/components/ui/Picture";
 import { warmImages } from "@/components/ui/warm-images";
 import { REDUCED_MOTION } from "@/components/window/ghost";
+import { usePrefetchWindow } from "@/components/window/prefetch";
 import { useOpenWindowKey } from "@/components/window/store";
 import { useWindowNav } from "@/components/window/useWindowNav";
 import { HoverPreview, QuickLook, type Preview } from "./QuickLook";
@@ -50,7 +51,7 @@ export type DesktopFile = {
   icon: ImageSet;
   slot: { x: number; y: number; depth: Depth };
   badge?: string;
-  /** Pictures of the window's first screen, loaded as soon as the file is hovered or focused. */
+  /** Pictures of the window's first screen, loaded with the window as soon as the file is hovered, focused or touched. */
   preload: ImageRef[];
   preview?: Preview;
 };
@@ -252,6 +253,7 @@ function FileItem({
   const link = useRef<HTMLAnchorElement>(null);
   const icon = useRef<HTMLSpanElement>(null);
   const { open } = useWindowNav();
+  const prefetch = usePrefetchWindow();
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -286,8 +288,13 @@ function FileItem({
   // Gaze: look at the file while hovered or focused from the keyboard.
   const releaseGaze = useRef<(() => void) | null>(null);
   const handBack = useRef<(() => void) | null>(null);
-  const lookHere = () => {
+  // Hover, focus or touch: the window's content, code and first pictures start loading.
+  const loadAhead = () => {
+    prefetch(file.href);
     warmImages(file.preload);
+  };
+  const lookHere = () => {
+    loadAhead();
     if (!releaseGaze.current && icon.current) releaseGaze.current = characterGaze.lookAt(icon.current);
   };
   const lookAway = () => {
@@ -301,7 +308,7 @@ function FileItem({
   // keyboard focus, and the next mouse move off the file hands them back to the cursor
   // (otherwise they stayed on the file, deaf to the mouse, until something else took focus).
   const lookOnFocus = (e: ReactFocusEvent<HTMLAnchorElement>) => {
-    warmImages(file.preload);
+    loadAhead();
     if (!e.currentTarget.matches(":focus-visible")) return;
     lookHere();
     handBack.current ??= pointer.subscribe((p) => {
@@ -470,6 +477,7 @@ function FileItem({
           ref={link}
           href={file.href}
           scroll={false}
+          prefetch={false}
           className={s.file}
           draggable={false}
           data-intro-drop=""

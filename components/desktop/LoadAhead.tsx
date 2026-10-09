@@ -4,23 +4,31 @@ import { useEffect } from "react";
 import type { ImageRef } from "@/lib/images";
 import { currentIntro } from "@/lib/intro";
 import { canLoadAhead, warmImages } from "@/components/ui/warm-images";
+import { usePrefetchWindow } from "@/components/window/prefetch";
 
-/** After the intro, the character gets this long to swap in its full base before the pictures go. */
+/** After the intro, the character gets this long to swap in its full base before the windows go. */
 const CHARACTER_GRACE_MS = 3000;
 
 /**
- * Loads the pictures of every window ahead, at low priority, once nothing
- * else needs the connection: after the intro, after the character's full
- * base (or a grace period), in an idle moment. Fast connections only.
+ * Loads every window ahead once nothing else needs the connection: after
+ * the intro, after the character's full base (or a grace period), in an idle
+ * moment. Fast connections only. First the windows' routes (content and
+ * code, so a later click or tap opens at once), then their pictures at low
+ * priority. A window already loaded by hover, focus or touch isn't fetched again.
  */
-export function ImageWarmup({ images }: { images: ImageRef[] }) {
+export function LoadAhead({ windows, images }: { windows: string[]; images: ImageRef[] }) {
+  const prefetch = usePrefetchWindow();
+
   useEffect(() => {
     if (!canLoadAhead()) return;
     const html = document.documentElement;
     const cleanups: (() => void)[] = [];
 
     const idle = () => {
-      const run = () => warmImages(images, "low");
+      const run = () => {
+        windows.forEach(prefetch);
+        warmImages(images, "low");
+      };
       if ("requestIdleCallback" in window) {
         const id = requestIdleCallback(run, { timeout: 2000 });
         cleanups.push(() => cancelIdleCallback(id));
@@ -61,7 +69,7 @@ export function ImageWarmup({ images }: { images: ImageRef[] }) {
       cleanups.push(() => observer.disconnect());
     }
     return () => cleanups.forEach((c) => c());
-  }, [images]);
+  }, [windows, images, prefetch]);
 
   return null;
 }

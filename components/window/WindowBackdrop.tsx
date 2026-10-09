@@ -3,6 +3,8 @@
 import { useDriveWindowOpenSettled, useOpenWindowKey } from "./store";
 import { useWindowNav } from "./useWindowNav";
 import { WindowHistory } from "./WindowHistory";
+// the windows' code comes with the desktop, so a window waits only for its content
+import "./window-code";
 
 /**
  * Light dim + blur over the desktop while a window is open; clicking it

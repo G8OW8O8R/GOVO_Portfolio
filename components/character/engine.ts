@@ -56,12 +56,13 @@ type Options = {
   quick?: boolean;
 };
 
+/**
+ * Whether the browser has WebGL2 at all. A probe context would cost a GPU
+ * context creation (~100 ms on the main thread during hydration); a context
+ * that can't be created after all ends in the poster (start → fail).
+ */
 export function webgl2Supported(): boolean {
-  try {
-    return !!document.createElement("canvas").getContext("webgl2");
-  } catch {
-    return false;
-  }
+  return typeof WebGL2RenderingContext !== "undefined";
 }
 
 export class CharacterEngine {

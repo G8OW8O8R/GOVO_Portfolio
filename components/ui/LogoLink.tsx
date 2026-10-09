@@ -99,6 +99,8 @@ export function LogoLink({ href, label, className, children }: { href: string; l
     <Link
       ref={ref}
       href={href}
+      // the desktop is already here; with a window open it is what closing leads to
+      prefetch={windowOpen ? null : false}
       data-dim=""
       className={className}
       aria-label={label}
