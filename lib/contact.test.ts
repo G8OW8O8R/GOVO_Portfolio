@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { buildContactEmail, clientIp, contactMailto, createRateLimiter, validateContact } from "./contact";
+import { buildContactEmail, clientIp, contactMailto, createRateLimiter } from "./contact";
+import { checkContact } from "./contact-live";
+import { validateContact } from "./contact-schema";
 
 const valid = {
   name: "Anna Nowak",
@@ -37,6 +39,34 @@ describe("validateContact", () => {
   it("keeps the name on one line (no header tricks in the subject)", () => {
     const r = validateContact({ ...valid, name: "Anna\r\nBcc: x@y.z" });
     expect(r.ok && r.data.name).toBe("Anna Bcc: x@y.z");
+  });
+});
+
+describe("checkContact (browser)", () => {
+  // the browser must never accept what the server rejects, nor the other way round
+  const cases: Record<string, unknown>[] = [
+    valid,
+    {},
+    { ...valid, name: " ", email: "anna@", message: "krótko" },
+    { ...valid, subject: "spam", message: "x".repeat(4001) },
+    { ...valid, subject: "praca" },
+    { ...valid, budget: "milion" },
+    { ...valid, budget: "" },
+    { ...valid, name: "Anna\r\nBcc: x@y.z" },
+    { ...valid, name: "A" },
+    { ...valid, name: "x".repeat(81) },
+    { ...valid, name: "\n\tAn\n" },
+    { ...valid, email: "  anna@example.com  " },
+    { ...valid, email: `${"a".repeat(150)}@example.com` },
+    { ...valid, email: "anna@example" },
+    { ...valid, message: "   " + "x".repeat(9) + "   " },
+    { ...valid, message: "x".repeat(4000) },
+    { ...valid, lang: "de" },
+    { ...valid, lang: "en" },
+    { ...valid, name: 42, email: null, subject: undefined },
+  ];
+  it.each(cases.map((c, i) => [i, c] as const))("case %i: same result as the server schema", (_i, c) => {
+    expect(checkContact(c)).toEqual(validateContact(c));
   });
 });
 

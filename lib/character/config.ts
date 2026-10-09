@@ -1,71 +1,16 @@
-import { z } from "zod";
+import type { Eyes } from "./eyes-schema";
 import raw from "@/public/character/eyes.json";
 
 /**
- * eyes.json is the source of truth for the living character. It is parsed
- * once here, so a broken asset file fails loudly in tests and at build time.
+ * eyes.json is the source of truth for the living character. Its shape is
+ * checked by eyes-schema.ts in the unit tests and in every `next build`
+ * (next.config.ts), so a broken asset file fails loudly before it ships;
+ * the browser gets the plain data without a validator.
  * All values are in pixels of the 2752×1536 base image.
  */
 
-const point = z.tuple([z.number(), z.number()]);
-const span = z.tuple([z.number(), z.number()]);
-
-const eye = z.object({
-  irisCenter: point,
-  irisRadius: z.number(),
-  spriteOrigin: point,
-  spriteSize: z.number(),
-  maskOrigin: point,
-  maskSize: point,
-  range: z.object({ x: span, y: span }),
-});
-
-const schema = z.object({
-  image: point,
-  eyes: z.object({ L: eye, R: eye }),
-  blink: z.object({
-    origin: point,
-    size: point,
-    timing_ms: z.object({ close: z.number(), hold: z.number(), open: z.number() }),
-    interval_s: span,
-  }),
-  living: z.object({
-    breathing: z.object({
-      period_s: z.number(),
-      lift_px: z.number(),
-      chest_expand: z.number(),
-      chest_center_y: z.number(),
-      chest_sigma: z.number(),
-    }),
-    head: z.object({
-      center: point,
-      radius: point,
-      fade_to_neck_y: span,
-      follow_gaze_px: z.object({ x: z.number(), y: z.number() }),
-      sway_rad: z.number(),
-      sway_period_s: z.number(),
-    }),
-    pendant_sparkles: z.object({
-      glint_life_s: z.number(),
-      glint_size_px: span,
-      sweep: z.object({
-        every_s: z.number(),
-        duration_s: z.number(),
-        angle_deg: z.number(),
-        width_px: z.number(),
-        strength: z.number(),
-      }),
-    }),
-    chain: z.object({
-      maskOrigin: point,
-      pivot: point,
-      attach_fade_y: span,
-      pendulum: z.object({ stiffness: z.number(), damping: z.number() }),
-    }),
-  }),
-});
-
-export const EYES = schema.parse(raw);
+// JSON imports type tuples as number[]; the build-time check guarantees the shape
+export const EYES = raw as unknown as Eyes;
 export type EyeSide = "L" | "R";
 export type Vec2 = readonly [number, number];
 

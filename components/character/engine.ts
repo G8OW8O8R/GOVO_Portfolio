@@ -10,14 +10,14 @@ import { FpsWatchdog } from "@/lib/character/watchdog";
 import { pointer as pointerSource, type PointerState } from "@/lib/pointer";
 import { CROP_MEDIA, MOBILE_CROP, cropFits, visibleImageRect, type Rect } from "@/lib/character/mobile-crop";
 import { CHARACTER_FILES } from "@/lib/character/stage";
-import { loadBase, underived, type CharacterAssets } from "./assets";
+import { loadBase, scratchCanvas, underived, type CharacterAssets } from "./assets";
 import { loadAssetFullBase, loadAssetLayers, loadAssets, posterBase } from "./load";
 import { CharacterRenderer, type PixelMap } from "./renderer";
 
 /**
  * Runs the living character: input → gaze director → simulation → renderer,
  * on requestAnimationFrame, paused off screen / on a hidden tab / while
- * printing (and resumed after), with the FPS watchdog and recovery from a
+ * printing / under a phone's window sheet (and resumed after), with the FPS watchdog and recovery from a
  * lost WebGL context. React only mounts and unmounts it.
  * Each rendered frame is also a pulse (lib/character/pulse.ts) for the logo's
  * owl eyes; the intro directs it through lib/character/stage.ts.
@@ -79,6 +79,7 @@ export class CharacterEngine {
   private visible = !document.hidden;
   private onScreen = true;
   private printing = false;
+  private covered = false;
   private destroyed = false;
   /** last pointer as gaze; `client` is missing when the scroll (phones) moved the gaze */
   private pointer: { gaze: Vec2; at: number; client?: ClientPoint } | null = null;
@@ -188,6 +189,12 @@ export class CharacterEngine {
     characterStage.report({ status: "live" });
     performance.mark("character:live");
     if (this.o.quick) void this.upgrade();
+    this.schedule();
+  }
+
+  /** A phone's window sheet covers the character: no frames until it closes. */
+  setCovered(covered: boolean) {
+    this.covered = covered;
     this.schedule();
   }
 
@@ -426,7 +433,8 @@ export class CharacterEngine {
   // ---------- loop ----------
 
   private schedule() {
-    const run = this.visible && this.onScreen && !this.printing && !this.manual && !this.destroyed && !!this.sim && !!this.renderer;
+    const run =
+      this.visible && this.onScreen && !this.printing && !this.covered && !this.manual && !this.destroyed && !!this.sim && !!this.renderer;
     if (run && !this.raf) {
       this.last = -1;
       this.raf = requestAnimationFrame(this.tick);
@@ -590,7 +598,7 @@ export class CharacterEngine {
     const maskPixels = (side: "L" | "R") => {
       if (!maskCache.has(side)) {
         const img = renderer.maskBitmap(side);
-        const c = new OffscreenCanvas(img.width, img.height);
+        const c = scratchCanvas(img.width, img.height);
         const ctx = c.getContext("2d")!;
         ctx.drawImage(img, 0, 0);
         maskCache.set(side, ctx.getImageData(0, 0, img.width, img.height).data);

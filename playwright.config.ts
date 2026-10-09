@@ -1,4 +1,4 @@
-import { defineConfig } from "@playwright/test";
+import { defineConfig, type PlaywrightTestProject } from "@playwright/test";
 
 const port = 3100;
 // The character's debug hooks (?character=debug) exist only in development,
@@ -7,17 +7,22 @@ const port = 3100;
 // statistics spec runs on both: counted in the build, never on dev.
 const devPort = 3000;
 
+// Every spec in Chrome, Firefox and WebKit. Playwright's WebKit on Windows is
+// slow (software WebGL until the watchdog falls back): longer timeouts there.
+const engines: { suffix: string; use: PlaywrightTestProject["use"]; timeout?: number }[] = [
+  { suffix: "", use: { browserName: "chromium", channel: "chrome" } },
+  { suffix: "-firefox", use: { browserName: "firefox" } },
+  { suffix: "-webkit", use: { browserName: "webkit" }, timeout: 90_000 },
+];
+
 export default defineConfig({
   testDir: "e2e",
   outputDir: ".tmp/test-results",
   reporter: "list",
-  use: {
-    channel: "chrome",
-  },
-  projects: [
-    { name: "production", testIgnore: /character\.spec/, use: { baseURL: `http://localhost:${port}` } },
-    { name: "dev", testMatch: /(character|analytics)\.spec/, use: { baseURL: `http://localhost:${devPort}` } },
-  ],
+  projects: engines.flatMap(({ suffix, use, timeout }) => [
+    { name: `production${suffix}`, testIgnore: /character\.spec/, timeout, use: { ...use, baseURL: `http://localhost:${port}` } },
+    { name: `dev${suffix}`, testMatch: /(character|analytics)\.spec/, timeout, use: { ...use, baseURL: `http://localhost:${devPort}` } },
+  ]),
   webServer: [
     {
       command: `pnpm build && pnpm start -p ${port}`,

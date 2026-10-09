@@ -107,14 +107,16 @@ export function Desktop({ lang, children }: { lang: Locale; children?: ReactNode
             />
           </main>
           {/* desktop only: on phones the dock takes the bottom edge (the contact form links it too) */}
-          <WindowLink
-            href={href(lang, "privacy")}
-            data-dim=""
-            data-intro-drop="late"
-            className="fixed bottom-6 left-8 z-20 hidden font-mono text-13 text-ink-soft transition-colors hover:text-ink desk:block"
-          >
-            {dict.files.privacy}
-          </WindowLink>
+          <footer className="contents">
+            <WindowLink
+              href={href(lang, "privacy")}
+              data-dim=""
+              data-intro-drop="late"
+              className="fixed bottom-6 left-8 z-20 hidden font-mono text-13 text-ink-soft transition-colors hover:text-ink desk:block"
+            >
+              {dict.files.privacy}
+            </WindowLink>
+          </footer>
         </DesktopLayer>
         <WindowBackdrop />
         {children}

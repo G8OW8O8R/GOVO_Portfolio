@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { IMAGE, computeCharacterBox, isDesktopViewport } from "../character-box";
 import { CHAIN_WEIGHT_MARGIN, DIAMOND_RECT, EYES, TUNING, type Vec2 } from "./config";
-import { CROP_MAX_ASPECT, MOBILE_CROP, MOBILE_CROP_FILE, TOOLBAR_ALLOWANCE, cropFits, toCropSpace, visibleImageRect, warpReach } from "./mobile-crop";
+import { CROP_MAX_ASPECT, CROP_MEDIA, CROP_MEDIA_ASPECT, MOBILE_CROP, MOBILE_CROP_FILE, TOOLBAR_ALLOWANCE, cropFits, toCropSpace, visibleImageRect, warpReach } from "./mobile-crop";
 import { seededRng } from "./motion";
 import { REST_FRAME, warpSource } from "./sim";
 
@@ -11,6 +11,7 @@ const phones = [
   [375, 812],
   [390, 844],
   [393, 852],
+  [412, 823],
   [412, 915],
   [414, 896],
   [430, 932],
@@ -31,12 +32,20 @@ describe("mobile crop", () => {
 
   it.each(phones)("covers what a %i×%i phone shows, with browser toolbars and the warp reach", (w, h) => {
     expect(isDesktopViewport({ width: w, height: h })).toBe(false);
-    expect(w / h).toBeLessThanOrEqual(CROP_MAX_ASPECT); // the poster media query picks the crop
+    expect(w / h).toBeLessThanOrEqual(CROP_MEDIA_ASPECT); // the poster media query picks the crop
     for (const svh of [h, h * TOOLBAR_ALLOWANCE]) {
       const vis = visible(w, svh);
       expect(vis.width).toBeGreaterThan(900);
       expect(cropFits(vis)).toBe(true);
     }
+  });
+
+  it("shows everything visible as a poster up to the media query's aspect", () => {
+    expect(CROP_MEDIA).toBe(`(max-aspect-ratio: ${Math.round(CROP_MEDIA_ASPECT * 200)}/200)`);
+    expect(CROP_MEDIA_ASPECT).toBeGreaterThanOrEqual(CROP_MAX_ASPECT);
+    // a still poster needs no warp reach; the engine checks the reach itself
+    for (const w of [320, 360, 375, 390, 412, 430, 480])
+      for (const svh of [w / CROP_MEDIA_ASPECT, (w / CROP_MEDIA_ASPECT) * TOOLBAR_ALLOWANCE]) expect(cropFits(visible(w, svh), MOBILE_CROP, 0)).toBe(true);
   });
 
   it("is not used where more of the image is visible", () => {

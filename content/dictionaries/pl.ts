@@ -166,7 +166,14 @@ const pl = {
     email: "Napisz e-mail",
     ask: "Zapytaj mnie",
   },
-  notFound: { title: "Nie ma takiego pliku", back: "Wróć na pulpit" },
+  notFound: {
+    meta: "Nie ma takiego pliku | GOVO DIGITAL",
+    file: "nie-istnieje.txt",
+    title: "Nie ma takiego pliku",
+    text: "Pod tym adresem nic nie leży. Link może być stary albo z literówką. Wszystko, co mam, jest na pulpicie.",
+    back: "Wróć na pulpit",
+    close: "Zamknij i wróć na pulpit",
+  },
 };
 
 export type Dictionary = typeof pl;

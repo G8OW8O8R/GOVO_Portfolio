@@ -22,6 +22,13 @@ describe("srcsets", () => {
     expect(s.sizes).toBe(`${DESKTOP_MEDIA} 72px, 56px`);
   });
 
+  it("leaves out the formats a group doesn't write", () => {
+    const s = srcsets({ key: "character/base-mobile", hash: "ab", group: "characterMobile" }, "50vw");
+    expect(s.avif).toContain("/img/character/base-mobile.ab.1520.avif 1520w");
+    expect(s.webp).toBe("");
+    expect(s.src).toBe("");
+  });
+
   it("takes sizes of the place it is shown in when given", () => {
     expect(srcsets({ key: "projects/obok/cover", hash: "ff", group: "cover" }, "232px").sizes).toBe("232px");
   });
@@ -50,8 +57,11 @@ describe("imageSetFrom", () => {
 describe("generated pictures", () => {
   const list = generated as ImageManifest;
 
-  it("have two widths per group, the 1× one below the 2× one", () => {
-    for (const group of Object.values(IMAGE_GROUPS)) expect(group.widths[0]).toBeLessThan(group.widths[1]);
+  it("have at least two ascending widths per group", () => {
+    for (const group of Object.values(IMAGE_GROUPS)) {
+      expect(group.widths.length).toBeGreaterThanOrEqual(2);
+      for (let i = 1; i < group.widths.length; i++) expect(group.widths[i - 1]).toBeLessThan(group.widths[i]);
+    }
   });
 
   it("exist for every skill, service and project picture of the content", () => {
@@ -76,8 +86,9 @@ describe("generated pictures", () => {
 
   it("have every variant file in public/img and a small placeholder", () => {
     for (const [key, entry] of Object.entries(list)) {
-      for (const width of IMAGE_GROUPS[entry.group].widths) {
-        for (const format of IMAGE_FORMATS) {
+      const group = IMAGE_GROUPS[entry.group];
+      for (const width of group.widths) {
+        for (const format of ("formats" in group && group.formats) || IMAGE_FORMATS) {
           expect(existsSync(join("public", variantPath(key, entry.hash, width, format))), `${key} ${width} ${format}`).toBe(true);
         }
       }

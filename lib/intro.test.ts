@@ -1,8 +1,10 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { CHARACTER_LAYERS } from "./character/stage";
 import {
   INTRO_BUDGET_MS,
   INTRO_SEEN_KEY,
+  OVERLAY_SELF_LEAVE_MS,
   PHONE_FACTOR,
   MIN_TAIL_FACTOR,
   SKIP_EVENTS,
@@ -207,5 +209,13 @@ describe("introScript", () => {
 
   it("survives blocked storage (first visit)", () => {
     expect(runScript({ storageThrows: true })).toBe("full");
+  });
+});
+
+describe("overlay without the director", () => {
+  it("leaves by itself after OVERLAY_SELF_LEAVE_MS (the CSS animation delay)", () => {
+    const css = readFileSync("components/intro/intro.module.css", "utf8");
+    const delay = /animation: intro-leave [\d.]+s [\w-]+ ([\d.]+)s both;/.exec(css)?.[1];
+    expect(Number(delay) * 1000).toBe(OVERLAY_SELF_LEAVE_MS);
   });
 });

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { BLINK_DURATION, Blinker, blinkCurve } from "./blink";
+import raw from "@/public/character/eyes.json";
 import { EYES, TUNING, type Vec2 } from "./config";
+import { eyesSchema } from "./eyes-schema";
 import { GazeDirector, eyeBlend, irisOffset, pointToGaze } from "./gaze";
 import { createGazeBus } from "./look-at";
 import { seededRng, smoothstep } from "./motion";
@@ -15,8 +17,14 @@ const run = (sim: CharacterSim, seconds: number, target: readonly [number, numbe
 
 describe("config", () => {
   it("parses eyes.json", () => {
+    expect(eyesSchema.safeParse(raw).success).toBe(true);
     expect(EYES.image).toEqual([2752, 1536]);
     expect(EYES.eyes.L.range.x).toEqual([-12, 12]);
+  });
+
+  it("rejects a broken eyes.json", () => {
+    expect(eyesSchema.safeParse({ ...raw, eyes: { L: raw.eyes.L } }).success).toBe(false);
+    expect(eyesSchema.safeParse({ ...raw, blink: { ...raw.blink, interval_s: [2] } }).success).toBe(false);
   });
 });
 

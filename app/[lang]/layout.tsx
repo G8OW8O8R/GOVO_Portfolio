@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { JetBrains_Mono, Schibsted_Grotesk } from "next/font/google";
 import { notFound } from "next/navigation";
 import { getDictionary } from "@/content/dictionaries";
 import { Analytics } from "@/components/analytics/Analytics";
@@ -9,21 +8,8 @@ import { IMAGE_FADE_SCRIPT } from "@/lib/images";
 import { introScript } from "@/lib/intro";
 import { pageMetadata } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";
+import { fontClasses } from "../fonts";
 import "../globals.css";
-
-/* Schibsted Grotesk for text, JetBrains Mono for technical details.
-   Variable fonts; next/font adjusts the fallback metrics, so the swap doesn't shift the layout. */
-const sans = Schibsted_Grotesk({
-  variable: "--font-schibsted",
-  subsets: ["latin", "latin-ext"],
-  display: "swap",
-});
-
-const mono = JetBrains_Mono({
-  variable: "--font-jetbrains",
-  subsets: ["latin", "latin-ext"],
-  display: "swap",
-});
 
 export const dynamicParams = false;
 
@@ -55,7 +41,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
 
   return (
     // data-intro is set by the head script before the first paint (lib/intro.ts)
-    <html lang={lang} className={`${sans.variable} ${mono.variable} antialiased`} suppressHydrationWarning>
+    <html lang={lang} className={fontClasses} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: introScript() }} />
         <script dangerouslySetInnerHTML={{ __html: IMAGE_FADE_SCRIPT }} />

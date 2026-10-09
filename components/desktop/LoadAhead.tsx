@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import type { ImageRef } from "@/lib/images";
-import { afterStart } from "@/components/intro/after-intro";
+import { whenStarted } from "@/components/intro/after-intro";
 import { canLoadAhead, warmImages } from "@/components/ui/warm-images";
 import { usePrefetchWindow } from "@/components/window/prefetch";
 
@@ -17,8 +17,9 @@ export function LoadAhead({ windows, images }: { windows: string[]; images: Imag
   const prefetch = usePrefetchWindow();
 
   useEffect(() => {
-    if (!canLoadAhead()) return;
-    return afterStart(() => {
+    // also starts the page's shared wait (whenStarted), whatever the connection
+    return whenStarted(() => {
+      if (!canLoadAhead()) return;
       windows.forEach(prefetch);
       warmImages(images, "low");
     });

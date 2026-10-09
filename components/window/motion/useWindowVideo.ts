@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { whenStarted } from "@/components/intro/after-intro";
 import { REDUCED_MOTION } from "../ghost";
 import { observeInWindow, prefersReducedMotion, useWindowScroller } from "./shared";
 
@@ -42,10 +43,18 @@ export function useWindowVideo(toggleable: boolean, threshold = 0.25) {
     if (!v) return;
     if (prefersReducedMotion() && !toggleable) return;
     let inView = false;
+    // a window opened at its own address plays once the page has started
+    // (intro, character, an idle moment): the player and its download stay out
+    // of the first paint, the poster shows meanwhile; later windows play at once
+    let started = false;
     const sync = () => {
-      if (inView && !pausedRef.current && document.visibilityState === "visible") v.play().catch(() => {});
+      if (started && inView && !pausedRef.current && document.visibilityState === "visible") v.play().catch(() => {});
       else v.pause();
     };
+    const cancelStart = whenStarted(() => {
+      started = true;
+      sync();
+    });
     syncRef.current = sync;
     const stop = observeInWindow(
       v,
@@ -59,6 +68,7 @@ export function useWindowVideo(toggleable: boolean, threshold = 0.25) {
     document.addEventListener("visibilitychange", sync);
     return () => {
       stop();
+      cancelStart();
       document.removeEventListener("visibilitychange", sync);
       v.pause();
     };

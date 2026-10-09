@@ -25,6 +25,14 @@ export const INTRO_PARAM = "intro";
 export const FLASH_FROM = [1390, 902] as const;
 
 export const INTRO_BUDGET_MS = { full: 2800, short: 600 } as const;
+
+/**
+ * Without the director (no JS yet on a slow connection, no JS at all, an
+ * error) the overlay leaves by itself after this long (intro.module.css,
+ * `intro-leave` delay). A director that mounts later only marks the end:
+ * the intro never comes back over a page that is already showing.
+ */
+export const OVERLAY_SELF_LEAVE_MS = 3400;
 /** Phones play everything 30 % shorter. */
 export const PHONE_FACTOR = 0.7;
 

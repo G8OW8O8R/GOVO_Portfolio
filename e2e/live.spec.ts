@@ -8,9 +8,15 @@ test.describe("cursor and live skills (desktop mouse)", () => {
     const cursor = page.locator('[aria-hidden="true"][data-state]');
     const file = page.locator('[data-file-key="about"] a');
     const box = (await file.boundingBox())!;
-    await page.mouse.move(box.x + box.width / 2, box.y + 20, { steps: 4 });
+    // the cursor follows pointer moves seen after hydration: move until it shows
+    let nudge = 0;
+    await expect
+      .poll(async () => {
+        await page.mouse.move(box.x + box.width / 2, box.y + 20 + (nudge++ % 2), { steps: 4 });
+        return cursor.getAttribute("data-visible");
+      })
+      .toBe("");
     await expect(cursor).toHaveAttribute("data-state", "open");
-    await expect(cursor).toHaveAttribute("data-visible", "");
 
     await page.goto("/pl/o-mnie#umiejetnosci");
     const row = page.locator('li:has(img[src*="grafika-realtime"])');

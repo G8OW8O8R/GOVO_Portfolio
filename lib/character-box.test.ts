@@ -4,6 +4,7 @@ import {
   FACE,
   FIGURE,
   IMAGE,
+  characterBoxCss,
   characterImageSizes,
   computeCharacterBox,
   imageToScreen,
@@ -111,5 +112,17 @@ describe("isDesktopViewport", () => {
     expect(isDesktopViewport({ width: 390, height: 844 })).toBe(false);
     expect(isDesktopViewport({ width: 844, height: 390 })).toBe(false); // phone landscape
     expect(isDesktopViewport({ width: 768, height: 1024 })).toBe(false); // tablet portrait
+  });
+});
+
+describe("characterBoxCss", () => {
+  it("compares lengths per 1000 image px in min() (Firefox rounds its arguments to 1/60 px)", () => {
+    const css = characterBoxCss(":root");
+    const scales = [...css.matchAll(/--cb-s: calc\(min\(([\d.]+) \* [^,]+, ([\d.]+) \* [^)]+\) \/ 1000\);/g)];
+    expect(scales).toHaveLength(2); // phone and desktop
+    for (const [, a, b] of scales) {
+      expect(Number(a)).toBeGreaterThanOrEqual(100);
+      expect(Number(b)).toBeGreaterThanOrEqual(100);
+    }
   });
 });

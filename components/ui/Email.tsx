@@ -44,9 +44,20 @@ export function EmailLink({
   );
 }
 
-/** The address as text (empty placeholder of the same height until assembled). */
-export function EmailText({ className }: { className?: string }) {
+/**
+ * The address as text (empty placeholder of the same height until assembled).
+ * `fallback`: what a screen reader hears until then (and without JS), so the
+ * link around it is never nameless.
+ */
+export function EmailText({ className, fallback }: { className?: string; fallback?: string }) {
   const email = useEmail();
+  if (!email && fallback) {
+    return (
+      <span className={className} aria-live="polite">
+        <span className="sr-only">{fallback}</span>
+      </span>
+    );
+  }
   return (
     <span className={className} aria-live="polite">
       {email ?? " "}

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Fragment } from "react";
+import { getDictionary } from "@/content/dictionaries";
 import { about } from "@/content/profile/about";
 import { SITE_URL } from "@/content/profile/contact";
 import { cv } from "@/content/profile/cv";
@@ -75,7 +76,7 @@ export function CvDocument({ lang }: { lang: Locale }) {
             <span>{cv.location[lang]} ·</span>{" "}
             <span>
               <EmailLink fallbackHref={href(lang, "contact")} className={s.strong}>
-                <EmailText />
+                <EmailText fallback={getDictionary(lang).files.contact} />
               </EmailLink>
               {/* the line break of the sheet; one flowing line in a narrow window */}
               <span className={s.lineSep}> ·</span>

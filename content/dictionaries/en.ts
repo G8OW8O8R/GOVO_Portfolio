@@ -167,7 +167,14 @@ const en: Dictionary = {
     email: "Send an email",
     ask: "Ask me",
   },
-  notFound: { title: "No such file", back: "Back to the desktop" },
+  notFound: {
+    meta: "No such file | GOVO DIGITAL",
+    file: "not-found.txt",
+    title: "No such file",
+    text: "There's nothing at this address. The link may be old or mistyped. Everything I have is on the desktop.",
+    back: "Back to the desktop",
+    close: "Close and go back to the desktop",
+  },
 };
 
 export default en;

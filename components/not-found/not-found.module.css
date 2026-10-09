@@ -1,0 +1,174 @@
+/*
+ * The 404 page: the desktop's backdrop (body), its logo and character, and one
+ * window below the chin, like the window of any file. Mobile first; the
+ * desktop layout under the same query as the desktop (lib/character-box.ts).
+ */
+
+.root {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+}
+
+.logo {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  z-index: 2;
+  display: block;
+  height: 32px;
+  color: var(--ink);
+}
+
+.stage {
+  position: relative;
+  height: var(--cb-area);
+  overflow: hidden;
+  pointer-events: none;
+  mask-image: linear-gradient(to bottom, #000 72%, transparent);
+}
+
+.window {
+  position: relative;
+  z-index: 1;
+  width: min(520px, calc(100vw - 32px));
+  margin: -96px auto 32px;
+  overflow: clip;
+  background: var(--win-bg);
+  color: var(--ink);
+  border-radius: 14px;
+  box-shadow: var(--shadow-window);
+}
+
+.bar {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  height: 44px;
+  padding: 0 4px;
+  border-bottom: 1px solid var(--win-line);
+  background: var(--win-bar);
+}
+
+.file {
+  grid-column: 2;
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.close {
+  grid-column: 3;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 99px;
+  color: var(--ink-muted);
+}
+
+.close svg {
+  width: 20px;
+  height: 20px;
+}
+
+.close:hover {
+  background: rgb(0 0 0 / 0.05);
+}
+
+.body {
+  padding: 28px 24px 28px;
+  text-align: center;
+}
+
+.code {
+  margin: 0;
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.title {
+  margin: 8px 0 0;
+  font-size: 28px;
+  font-weight: 650;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.text {
+  max-width: 38ch;
+  margin: 12px auto 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+.primary {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  margin-top: 22px;
+  padding: 0 22px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.primary:hover {
+  background: #2a2a2a;
+}
+
+.other {
+  margin: 18px 0 0;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.link {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: rgb(17 17 17 / 0.3);
+  text-underline-offset: 4px;
+}
+
+.link:hover {
+  text-decoration-color: var(--ink);
+}
+
+/* Keep in sync with DESKTOP_MEDIA in lib/character-box.ts */
+@media (min-width: 768px) and (min-height: 540px) and (min-aspect-ratio: 5/6) {
+  .logo {
+    top: 20px;
+    left: 32px;
+    height: 44px;
+  }
+
+  .stage {
+    position: absolute;
+    inset: 0;
+    mask-image: none;
+  }
+
+  /* low on the screen, under the chin like any window of the desktop */
+  /* centred by margins: no transform on text (sharp at any width) */
+  .window {
+    position: absolute;
+    inset: auto 0 28px;
+    margin: 0 auto;
+  }
+
+  .body {
+    padding: 32px 40px 32px;
+  }
+
+  .title {
+    font-size: 40px;
+  }
+}

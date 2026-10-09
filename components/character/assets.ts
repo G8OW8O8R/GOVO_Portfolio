@@ -55,14 +55,24 @@ async function bitmap(file: string, signal: AbortSignal | undefined, { crop, pre
   const opts: ImageBitmapOptions = {
     premultiplyAlpha: premultiply ? "premultiply" : "none",
     colorSpaceConversion: "default",
-    imageOrientation: "none",
+    // no file has an EXIF orientation, so this is the same as "none" (deprecated)
+    imageOrientation: "from-image",
   };
   return crop ? createImageBitmap(blob, crop.x, crop.y, crop.width, crop.height, opts) : createImageBitmap(blob, opts);
 }
 
+/** A 2D scratch canvas: OffscreenCanvas (also in the worker), or a detached <canvas> where it doesn't exist (main thread). */
+export function scratchCanvas(width: number, height: number): OffscreenCanvas | HTMLCanvasElement {
+  if (typeof OffscreenCanvas !== "undefined") return new OffscreenCanvas(width, height);
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  return canvas;
+}
+
 function pixels(img: ImageBitmap, crop?: Rect): Uint8ClampedArray {
   const r = crop ?? { x: 0, y: 0, width: img.width, height: img.height };
-  const canvas = new OffscreenCanvas(r.width, r.height);
+  const canvas = scratchCanvas(r.width, r.height);
   const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
   ctx.drawImage(img, r.x, r.y, r.width, r.height, 0, 0, r.width, r.height);
   return ctx.getImageData(0, 0, r.width, r.height).data;
@@ -75,7 +85,7 @@ function pixels(img: ImageBitmap, crop?: Rect): Uint8ClampedArray {
 export function basePixels(base: ImageBitmap, baseRect: Rect, r: Rect): Uint8ClampedArray {
   const [sx, sy] = toCropSpace([r.x, r.y], baseRect);
   const k = base.width / baseRect.width;
-  const canvas = new OffscreenCanvas(r.width, r.height);
+  const canvas = scratchCanvas(r.width, r.height);
   const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
   ctx.drawImage(base, sx * k, sy * k, r.width * k, r.height * k, 0, 0, r.width, r.height);
   return ctx.getImageData(0, 0, r.width, r.height).data;

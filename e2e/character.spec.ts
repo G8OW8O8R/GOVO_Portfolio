@@ -21,8 +21,18 @@ declare global {
 
 const live = (page: Page) => page.locator("canvas[data-live]");
 
+/**
+ * Playwright's WebKit on Windows draws WebGL in software (~10 fps): the
+ * watchdog rightly calls it a slow device and keeps the poster, so the living
+ * loop can't be checked there (the fallback itself is, in intro.spec.ts).
+ */
+const SOFTWARE_WEBGL = "WebKit on Windows renders WebGL in software: the watchdog falls back to the poster";
+/** Headless Firefox draws ~30 fps here: past the watchdog's window it rightly keeps the poster. */
+const SLOW_HEADLESS = "headless Firefox renders at ~30 fps: the watchdog falls back once its window is over";
+
 test.describe("living character", () => {
-  test("rest frame equals base.jpg, eyes stay in their masks, smooth at CPU 4×", async ({ page, context }) => {
+  test("rest frame equals base.jpg, eyes stay in their masks, smooth at CPU 4×", async ({ page, context, browserName }) => {
+    test.skip(browserName === "webkit", SOFTWARE_WEBGL);
     await page.setViewportSize({ width: 1536, height: 864 });
     await page.goto("/pl?character=debug&seed=1");
     await expect(live(page)).toHaveCount(1, { timeout: 30_000 });
@@ -53,8 +63,9 @@ test.describe("living character", () => {
     await page.evaluate(() => (window.__character.setTarget([0, 0]), window.__character.step(1000 / 60, 240)));
     expect(await page.evaluate(() => window.__character.frame().eyeBlend)).toBe(0);
 
-    // real-time loop at CPU 4×: median frame within a 60 Hz budget
+    // real-time loop at CPU 4×: median frame within a 60 Hz budget (CPU throttling is Chromium's DevTools protocol)
     await page.evaluate(() => (window.__character.setTarget(null), window.__character.manual(false)));
+    if (browserName !== "chromium") return;
     const cdp = await context.newCDPSession(page);
     await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
     await page.waitForTimeout(1000);
@@ -86,6 +97,7 @@ test.describe("living character", () => {
  */
 test.describe("character stays alive", () => {
   test.use({ viewport: { width: 1536, height: 864 } });
+  test.beforeEach(({ browserName }) => test.skip(browserName === "webkit", SOFTWARE_WEBGL));
 
   /** Eyes follow the mouse: left of the face → iris left, right → iris right; no fallback. */
   async function expectAlive(page: Page) {
@@ -115,7 +127,8 @@ test.describe("character stays alive", () => {
     await expectAlive(page);
   });
 
-  test("(b) beforeprint / afterprint: paused while printing, alive after", async ({ page }) => {
+  test("(b) beforeprint / afterprint: paused while printing, alive after", async ({ page, browserName }) => {
+    test.skip(browserName === "firefox", SLOW_HEADLESS);
     await open(page);
     await page.evaluate(() => dispatchEvent(new Event("beforeprint")));
     expect(await page.evaluate(() => window.__character.running())).toBe(false);
@@ -130,7 +143,8 @@ test.describe("character stays alive", () => {
     expect(await page.evaluate(() => sessionStorage.getItem("character:fallback"))).toBeNull();
   });
 
-  test("(c) tab hidden for 5 s and back: the loop resumes", async ({ page }) => {
+  test("(c) tab hidden for 5 s and back: the loop resumes", async ({ page, browserName }) => {
+    test.skip(browserName === "firefox", SLOW_HEADLESS);
     await open(page);
     const setHidden = (hidden: boolean) =>
       page.evaluate((hidden) => {
@@ -152,7 +166,8 @@ test.describe("character stays alive", () => {
     await expectAlive(page);
   });
 
-  test("(d) the Skills tab with its WebGL demo doesn't take the character's context", async ({ page }) => {
+  test("(d) the Skills tab with its WebGL demo doesn't take the character's context", async ({ page, browserName }) => {
+    test.skip(browserName === "firefox", SLOW_HEADLESS);
     await open(page);
     await page.locator('[data-file-key="about"] a').click();
     const dialog = page.getByRole("dialog", { name: "O mnie" });

@@ -1,4 +1,11 @@
 {
+  "character/base-mobile": {
+    "group": "characterMobile",
+    "hash": "965d56a7",
+    "width": 1520,
+    "height": 1136,
+    "placeholder": "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAADwAQCdASoQAAwAA4BaJaQAApMItgGPsAAA/vOB/6KgrK6Gu82apceRBud6iir/g3T00RAb/LyiZVuZRw2khOpa+IaxAAAA"
+  },
   "icons/cv": {
     "group": "icons",
     "hash": "bc8204ba",

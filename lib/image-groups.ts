@@ -14,8 +14,12 @@ export type ImageGroup = {
   /** Names without extension; omitted = every png/jpg in the folder (minus `exclude`). */
   names?: readonly string[];
   exclude?: RegExp;
-  /** Output widths in px: 1× and 2× of the largest size shown (at most the source width). */
-  widths: readonly [number, number];
+  /** Output widths in px, ascending: 1× and 2× of the largest size shown (at most the source width). */
+  widths: readonly number[];
+  /** Formats written (default: AVIF and WebP). */
+  formats?: readonly ImageFormat[];
+  /** AVIF encoder settings instead of the shared ones (a different quality renames the files). */
+  avif?: { quality: number; effort: number };
   /** Crop to this aspect (width / height) like object-fit: cover; `x` = object-position x in %. */
   crop?: { aspect: number; x?: number };
   /** Rendered width as in the `sizes` attribute; {desk} = the desktop media query. */
@@ -40,6 +44,20 @@ export const IMAGE_GROUPS = {
   showreel: { dir: "projects/obok", names: ["showreel-poster"], widths: [960, 1920], sizes: "{desk} 860px, 92vw" },
   /** Project cover: Pricing, service pages and the quick look. */
   cover: { dir: "projects/obok", names: ["cover"], widths: [480, 960], sizes: "{desk} 360px, 90vw" },
+  /**
+   * The character's poster on phones (the crop, base-mobile.jpg): AVIF only, the
+   * WebP fallback is next/image's q90. Widths follow the crop's rendered width ×
+   * DPR 1.75–3; AVIF q80 matches WebP q90 (SSIM of the whole frame, the eyes and
+   * the pendant) at ~15 % less. The page passes the crop's own `sizes`.
+   */
+  characterMobile: {
+    dir: "character",
+    names: ["base-mobile"],
+    widths: [640, 828, 1080, 1280, 1520],
+    formats: ["avif"],
+    avif: { quality: 80, effort: 9 },
+    sizes: "100vw",
+  },
 } as const satisfies Record<string, ImageGroup>;
 
 export type ImageGroupName = keyof typeof IMAGE_GROUPS;

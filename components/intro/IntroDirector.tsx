@@ -4,7 +4,7 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { DESKTOP_MEDIA } from "@/lib/character-box";
 import { VIEWER, characterGaze } from "@/lib/character/look-at";
 import { CHARACTER_FILES, REST_DIRECTION, characterStage } from "@/lib/character/stage";
-import { INTRO_SEEN_KEY, SKIP_EVENTS, currentIntro, fitTail, fullTimeline, loadProgress, shortTimeline } from "@/lib/intro";
+import { INTRO_SEEN_KEY, OVERLAY_SELF_LEAVE_MS, SKIP_EVENTS, currentIntro, fitTail, fullTimeline, loadProgress, shortTimeline } from "@/lib/intro";
 import { cssBezier, EASE_OUT } from "@/lib/motion-tokens";
 
 /** Skipping: everything lands in its final state this fast. */
@@ -38,6 +38,8 @@ export function IntroDirector({ files, overlayClass, centerClass, lineClass, bar
     const html = document.documentElement;
     const mode = currentIntro();
     if (mode === "fade" || mode === "none" || html.hasAttribute("data-intro-done")) return;
+    // hydrated after the overlay left by itself (very slow connection): the page is already showing
+    if (performance.now() >= OVERLAY_SELF_LEAVE_MS) return done();
     try {
       sessionStorage.setItem(INTRO_SEEN_KEY, "1");
     } catch {}

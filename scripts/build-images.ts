@@ -1,6 +1,6 @@
 /**
  * Static picture variants (lib/image-groups.ts): for every source in the
- * groups, AVIF and WebP in the group's two widths, cropped to its frame, plus
+ * groups, AVIF and WebP (or the group's formats) in its widths, cropped to its frame, plus
  * a ~16 px blurred placeholder. Files: public/img/<source path>.<hash>.<width>.<avif|webp>
  * (the hash covers the source and the settings, so a changed picture gets a
  * new name and the old one may be cached forever); list: lib/images.generated.json.
@@ -80,25 +80,30 @@ for (const [name, group] of Object.entries(IMAGE_GROUPS) as [ImageGroupName, Ima
     const input = fs.readFileSync(file);
     const meta = await sharp(input).metadata();
     const region = cropRegion(meta.width!, meta.height!, group.crop);
-    const [w1, w2] = group.widths;
-    if (w2 > region.width) throw new Error(`${key}: ${w2} px is wider than the source (${region.width} px)`);
+    const widths = group.widths;
+    const formats = group.formats ?? (["avif", "webp"] as const);
+    const avif = group.avif ?? ENCODE.avif;
+    const largest = widths[widths.length - 1];
+    if (largest > region.width) throw new Error(`${key}: ${largest} px is wider than the source (${region.width} px)`);
     const hash = createHash("sha1")
       .update(input)
-      .update(JSON.stringify({ widths: group.widths, crop: group.crop ?? null, ENCODE, sharp: sharp.versions.sharp }))
+      .update(
+        JSON.stringify({ widths, crop: group.crop ?? null, ENCODE, ...(group.formats && { formats }), ...(group.avif && { avif }), sharp: sharp.versions.sharp }),
+      )
       .digest("hex")
       .slice(0, 8);
     const cropped = () => sharp(input).extract(region);
-    const sizes: number[] = [];
-    for (const width of [w1, w2]) {
-      for (const format of ["avif", "webp"] as const) {
+    const sizes: Record<string, number[]> = {};
+    for (const width of widths) {
+      for (const format of formats) {
         const out = path.join(PUBLIC, variantPath(key, hash, width, format));
         written.add(path.normalize(out));
         if (!fs.existsSync(out)) {
           fs.mkdirSync(path.dirname(out), { recursive: true });
           const resized = cropped().resize({ width, kernel: "lanczos3" });
-          await (format === "avif" ? resized.avif(ENCODE.avif) : resized.webp(ENCODE.webp)).toFile(out);
+          await (format === "avif" ? resized.avif(avif) : resized.webp(ENCODE.webp)).toFile(out);
         }
-        sizes.push(fs.statSync(out).size);
+        (sizes[format] ??= []).push(fs.statSync(out).size);
       }
     }
     const tiny = await cropped()
@@ -109,15 +114,16 @@ for (const [name, group] of Object.entries(IMAGE_GROUPS) as [ImageGroupName, Ima
     const entry: ImageEntry = {
       group: name,
       hash,
-      width: w2,
-      height: Math.round((w2 * region.height) / region.width),
+      width: largest,
+      height: Math.round((largest * region.height) / region.width),
       placeholder: `data:image/webp;base64,${tiny.toString("base64")}`,
     };
     manifest[key] = entry;
     totalSource += input.length;
-    totalOut += sizes.reduce((a, b) => a + b, 0);
+    totalOut += Object.values(sizes).flat().reduce((a, b) => a + b, 0);
     const kb = (n: number) => `${(n / 1024).toFixed(1)}`.padStart(6);
-    rows.push(`${key.padEnd(36)} ${kb(input.length)} KB → avif ${kb(sizes[0])} / ${kb(sizes[2])}  webp ${kb(sizes[1])} / ${kb(sizes[3])}  (${w1}/${w2} px)`);
+    const out = Object.entries(sizes).map(([format, list]) => `${format} ${list.map(kb).join(" /")}`);
+    rows.push(`${key.padEnd(36)} ${kb(input.length)} KB → ${out.join("  ")}  (${widths.join("/")} px)`);
   }
 }
 

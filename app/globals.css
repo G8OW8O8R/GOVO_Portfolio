@@ -256,11 +256,18 @@ img[data-fade] {
   }
 }
 
+/*
+ * Reduced motion: no transitions at all. A non-zero duration here would turn
+ * on `transition: all` (the initial property) on every element, and Firefox
+ * then animates each inherited change, e.g. `visibility` of a tab panel's
+ * whole subtree. Nothing waits for transitionend with reduced motion.
+ */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    transition-duration: 0.01ms !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
     animation-duration: 0.01ms !important;
   }
 

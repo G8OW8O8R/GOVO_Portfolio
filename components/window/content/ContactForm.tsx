@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useId, useRef, useState, type FocusEvent, type FormEvent, type ReactNode } from "react";
+import { useActionState, useEffect, useId, useRef, useState, useTransition, type FocusEvent, type FormEvent, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { Check, Copy } from "lucide-react";
 import { sendContact } from "@/app/[lang]/(desktop)/kontakt/actions";
@@ -15,11 +15,11 @@ import {
   HONEYPOT,
   LIMITS,
   contactMailto,
-  validateContact,
   type ContactErrorCode,
   type ContactField,
   type ContactState,
 } from "@/lib/contact";
+import type { checkContact } from "@/lib/contact-live";
 import type { Locale } from "@/lib/i18n";
 import { href } from "@/lib/routes";
 import { ui } from "./ui";
@@ -58,7 +58,14 @@ function errorText(field: ContactField, code: ContactErrorCode, L: Labels): stri
  * flashes.
  */
 export function ContactForm({ lang, labels: L, initial = EMPTY }: { lang: Locale; labels: Labels; initial?: Values }) {
-  const [state, formAction, pending] = useActionState(sendContact, IDLE);
+  // Without JavaScript the form posts to the server action itself (formAction);
+  // with it the submit calls the action here, so a failed request (offline, the
+  // server unreachable) becomes the "couldn't send" message, not a broken window.
+  const [serverState, formAction, actionPending] = useActionState(sendContact, IDLE);
+  const [clientState, setClientState] = useState<ContactState | null>(null);
+  const [sending, startSending] = useTransition();
+  const state = clientState ?? serverState;
+  const pending = actionPending || sending;
   const [values, setValues] = useState<Values>(initial);
   const [touched, setTouched] = useState<Partial<Record<ContactField, boolean>>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -69,8 +76,19 @@ export function ContactForm({ lang, labels: L, initial = EMPTY }: { lang: Locale
   const sentEvent = useRef<{ topic: string; budget: string } | null>(null);
   const id = useId();
 
-  const check = validateContact({ ...values, lang });
-  const errors = check.ok ? {} : check.errors;
+  // Live validation loads with the form, not with the desktop. Until it has
+  // (a few ms after mounting), a submit goes straight to the server, which
+  // checks anyway, and its answer marks the fields.
+  const [checker, setChecker] = useState<typeof checkContact | null>(null);
+  useEffect(() => {
+    let alive = true;
+    import("@/lib/contact-live").then((m) => alive && setChecker(() => m.checkContact));
+    return () => {
+      alive = false;
+    };
+  }, []);
+  const check = checker?.({ ...values, lang }) ?? null;
+  const errors = check ? (check.ok ? {} : check.errors) : state.status === "invalid" ? state.errors : {};
   const errorFor = (field: ContactField) =>
     (submitted || touched[field]) && errors[field] ? errorText(field, errors[field]!, L) : null;
 
@@ -96,14 +114,18 @@ export function ContactForm({ lang, labels: L, initial = EMPTY }: { lang: Locale
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     setSubmitted(true);
-    if (check.ok) {
-      // the action takes over
+    e.preventDefault();
+    if (!check || check.ok) {
       const trap = e.currentTarget.elements.namedItem(HONEYPOT);
       const bot = trap instanceof HTMLInputElement && trap.value !== "";
       sentEvent.current = bot ? null : { topic: values.subject, budget: (!job && values.budget) || "none" };
+      const data = new FormData(e.currentTarget);
+      startSending(async () => {
+        const next = await sendContact(state, data).catch((): ContactState => ({ status: "error" }));
+        startSending(() => setClientState(next));
+      });
       return;
     }
-    e.preventDefault();
     const first = CONTACT_FIELDS.find((f) => errors[f]);
     formRef.current?.querySelector<HTMLElement>(`[data-field="${first}"]`)?.focus();
   };

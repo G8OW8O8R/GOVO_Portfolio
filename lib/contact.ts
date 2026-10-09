@@ -1,10 +1,12 @@
-import { z } from "zod";
 import { budgets, findBudget, findSubject, subjects } from "@/content/profile/contact";
 import type { Locale } from "./i18n";
 
 /**
- * Contact form logic shared by the browser (live validation) and the server
- * action (the same schema again, rate limit, e-mail). No secrets here.
+ * Contact form logic shared by the browser and the server action: limits,
+ * input normalisation, error codes, rate limit, e-mail. The schema itself
+ * lives twice with the same rules: full Zod on the server (contact-schema.ts)
+ * and Zod Mini in the browser (contact-live.ts), so the page does not ship
+ * the whole of Zod; a test keeps the two in step. No secrets here.
  */
 
 export const CONTACT_FIELDS = ["name", "email", "subject", "budget", "message"] as const;
@@ -17,31 +19,28 @@ export const LIMITS = { name: [2, 80], email: [3, 160], message: [10, 4000] } as
 /** Honeypot field: hidden from people, bots fill it in. */
 export const HONEYPOT = "website";
 
-const oneLine = (s: string) => s.replace(/[\r\n\t]+/g, " ").trim();
+/** Names may not span lines (they end up in the e-mail subject). */
+export const oneLine = (s: string) => s.replace(/[\r\n\t]+/g, " ").trim();
 
-export const contactSchema = z
-  .object({
-    name: z.string().transform(oneLine).pipe(z.string().min(LIMITS.name[0]).max(LIMITS.name[1])),
-    email: z.string().trim().max(LIMITS.email[1]).pipe(z.email()),
-    subject: z.enum(subjects.map((s) => s.id) as [string, ...string[]]),
-    budget: z
-      .enum(budgets.map((b) => b.id) as [string, ...string[]])
-      .optional()
-      .catch(undefined),
-    message: z.string().trim().min(LIMITS.message[0]).max(LIMITS.message[1]),
-    lang: z.enum(["pl", "en"]).catch("pl"),
-  })
-  // a job offer has no budget
-  .transform((v) => (v.subject === "praca" ? { ...v, budget: undefined } : v));
+export const subjectIds = subjects.map((s) => s.id) as [string, ...string[]];
+export const budgetIds = budgets.map((b) => b.id) as [string, ...string[]];
 
-export type ContactInput = z.input<typeof contactSchema>;
-export type ContactData = z.output<typeof contactSchema>;
+/** What both schemas output: a job offer has no budget. */
+export type ContactData = {
+  name: string;
+  email: string;
+  subject: string;
+  budget?: string | undefined;
+  message: string;
+  lang: "pl" | "en";
+};
 
-/** Raw form values (FormData or state) → validated data or one error code per field. */
-export function validateContact(
-  raw: Record<string, unknown>,
-): { ok: true; data: ContactData } | { ok: false; errors: ContactErrors } {
-  const input = {
+export type ContactInput = ReturnType<typeof contactInput>;
+export type ContactResult = { ok: true; data: ContactData } | { ok: false; errors: ContactErrors };
+
+/** Raw form values (FormData or state) → the strings both schemas parse. */
+export function contactInput(raw: Record<string, unknown>) {
+  return {
     name: str(raw.name),
     email: str(raw.email),
     subject: str(raw.subject),
@@ -49,10 +48,12 @@ export function validateContact(
     message: str(raw.message),
     lang: str(raw.lang),
   };
-  const result = contactSchema.safeParse(input);
-  if (result.success) return { ok: true, data: result.data };
+}
+
+/** Schema issues → one error code per field (the first issue wins). */
+export function contactErrors(issues: readonly { code: string; path: readonly PropertyKey[] }[], input: ContactInput): ContactErrors {
   const errors: ContactErrors = {};
-  for (const issue of result.error.issues) {
+  for (const issue of issues) {
     const field = issue.path[0] as ContactField;
     if (!CONTACT_FIELDS.includes(field) || errors[field]) continue;
     const value = input[field as keyof typeof input];
@@ -65,7 +66,7 @@ export function validateContact(
             ? "long"
             : "invalid";
   }
-  return { ok: false, errors };
+  return errors;
 }
 
 const str = (v: unknown) => (typeof v === "string" ? v : "");

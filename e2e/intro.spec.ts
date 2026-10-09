@@ -57,7 +57,17 @@ test.describe("intro and the living logo", () => {
     await expect(html(page)).toHaveAttribute("data-intro-done", "", { timeout: 6000 });
     // the logo sits top left: the cursor far right, then far below it
     await page.mouse.move(1500, 40, { steps: 4 });
-    await expect.poll(async () => (await eye(page))?.x ?? 0, { timeout: 3000 }).toBeGreaterThan(2);
+    const live = async () => (await page.locator("canvas[data-live]").count()) > 0;
+    await expect.poll(async () => !(await live()) || ((await eye(page))?.x ?? 0) > 2, { timeout: 3000 }).toBe(true);
+    if (!(await live())) {
+      // the watchdog found the device too slow (Playwright's WebKit on Windows draws WebGL in
+      // software, ~10 fps): the poster stays and the logo stands still, eyes straight ahead
+      test.info().annotations.push({ type: "slow device", description: "character fell back to the poster" });
+      await page.mouse.move(110, 840, { steps: 4 });
+      const e = await eye(page);
+      expect(Math.max(Math.abs(e?.x ?? 0), Math.abs(e?.y ?? 0))).toBeLessThan(0.01);
+      return;
+    }
     await page.mouse.move(110, 840, { steps: 4 });
     await expect.poll(async () => (await eye(page))?.y ?? 0, { timeout: 3000 }).toBeGreaterThan(2);
     // never more than ±4 viewBox units (away from the logo hover)

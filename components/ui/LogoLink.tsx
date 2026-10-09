@@ -6,6 +6,7 @@ import { computeCharacterBox, isDesktopViewport } from "@/lib/character-box";
 import { TUNING, type Vec2 } from "@/lib/character/config";
 import { Spring2 } from "@/lib/character/motion";
 import { characterPulse } from "@/lib/character/pulse";
+import { characterStage } from "@/lib/character/stage";
 import { LOGO, eyeTransform, logoGaze, sweepBand, viewBoxToClient } from "@/lib/logo-eyes";
 import { pointer } from "@/lib/pointer";
 import { useOpenWindowKey } from "@/components/window/store";
@@ -46,7 +47,7 @@ export function LogoLink({ href, label, className, children }: { href: string; l
     addEventListener("scroll", invalidate, { passive: true, capture: true });
     addEventListener("resize", invalidate);
 
-    const spring = new Spring2(TUNING.gazeSpring.stiffness, TUNING.gazeSpring.damping);
+    let spring = new Spring2(TUNING.gazeSpring.stiffness, TUNING.gazeSpring.damping);
     let reach: number = LOGO.reach;
     // the character's gaze reach in CSS px (sent with every point target)
     const viewport = { width: innerWidth, height: innerHeight };
@@ -84,8 +85,22 @@ export function LogoLink({ href, label, className, children }: { href: string; l
       }
     });
 
+    // the character fell back to its poster (slow device, lost context): the logo stands, eyes straight ahead
+    const rest = () => {
+      for (const e of eyes) {
+        e.el.removeAttribute("transform");
+        e.last = "";
+      }
+      band?.setAttribute("opacity", "0");
+      band?.setAttribute("visibility", "hidden");
+      bandLast = "";
+      spring = new Spring2(TUNING.gazeSpring.stiffness, TUNING.gazeSpring.damping);
+    };
+    const offStage = characterStage.onLoad((l) => l.status === "poster" && rest());
+
     return () => {
       off();
+      offStage();
       ro.disconnect();
       removeEventListener("scroll", invalidate, { capture: true });
       removeEventListener("resize", invalidate);

@@ -194,7 +194,6 @@ export function serviceJsonLd({
     serviceType: name,
     description,
     url,
-    inLanguage: lang,
     provider: provider(lang),
     ...(areaServed ? { areaServed } : {}),
     offers: packages.map((p) => ({

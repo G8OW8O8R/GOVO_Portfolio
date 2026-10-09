@@ -44,6 +44,26 @@ const FOCUSABLE =
 
 const isDesktop = () => matchMedia(DESKTOP_MEDIA).matches;
 
+/**
+ * The window's tab stops in document order, as the browser's own Tab would
+ * visit them: visible, not inert, no tabindex="-1", and one stop per radio
+ * group (the checked radio, or the first one), where the arrow keys take over.
+ */
+function tabStops(root: HTMLElement): HTMLElement[] {
+  const seenGroups = new Set<string>();
+  return [...root.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((n) => {
+    if (n.tabIndex < 0 || n.getClientRects().length === 0 || n.closest("[hidden],[inert]")) return false;
+    if (getComputedStyle(n).visibility === "hidden") return false;
+    if (n instanceof HTMLInputElement && n.type === "radio" && n.name) {
+      const group = [...root.querySelectorAll<HTMLInputElement>(`input[type=radio][name="${CSS.escape(n.name)}"]`)];
+      const stop = group.find((r) => r.checked) ?? group[0];
+      if (n !== stop || seenGroups.has(n.name)) return false;
+      seenGroups.add(n.name);
+    }
+    return true;
+  });
+}
+
 /** How long the gaze keeps following a scroll of the window content, ms. */
 const SCROLL_GLANCE_MS = 900;
 
@@ -321,22 +341,20 @@ export function AppWindow({
     };
   }, [y]);
 
+  // Tab and Shift+Tab move through the window's own stops and wrap around, the
+  // same in every browser (Safari would skip links and leave the window).
   const trapFocus = (e: ReactKeyboardEvent<HTMLElement>) => {
-    if (e.key !== "Tab" || !ref.current) return;
-    const items = [...ref.current.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(
-      (n) => n.getClientRects().length > 0 && !n.closest("[hidden],[inert]"),
-    );
+    if (e.key !== "Tab" || e.altKey || e.ctrlKey || e.metaKey || !ref.current) return;
+    const items = tabStops(ref.current);
     if (!items.length) return;
-    const first = items[0];
-    const last = items[items.length - 1];
+    e.preventDefault();
+    const n = items.length;
     const active = document.activeElement;
-    if (e.shiftKey && (active === first || active === ref.current)) {
-      e.preventDefault();
-      last.focus();
-    } else if (!e.shiftKey && active === last) {
-      e.preventDefault();
-      first.focus();
-    }
+    const at = items.indexOf(active as HTMLElement);
+    // focus on something that isn't a stop (the window itself, text clicked inside): the stops around it
+    const after = items.findIndex((el) => !!active && !!(active.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING));
+    const next = at >= 0 ? at + (e.shiftKey ? -1 : 1) : e.shiftKey ? (after === -1 ? n : after) - 1 : after === -1 ? 0 : after;
+    items[(next + n) % n].focus();
   };
 
   return (
@@ -354,7 +372,8 @@ export function AppWindow({
           style={{ x, y, scaleX, scaleY, opacity }}
           onKeyDown={trapFocus}
         >
-          <header
+          {/* not a <header>: inside the dialog it would be a second banner landmark */}
+          <div
             className={s.bar}
             onPointerDown={onBarPointerDown}
             onPointerMove={onBarPointerMove}
@@ -386,7 +405,7 @@ export function AppWindow({
             <button type="button" className={s.sheetClose} onClick={() => close()} aria-label={labels.close}>
               <X aria-hidden="true" />
             </button>
-          </header>
+          </div>
           <div ref={scrollerRef} className={s.scroller} data-window-scroller="">
             {children}
           </div>

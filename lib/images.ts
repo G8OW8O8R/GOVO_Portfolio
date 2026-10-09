@@ -1,13 +1,13 @@
 import { DESKTOP_MEDIA } from "./character-box";
-import { IMAGE_GROUPS, variantPath, type ImageEntry, type ImageFormat, type ImageManifest, type ImageRef } from "./image-groups";
+import { IMAGE_FORMATS, IMAGE_GROUPS, variantPath, type ImageEntry, type ImageFormat, type ImageManifest, type ImageRef } from "./image-groups";
 
 export type { ImageRef } from "./image-groups";
 
-/** What a <picture> source needs: AVIF and WebP srcsets for the rendered `sizes`. */
+/** What a <picture> source needs: AVIF and WebP srcsets for the rendered `sizes` (empty for a format the group doesn't write). */
 export type Srcsets = {
   avif: string;
   webp: string;
-  /** WebP at the 1× width, for browsers without srcset */
+  /** WebP at the 1× width, for browsers without srcset (empty without WebP) */
   src: string;
   sizes: string;
 };
@@ -26,11 +26,13 @@ export function srcset(key: string, hash: string, widths: readonly number[], for
 
 /** Srcsets of a generated picture; `sizes` defaults to its group's (the size it is shown at). */
 export function srcsets({ key, hash, group }: ImageRef, sizes?: string): Srcsets {
-  const { widths, sizes: groupDefault } = IMAGE_GROUPS[group];
+  const { widths, sizes: groupDefault, ...rest } = IMAGE_GROUPS[group];
+  const formats: readonly ImageFormat[] = ("formats" in rest && rest.formats) || IMAGE_FORMATS;
+  const has = (f: ImageFormat) => formats.includes(f);
   return {
-    avif: srcset(key, hash, widths, "avif"),
-    webp: srcset(key, hash, widths, "webp"),
-    src: variantPath(key, hash, widths[0], "webp"),
+    avif: has("avif") ? srcset(key, hash, widths, "avif") : "",
+    webp: has("webp") ? srcset(key, hash, widths, "webp") : "",
+    src: has("webp") ? variantPath(key, hash, widths[0], "webp") : "",
     sizes: sizes ?? groupSizes(groupDefault),
   };
 }

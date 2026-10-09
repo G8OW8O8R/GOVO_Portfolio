@@ -15,7 +15,7 @@ type Hit = { url: string; title?: string; referrer?: string; name?: string; data
 
 const STUB = `window.__hits=[];window.umami={track:function(b){window.__hits.push(typeof b==="function"?b({website:"stub"}):b)}};`;
 
-const onDev = () => test.info().project.name === "dev";
+const onDev = () => test.info().project.name.startsWith("dev");
 
 /** Stub tracker, Umami unreachable, external links answered empty; returns how often the tracker was requested. */
 async function stub(context: BrowserContext) {
@@ -89,6 +89,7 @@ test.describe("statistics (production build)", () => {
     const popup = page.waitForEvent("popup");
     await page.getByRole("link", { name: /Otwórz Obok/ }).click();
     await (await popup).close();
+    await page.bringToFront(); // WebKit keeps the page in the background after the new tab: no frames, nothing "stable"
     await page.keyboard.press("Escape");
     await expect(page).toHaveURL(/\/pl$/);
 

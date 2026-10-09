@@ -22,7 +22,7 @@
   /* not quite opaque: the page beneath is rasterised while the assets load,
      not all at once in the frame the dark starts lifting (occlusion culling) */
   opacity: 0.998;
-  /* never stuck: without the director (no JS, an error) the overlay leaves by itself */
+  /* never stuck: without the director (no JS, an error, JS still loading) the overlay leaves by itself (OVERLAY_SELF_LEAVE_MS) */
   animation: intro-leave 0.3s ease-out 3.4s both;
 }
 

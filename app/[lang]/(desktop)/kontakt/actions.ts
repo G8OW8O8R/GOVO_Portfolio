@@ -8,9 +8,9 @@ import {
   buildContactEmail,
   clientIp,
   createRateLimiter,
-  validateContact,
   type ContactState,
 } from "@/lib/contact";
+import { validateContact } from "@/lib/contact-schema";
 import { SITE_URL } from "@/lib/site";
 
 const limiter = createRateLimiter(CONTACT_RATE);
@@ -19,8 +19,8 @@ const limiter = createRateLimiter(CONTACT_RATE);
 const FROM = "GOVO Portfolio <onboarding@resend.dev>";
 
 /**
- * Contact form → e-mail via the Resend REST API (no SDK). The same Zod schema
- * as in the browser, a honeypot, 3 messages / 10 min per IP. The API key is
+ * Contact form → e-mail via the Resend REST API (no SDK). The full Zod schema
+ * (the browser checks the same rules with Zod Mini), a honeypot, 3 messages / 10 min per IP. The API key is
  * read on the server only and never logged or returned.
  */
 export async function sendContact(_prev: ContactState, formData: FormData): Promise<ContactState> {

@@ -18,7 +18,15 @@ export const MOBILE_CROP_FILE = "base-mobile.jpg";
  * landscape, tablet, desktop) get the full image.
  */
 export const CROP_MAX_ASPECT = 1 / 2;
-export const CROP_MEDIA = "(max-aspect-ratio: 1/2)";
+/**
+ * The poster media query reaches a little past that, to 412×823 (aspect
+ * 0.5006, a common Android size): the crop still holds everything such a phone
+ * shows, which is all a still poster needs. The living character also needs
+ * the warp reach around it; where the crop falls short of that, the engine
+ * loads the full image as its base (cropFits), as on any wider screen.
+ */
+export const CROP_MEDIA_ASPECT = 101 / 200;
+export const CROP_MEDIA = "(max-aspect-ratio: 101/200)";
 
 /**
  * The character box scales with 100svh, which is shorter than the height the

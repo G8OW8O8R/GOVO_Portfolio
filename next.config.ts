@@ -1,9 +1,16 @@
+import fs from "node:fs";
 import type { NextConfig } from "next";
+import { eyesSchema } from "./lib/character/eyes-schema";
 import { ANALYTICS_BASE, UMAMI_ORIGIN, UMAMI_SEND } from "./lib/analytics";
 import { nextRedirects } from "./lib/redirects";
 import { localizedSegmentRules } from "./lib/routes";
 
+// The character's eyes.json reaches the browser unchecked: a broken file fails here, in every build.
+eyesSchema.parse(JSON.parse(fs.readFileSync("public/character/eyes.json", "utf8")));
+
 const nextConfig: NextConfig = {
+  // a 404 page for addresses outside every route (the root layout sits under [lang])
+  experimental: { globalNotFound: true },
   images: {
     // WebP only: Next encodes AVIF at quality × 0.625 (q100 → 63), which
     // smears the character's fine detail. WebP q90 keeps it.

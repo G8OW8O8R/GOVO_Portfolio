@@ -129,9 +129,14 @@ export function characterImageSizes(): string {
 /**
  * The same box as CSS custom properties: --cb-s (length per image px),
  * --cb-x, --cb-y, --cb-w, --cb-h, --cb-area. Mirrors computeCharacterBox.
+ * Firefox rounds the arguments of min() to 1/60 px; at ~0.56 px per image px
+ * that made the character 2 % smaller, so min() compares the length per
+ * 1000 image px and the result is divided afterwards.
  */
 export function characterBoxCss(selector: string): string {
   const focusHeight = MOBILE.focusBottom - MOBILE.focusTop;
+  const k = (share: number) => Math.round(share * 1000 * 1e6) / 1e6;
+  const perImagePx = (a: string, b: string) => `calc(min(${a}, ${b}) / 1000)`;
   const shared = `
     --cb-x: calc(50vw - ${FACE.x} * var(--cb-s));
     --cb-w: calc(${IMAGE.width} * var(--cb-s));
@@ -139,13 +144,13 @@ export function characterBoxCss(selector: string): string {
 
   return `
 ${selector} {
-  --cb-s: min(calc(${MOBILE.maxHeightShare} * 100svh / ${focusHeight}), calc(${MOBILE.figureShare} * 100vw / ${FIGURE_WIDTH}));${shared}
+  --cb-s: ${perImagePx(`${k(MOBILE.maxHeightShare)} * 100svh / ${focusHeight}`, `${k(MOBILE.figureShare)} * 100vw / ${FIGURE_WIDTH}`)};${shared}
   --cb-y: calc(${MOBILE.top}px - ${MOBILE.focusTop} * var(--cb-s));
   --cb-area: calc(${MOBILE.top}px + ${focusHeight} * var(--cb-s));
 }
 @media ${DESKTOP_MEDIA} {
   ${selector} {
-    --cb-s: min(calc(${DESKTOP.zoom} * 100dvh / ${IMAGE.height}), calc(${DESKTOP.maxFigureShare} * 100vw / ${FIGURE_WIDTH}));${shared}
+    --cb-s: ${perImagePx(`${k(DESKTOP.zoom)} * 100dvh / ${IMAGE.height}`, `${k(DESKTOP.maxFigureShare)} * 100vw / ${FIGURE_WIDTH}`)};${shared}
     --cb-y: calc(100dvh - ${IMAGE.height} * var(--cb-s));
     --cb-area: 100dvh;
   }

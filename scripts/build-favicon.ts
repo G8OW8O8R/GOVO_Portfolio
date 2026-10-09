@@ -1,8 +1,10 @@
 /**
  * Favicon from the logo's own owl eyes (#govo-eye-L/R in public/brand/logo.svg),
  * white on the brand's black, moved closer together so they read at 16–32 px.
- * Writes app/icon.svg, app/icon1.png (32 px) and app/apple-icon.png (180 px,
- * opaque full bleed – iOS rounds it itself). Run after changing the logo:
+ * Writes app/icon.svg, app/icon1.png (32 px), app/apple-icon.png (180 px,
+ * opaque full bleed – iOS rounds it itself) and public/icon-192.png,
+ * icon-512.png for the web app manifest (app/manifest.ts; full bleed, the eyes
+ * inside the maskable safe zone, the middle 80 %). Run after changing the logo:
  *   pnpm favicon
  */
 import { chromium } from "@playwright/test";
@@ -36,6 +38,9 @@ async function png(svg: string, px: number, out: string) {
 }
 await png(fav, 32, "app/icon1.png");
 await png(icon({ radius: 0, eye: 25, gap: 4 }), 180, "app/apple-icon.png");
+const maskable = icon({ radius: 0, eye: 21, gap: 4 });
+await png(maskable, 192, "public/icon-192.png");
+await png(maskable, 512, "public/icon-512.png");
 // preview at real sizes on light and dark tab strips
 await p.setViewportSize({ width: 420, height: 120 });
 const img = (px: number) => `<img src="data:image/svg+xml;base64,${Buffer.from(fav).toString("base64")}" width="${px}" height="${px}">`;
@@ -43,4 +48,4 @@ await p.setContent(`<body style="margin:0;display:grid;grid-template-columns:1fr
 fs.mkdirSync(".tmp", { recursive: true });
 await p.screenshot({ path: ".tmp/favicon-preview.png" });
 await b.close();
-console.log(`favicon: app/icon.svg (${fav.length} B), app/icon1.png, app/apple-icon.png; preview .tmp/favicon-preview.png`);
+console.log(`favicon: app/icon.svg (${fav.length} B), app/icon1.png, app/apple-icon.png, public/icon-192.png, icon-512.png; preview .tmp/favicon-preview.png`);

@@ -78,6 +78,31 @@ export function afterStart(run: () => void, { idleTimeoutMs = 2000, maxIntroWait
   };
 }
 
+let pageStarted = false;
+let waiting: Set<() => void> | null = null;
+
+/**
+ * afterStart shared by the whole page: the first call (the desktop mounting)
+ * starts the wait, later calls join it, and once the start is over `run` runs
+ * at once – a window opened minutes later doesn't wait for a grace period again.
+ */
+export function whenStarted(run: () => void): Cancel {
+  if (pageStarted) {
+    run();
+    return () => {};
+  }
+  if (!waiting) {
+    const queue = (waiting = new Set());
+    afterStart(() => {
+      pageStarted = true;
+      waiting = null;
+      queue.forEach((fn) => fn());
+    });
+  }
+  waiting.add(run);
+  return () => void waiting?.delete(run);
+}
+
 /** requestIdleCallback with a deadline (a short timeout where it doesn't exist). */
 export function idle(run: () => void, timeout: number): Cancel {
   if ("requestIdleCallback" in window) {

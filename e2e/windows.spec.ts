@@ -1,4 +1,31 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+type TouchStep = "touchStart" | "touchMove" | "touchEnd";
+
+/**
+ * One finger at x = 200: CDP touch input in Chromium; elsewhere a synthetic
+ * event with the same touch list, sent to the element under the finger
+ * (WebKit has no Touch constructor, the sheet reads only touches[0].clientY).
+ */
+async function finger(page: Page, browserName: string): Promise<(type: TouchStep, y?: number) => Promise<unknown>> {
+  if (browserName === "chromium") {
+    const cdp = await page.context().newCDPSession(page);
+    return (type, y = 0) => cdp.send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x: 200, y }] });
+  }
+  return (type, y = 0) =>
+    page.evaluate(
+      ({ type, y }) => {
+        const w = window as unknown as { __touchTarget?: Element };
+        if (type === "touchStart") w.__touchTarget = document.elementFromPoint(200, y) ?? document.body;
+        const point = { identifier: 1, clientX: 200, clientY: y, target: w.__touchTarget };
+        const e = new Event(type.toLowerCase(), { bubbles: true, cancelable: true });
+        const list = type === "touchEnd" ? [] : [point];
+        Object.defineProperties(e, { touches: { value: list }, targetTouches: { value: list }, changedTouches: { value: [point] } });
+        w.__touchTarget!.dispatchEvent(e);
+      },
+      { type, y },
+    );
+}
 
 const windows = [
   { path: "/pl/o-mnie", title: "O mnie", heading: "Piotr Goworek" },
@@ -106,7 +133,11 @@ test.describe("desktop windows", () => {
       await page.getByRole("navigation", { name: "Pliki na pulpicie" }).getByRole("link", { name: "Oferta" }).click();
       const win = page.getByRole("dialog", { name: "Oferta" });
       await expect(win).toBeVisible();
-      await page.waitForTimeout(1200);
+      // the window's motion is over once the dock has slid away (slower in WebKit at 1920×1080)
+      await expect
+        .poll(() => page.evaluate(() => getComputedStyle(document.querySelector("[data-dock]")!).visibility), { timeout: 5000 })
+        .toBe("hidden");
+      await page.waitForTimeout(300);
 
       const state = await page.evaluate(() => {
         const w = document.querySelector<HTMLElement>("[data-app-window]")!;
@@ -170,7 +201,7 @@ test.describe("desktop windows", () => {
   });
 });
 
-test("phone: windows are bottom sheets; swipe down closes", async ({ browser }) => {
+test("phone: windows are bottom sheets; swipe down closes", async ({ browser, browserName }) => {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   const page = await context.newPage();
   await page.goto("/pl");
@@ -180,9 +211,7 @@ test("phone: windows are bottom sheets; swipe down closes", async ({ browser }) 
   await expect.poll(async () => (await sheet.boundingBox())?.width).toBe(390);
   await expect.poll(async () => Math.round((await sheet.boundingBox())!.y)).toBe(28); // slid in
 
-  const cdp = await context.newCDPSession(page);
-  const touch = (type: "touchStart" | "touchMove" | "touchEnd", y = 0) =>
-    cdp.send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x: 200, y }] });
+  const touch = await finger(page, browserName);
   await touch("touchStart", 300);
   for (let y = 320; y <= 560; y += 20) await touch("touchMove", y);
   await touch("touchEnd");

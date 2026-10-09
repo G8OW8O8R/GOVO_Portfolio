@@ -29,7 +29,7 @@ export function PrivacyWindow({ lang }: { lang: Locale }) {
                 <Fragment key={i}>
                   {i > 0 && (
                     <EmailLink fallbackHref={href(lang, "contact")} className={ui.link}>
-                      <EmailText />
+                      <EmailText fallback={dict.files.contact} />
                     </EmailLink>
                   )}
                   {part}

@@ -121,7 +121,12 @@ export function ProjectWindow({ project, lang }: { project: Project; lang: Local
         <Section id={sid("assets")} title={s.assets}>
           <p className={`${ui.body} max-w-[62ch] text-pretty`}>{cs.assets.text[lang]}</p>
           {/* phone: a row that scrolls sideways inside the window; desktop: all five side by side */}
-          <ul className="-mx-5 mt-7 flex snap-x snap-mandatory scroll-px-5 gap-3 overflow-x-auto px-5 pb-2 desk:mx-0 desk:grid desk:grid-cols-5 desk:overflow-visible desk:px-0 desk:pb-0">
+          {/* focusable: the keyboard scrolls it on phones */}
+          <ul
+            tabIndex={0}
+            aria-labelledby={sid("assets")}
+            className="-mx-5 mt-7 flex snap-x snap-mandatory scroll-px-5 gap-3 overflow-x-auto px-5 pb-2 desk:mx-0 desk:grid desk:grid-cols-5 desk:overflow-visible desk:px-0 desk:pb-0"
+          >
             {cs.assets.gallery.map((scene) => (
               <li key={scene.src} className="w-[38%] shrink-0 snap-start desk:w-auto">
                 <figure>
