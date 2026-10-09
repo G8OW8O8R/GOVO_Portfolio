@@ -7,7 +7,7 @@ import { AppWindow } from "@/components/window/AppWindow";
 import { ServiceWindow } from "@/components/window/content/OfferPageWindow";
 import { isLocale } from "@/lib/i18n";
 import { href, pageIdForSlug, serviceIds, serviceSlugs } from "@/lib/routes";
-import { breadcrumbJsonLd, packagesById, pageMetadata, serviceJsonLd, titleWithPrice, withPrice } from "@/lib/seo";
+import { breadcrumbJsonLd, faqJsonLd, packagesById, pageMetadata, serviceJsonLd, titleWithPrice, withPrice } from "@/lib/seo";
 
 export const dynamicParams = false;
 
@@ -55,6 +55,8 @@ export default async function ServicePage({ params }: PageProps<"/[lang]/uslugi/
             { name: dict.files.offer, path: href(lang, "offer") },
             { name: page.name[lang], path },
           ]),
+          // the questions shown in the window, word for word
+          faqJsonLd(page.faq.map((item) => ({ q: item.q[lang], a: item.a[lang] }))),
         ]}
       />
       <AppWindow windowKey={`service-${page.id}`} title={page.name[lang]} labels={dict.window}>

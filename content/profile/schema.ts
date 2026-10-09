@@ -112,6 +112,24 @@ export const offerSchema = z.object({
 });
 
 /**
+ * How a project runs: remote by default, a meeting in person only as an
+ * option for Warsaw. Service pages and the local page show it as steps.
+ */
+export const workflowSchema = z.object({
+  title: localized,
+  /** Who I work with: all of Poland (PL), the whole world (EN); Warsaw is never a limit */
+  reach: localized,
+  remote: localized,
+  steps: z.array(z.object({ title: localized, text: localized })).min(3).max(5),
+  /** Only on the Warsaw page, after the steps */
+  meet: localized,
+  /** Warsaw page: beyond the city, before a link to the services */
+  beyond: localized,
+  /** Under the PLN prices; English only */
+  quoteEur: z.string().min(1),
+});
+
+/**
  * Only what lives nowhere else: name, e-mail,
  * links, skills and the site address are imported from the other profile
  * files, so the CV and the website never drift apart.
@@ -151,3 +169,4 @@ export type Skills = z.output<typeof skillsSchema>;
 export type Pricing = z.output<typeof pricingSchema>;
 export type Offer = z.output<typeof offerSchema>;
 export type Cv = z.output<typeof cvSchema>;
+export type Workflow = z.output<typeof workflowSchema>;

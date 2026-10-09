@@ -9,9 +9,15 @@
  * About me), the old unprefixed routes, the service list, the pricing page
  * (now /pl/cennik) and the process page (a tab of the Offer).
  *
+ * Every redirect of the site is a 301 in one hop: these, the English
+ * segments served from Polish folders (next.config.ts) and the paths without
+ * a language prefix (proxy.ts).
+ *
  * First matching rule wins (as in Next), so specific rules come first.
  * Patterns: `:name` = one segment, `:name*` = zero or more, `:name+` = one or more.
  */
+import { defaultLocale } from "./i18n";
+
 export type Redirect = { source: string; destination: string };
 
 const moved = (source: string, destination: string): Redirect => ({ source, destination });
@@ -42,6 +48,15 @@ export const legacyRedirects: Redirect[] = [
   moved("/en/process", "/en/services#process"),
   moved("/process", "/pl/oferta#proces"),
 ];
+
+/**
+ * Where a path without a language prefix goes (proxy.ts): its Polish page,
+ * or straight to where that page moved, so no redirect leads to another.
+ */
+export function unprefixedTarget(path: string, rules: Redirect[] = legacyRedirects): string {
+  const polish = `/${defaultLocale}${path === "/" ? "" : path}`;
+  return matchRedirect(polish, rules)?.destination ?? polish;
+}
 
 /** For next.config.ts: a real 301 (Next's `permanent: true` would give 308). */
 export function nextRedirects(rules: Redirect[] = legacyRedirects) {

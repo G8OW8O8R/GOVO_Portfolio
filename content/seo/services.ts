@@ -6,7 +6,8 @@ const t = (pl: string, en = pl) => ({ pl, en });
 /**
  * Service pages (/pl/uslugi/<slug>, /en/services/<slug>). PL is the source
  * copy, EN translated. Prices and times come from pricing.ts through
- * `packages`; the examples in `fit` are kinds of clients, not past clients.
+ * `packages`; `forWhom` lists kinds of clients, not past clients. No answer
+ * promises a place in Google.
  */
 const pages = [
   {
@@ -22,7 +23,12 @@ const pages = [
       "Strona, z której klient w kilka sekund dowie się, czym się zajmujesz i jak się z Tobą skontaktować. Zaczynasz od wizytówki albo od razu od pełnej strony z podstronami.",
       "A website where a client learns in seconds what you do and how to reach you. Start with a one-page site or go straight for a full website with subpages.",
     ),
-    packages: ["wizytowka", "strona-firmowa"],
+    thumb: "/services/firmowe.png",
+    forWhom: [
+      t("Gabinet fizjoterapii, który chce przyjmować zapisy przez formularz.", "A physiotherapy practice that wants to take bookings through a form."),
+      t("Firma remontowa, która pokazuje realizacje i zbiera zapytania o wycenę.", "A renovation company that shows its work and collects quote requests."),
+      t("Biuro rachunkowe, w którym każda usługa ma własną podstronę.", "An accounting office where every service has its own page."),
+    ],
     includes: [
       {
         title: t("Projekt pod Twoją markę", "Designed for your brand"),
@@ -52,27 +58,38 @@ const pages = [
           "Titles, descriptions, structured data and Google Search Console are set up before launch.",
         ),
       },
+    ],
+    packages: ["wizytowka", "strona-firmowa"],
+    faq: [
       {
-        title: t("Treści zmienisz sam", "Edit the content yourself"),
-        text: t(
-          "W stronie firmowej dostajesz prosty sposób na zmianę tekstów i zdjęć, bez dzwonienia do programisty.",
-          "A company website comes with an easy way to change text and photos without calling a developer.",
+        q: t("Wizytówka czy strona firmowa?", "A one-pager or a company website?"),
+        a: t(
+          "Wizytówka wystarczy, gdy klienci przychodzą z polecenia i chcą Cię tylko sprawdzić. Stronę firmową wybierz, gdy masz kilka usług i każda ma mieć własną podstronę. Wizytówkę można później rozbudować.",
+          "A one-pager is enough when clients come by referral and just want to check you out. Choose a company website when you offer several services and each should have its own page. A one-pager can be expanded later.",
+        ),
+      },
+      {
+        q: t("Czy sam zmienię treści na stronie?", "Can I edit the content myself?"),
+        a: t(
+          "W stronie firmowej tak: dostajesz prosty sposób na zmianę tekstów i zdjęć i pokazuję, jak z niego korzystać. W wizytówce zmian jest mało, więc zwykle robię je ja w ramach opieki nad stroną.",
+          "With a company website, yes: you get an easy way to change text and photos, and I show you how to use it. A one-pager rarely changes, so I usually make the edits myself as part of the care plan.",
+        ),
+      },
+      {
+        q: t("Nie mam tekstów i zdjęć. Co wtedy?", "I don't have copy or photos. What then?"),
+        a: t(
+          "Pomogę je przygotować. Czas realizacji liczę od chwili, gdy treści są gotowe.",
+          "I'll help you prepare them. The timeline starts once the content is ready.",
+        ),
+      },
+      {
+        q: t("Kto płaci za domenę i hosting?", "Who pays for the domain and hosting?"),
+        a: t(
+          "Domena i hosting są po Twojej stronie i na Twoje dane, więc strona należy do Ciebie. Pomogę je wybrać i skonfigurować.",
+          "The domain and hosting are yours and in your name, so the website belongs to you. I'll help you choose and set them up.",
         ),
       },
     ],
-    focus: {
-      title: t("Wizytówka czy strona firmowa?", "One-pager or company website?"),
-      text: t(
-        "Wizytówka to jedna strona: kim jesteś, co robisz i jak się skontaktować. Wystarczy, gdy klienci przychodzą z polecenia i chcą Cię tylko sprawdzić. Stronę firmową wybierz, gdy masz kilka usług i każda ma być osobno do znalezienia w Google. Wizytówkę można później rozbudować.",
-        "A one-pager says who you are, what you do and how to get in touch. It's enough when clients come by referral and just want to check you out. Choose a company website when you offer several services and each should be found on Google on its own. A one-pager can be expanded later.",
-      ),
-    },
-    fit: [
-      t("gabinetu fizjoterapii, który chce przyjmować zapisy przez formularz", "a physiotherapy practice that wants to take bookings through a form"),
-      t("firmy remontowej, która pokazuje realizacje i zbiera zapytania o wycenę", "a renovation company that shows its work and collects quote requests"),
-      t("biura rachunkowego, w którym każda usługa ma własną podstronę", "an accounting office where every service has its own page"),
-    ],
-    related: ["landing-page", "redesign"],
     cta: t("Napisz, czym się zajmujesz. Odpiszę z zakresem i wyceną.", "Tell me what you do. I'll reply with a scope and a quote."),
   },
   {
@@ -88,7 +105,12 @@ const pages = [
       "Jedna strona pod jedną kampanię lub produkt. Każda sekcja prowadzi do jednego działania: zapisu, zakupu albo kontaktu.",
       "One page for one campaign or product. Every section leads to a single action: a sign-up, a purchase or a message.",
     ),
-    packages: ["landing-page"],
+    thumb: "/services/landing.png",
+    forWhom: [
+      t("Twórca kursu online, który przed premierą zbiera listę oczekujących.", "An online course creator building a waitlist before launch."),
+      t("Aplikacja, która przed startem sprawdza zainteresowanie zapisami.", "An app testing interest with sign-ups before it launches."),
+      t("Firma szkoleniowa, która promuje jedno wydarzenie z reklam.", "A training company promoting a single event with ads."),
+    ],
     includes: [
       {
         title: t("Projekt pod cel", "Designed around the goal"),
@@ -119,19 +141,37 @@ const pages = [
         ),
       },
     ],
-    focus: {
-      title: t("Jeden cel na stronę", "One goal per page"),
-      text: t(
-        "Landing page bez menu i bez pięciu różnych przycisków działa lepiej niż zwykła podstrona. Gdy kampanie są dwie, robię dwa landingi pod osobnymi adresami. Wtedy w analityce od razu widać, która działa.",
-        "A landing page without a menu and five different buttons works better than an ordinary subpage. With two campaigns I make two landing pages at separate addresses, so analytics shows straight away which one works.",
-      ),
-    },
-    fit: [
-      t("twórcy kursu online, który przed premierą zbiera listę oczekujących", "an online course creator building a waitlist before launch"),
-      t("aplikacji, która przed startem sprawdza zainteresowanie zapisami", "an app testing interest with sign-ups before it launches"),
-      t("firmy szkoleniowej, która promuje jedno wydarzenie z reklam", "a training company promoting a single event with ads"),
+    packages: ["landing-page"],
+    faq: [
+      {
+        q: t("Czym landing page różni się od zwykłej podstrony?", "How is a landing page different from an ordinary page?"),
+        a: t(
+          "Nie ma menu ani pięciu różnych przycisków, które odciągają od celu. Wszystko na nim prowadzi do jednego działania.",
+          "It has no menu and no five different buttons pulling people away from the goal. Everything on it leads to one action.",
+        ),
+      },
+      {
+        q: t("Mam dwie kampanie. Jeden landing czy dwa?", "I have two campaigns. One landing page or two?"),
+        a: t(
+          "Dwa, pod osobnymi adresami. Wtedy w analityce od razu widać, która kampania działa.",
+          "Two, at separate addresses. Then analytics shows straight away which campaign works.",
+        ),
+      },
+      {
+        q: t("Czy landing może działać pod moją domeną?", "Can the landing page live on my domain?"),
+        a: t(
+          "Tak: jako podstrona obecnej strony albo pod osobnym adresem w Twojej domenie. Konfigurację biorę na siebie.",
+          "Yes: as a page of your current site or at a separate address on your domain. I take care of the setup.",
+        ),
+      },
+      {
+        q: t("Kampania startuje w konkretnym dniu. Zdążysz?", "The campaign starts on a set date. Can you make it?"),
+        a: t(
+          "Napisz o terminie w pierwszej wiadomości. Czas przy pakiecie liczę od otrzymania treści, więc od razu powiem, czy to realne.",
+          "Mention the date in your first message. The time shown with the package counts from when I get the content, so I'll tell you right away whether it's realistic.",
+        ),
+      },
     ],
-    related: ["strony-internetowe", "projekt-specjalny"],
     cta: t("Masz kampanię albo produkt na start? Napisz, na kiedy potrzebujesz strony.", "Got a campaign or a product to launch? Tell me when you need the page."),
   },
   {
@@ -147,7 +187,12 @@ const pages = [
       "Produkt znajdziesz szybko, a zapłacisz w kilka kliknięć. Płatności online i wysyłki konfiguruję za Ciebie, a na koniec pokazuję, jak prowadzić sklep samodzielnie.",
       "People find a product quickly and pay in a few clicks. I set up online payments and shipping for you, and at the end I show you how to run the shop yourself.",
     ),
-    packages: ["sklep-internetowy"],
+    thumb: "/services/sklep.png",
+    forWhom: [
+      t("Mała palarnia kawy, która sprzedaje ziarno w subskrypcji.", "A small coffee roastery selling beans on subscription."),
+      t("Pracownia ceramiki, która sprzedaje krótkie serie.", "A ceramics studio selling short runs."),
+      t("Sklep stacjonarny, który chce sprzedawać też online.", "A bricks-and-mortar shop that wants to sell online too."),
+    ],
     includes: [
       {
         title: t("Katalog i koszyk", "Catalogue and cart"),
@@ -157,24 +202,17 @@ const pages = [
         ),
       },
       {
-        title: t("Płatności online", "Online payments"),
+        title: t("Płatności i wysyłki", "Payments and shipping"),
         text: t(
-          "Operatora płatności wybieramy razem, a konfiguruję go ja.",
-          "We choose the payment provider together and I set it up.",
-        ),
-      },
-      {
-        title: t("Wysyłki", "Shipping"),
-        text: t(
-          "Metody dostawy z kosztem widocznym, zanim klient przejdzie do płatności.",
-          "Delivery options with the cost shown before the customer gets to payment.",
+          "Operatora płatności i metody dostawy wybieramy razem, a konfiguruję je ja. Koszt dostawy klient widzi przed płatnością.",
+          "We choose the payment provider and delivery options together, and I set them up. The customer sees the delivery cost before paying.",
         ),
       },
       {
         title: t("Karty produktów pod SEO", "SEO-ready product pages"),
         text: t(
-          "Każdy produkt ma własny adres, opis i dane strukturalne, więc może pojawić się w Google.",
-          "Every product has its own address, description and structured data, so it can show up on Google.",
+          "Każdy produkt ma własny adres, opis i dane strukturalne.",
+          "Every product has its own address, description and structured data.",
         ),
       },
       {
@@ -185,35 +223,51 @@ const pages = [
         ),
       },
     ],
-    focus: {
-      title: t("Płatności i wysyłki", "Payments and shipping"),
-      text: t(
-        "Tu sklepy najczęściej tracą klientów: zaskakujący koszt dostawy, za długi formularz, brak wygodnej płatności. Koszt dostawy pokazuję wcześnie, formularz skracam do niezbędnych pól, a płatności testujemy razem przed startem.",
-        "This is where shops lose most customers: a surprising delivery cost, a form that's too long, no convenient way to pay. I show the delivery cost early, cut the form down to the fields that matter, and we test payments together before launch.",
-      ),
-    },
-    fit: [
-      t("małej palarni kawy, która sprzedaje ziarno w subskrypcji", "a small coffee roastery selling beans on subscription"),
-      t("pracowni ceramiki, która sprzedaje krótkie serie", "a ceramics studio selling short runs"),
-      t("sklepu stacjonarnego, który chce sprzedawać też online", "a bricks-and-mortar shop that wants to sell online too"),
+    packages: ["sklep-internetowy"],
+    faq: [
+      {
+        q: t("Gdzie sklepy najczęściej tracą klientów?", "Where do shops lose most customers?"),
+        a: t(
+          "Przy kasie: zaskakujący koszt dostawy, za długi formularz, brak wygodnej płatności. Koszt dostawy pokazuję wcześnie, formularz skracam do niezbędnych pól, a płatności testujemy razem przed startem.",
+          "At checkout: a surprising delivery cost, a form that's too long, no convenient way to pay. I show the delivery cost early, cut the form down to the fields that matter, and we test payments together before launch.",
+        ),
+      },
+      {
+        q: t("Czy poradzę sobie z prowadzeniem sklepu sam?", "Will I manage the shop on my own?"),
+        a: t(
+          "Tak. Na koniec pokazuję, jak dodać produkt, zmienić cenę i obsłużyć zamówienie. Gdy później czegoś zabraknie, pomogę w ramach opieki nad stroną.",
+          "Yes. At the end I show you how to add a product, change a price and handle an order. If something comes up later, I'll help as part of the care plan.",
+        ),
+      },
+      {
+        q: t("Czy produkty będą widoczne w Google?", "Will my products show up on Google?"),
+        a: t(
+          "Każdy produkt ma własny adres, opis i dane strukturalne, więc Google może go znaleźć i zrozumieć. Konkretnej pozycji w wynikach nikt uczciwie nie obieca.",
+          "Every product has its own address, description and structured data, so Google can find and understand it. Nobody can honestly promise a specific ranking.",
+        ),
+      },
     ],
-    related: ["strony-internetowe", "redesign"],
     cta: t("Opisz, co sprzedajesz i ile masz produktów. Odpiszę z planem sklepu i wyceną.", "Tell me what you sell and how many products you have. I'll reply with a plan and a quote."),
   },
   {
     id: "redesign",
     name: t("Redesign"),
-    title: t("Redesign strony bez utraty pozycji w Google", "Website redesign that keeps your rankings"),
+    title: t("Redesign strony bez utraty adresów", "Website redesign that keeps your addresses"),
     description: t(
-      "Redesign strony {price}. Audyt, nowy projekt i kod oraz przekierowania 301 ze starych adresów: strona jest szybsza, a pozycje w Google zostają.",
-      "A website redesign {price}. An audit, new design and code, and 301 redirects from the old addresses: the site gets faster and keeps its Google rankings.",
+      "Redesign strony {price}. Audyt, nowy projekt i kod oraz przekierowania 301 ze starych adresów: strona jest szybsza, a linki do niej dalej działają.",
+      "A website redesign {price}. An audit, new design and code, and 301 redirects from the old addresses: the site gets faster and links to it keep working.",
     ),
-    h1: t("Redesign strony bez utraty pozycji w Google", "A website redesign that keeps your Google rankings"),
+    h1: t("Redesign strony, który nie gubi tego, co działa", "A website redesign that keeps what already works"),
     lead: t(
       "Nowy wygląd i szybkość dla strony, która już działa. Zanim cokolwiek zmienię, sprawdzam, co dziś przyprowadza klientów, żeby tego nie zgubić.",
       "A new look and speed for a website that already works. Before I change anything, I check what brings clients in today so none of it gets lost.",
     ),
-    packages: ["redesign"],
+    thumb: "/services/redesign.png",
+    forWhom: [
+      t("Biuro rachunkowe ze stroną sprzed lat, która nie działa na telefonie.", "An accounting office with a years-old website that doesn't work on phones."),
+      t("Restauracja, której menu wisi w PDF-ie nieczytelnym na telefonie.", "A restaurant whose menu is a PDF nobody can read on a phone."),
+      t("Firma, której strona ładuje się kilka sekund i traci klientów z reklam.", "A business whose site takes seconds to load and loses visitors from ads."),
+    ],
     includes: [
       {
         title: t("Audyt obecnej strony", "Audit of the current site"),
@@ -241,19 +295,30 @@ const pages = [
         ),
       },
     ],
-    focus: {
-      title: t("Co z pozycjami w Google?", "What happens to my rankings?"),
-      text: t(
-        "Pozycje giną zwykle wtedy, gdy znikają stare adresy. Dlatego najpierw spisuję wszystkie adresy starej strony i każdy przekierowuję 301 na jego odpowiednik. Tak przeniosłem też tę stronę: adresy usług zostały, a reszta prowadzi do nowych miejsc.",
-        "Rankings usually disappear when the old addresses do. So first I list every address of the old site and point each one to its counterpart with a 301. That's how I moved this website too: the service addresses stayed, and the rest lead to their new places.",
-      ),
-    },
-    fit: [
-      t("biura rachunkowego ze stroną sprzed lat, która nie działa na telefonie", "an accounting office with a years-old website that doesn't work on phones"),
-      t("restauracji, której menu wisi w PDF-ie nieczytelnym na telefonie", "a restaurant whose menu is a PDF nobody can read on a phone"),
-      t("firmy, której strona ładuje się kilka sekund i traci klientów z reklam", "a business whose site takes seconds to load and loses visitors from ads"),
+    packages: ["redesign"],
+    faq: [
+      {
+        q: t("Co z pozycjami w Google?", "What happens to my Google rankings?"),
+        a: t(
+          "Najczęściej giną razem ze starymi adresami. Dlatego spisuję wszystkie adresy starej strony i każdy przekierowuję 301 na jego odpowiednik, tak jak przy przenosinach tej strony. Wyników w Google nie gwarantuję, ale ten krok usuwa najczęstszą przyczynę spadków.",
+          "They usually disappear together with the old addresses. So I list every address of the old site and point each one to its counterpart with a 301, as I did when I moved this website. I don't guarantee Google results, but this step removes the most common cause of drops.",
+        ),
+      },
+      {
+        q: t("Czy strona przestanie działać na czas prac?", "Will the site go offline while you work?"),
+        a: t(
+          "Nie. Nową wersję buduję obok, pod osobnym linkiem, a obecna działa do dnia przełączenia.",
+          "No. I build the new version alongside it at a separate link, and the current one runs until the day we switch.",
+        ),
+      },
+      {
+        q: t("Czy możemy zostawić obecne teksty?", "Can we keep the current copy?"),
+        a: t(
+          "Tak. Często wystarczy je skrócić i uporządkować. Audyt pokaże, które podstrony przyprowadzają odwiedzających i warto je zostawić.",
+          "Yes. Often it's enough to shorten and tidy it. The audit shows which pages bring visitors in and are worth keeping.",
+        ),
+      },
     ],
-    related: ["strony-internetowe", "sklep-internetowy"],
     cta: t("Wyślij adres swojej strony. Odpiszę, co bym zmienił i ile to kosztuje.", "Send me your website's address. I'll reply with what I'd change and what it costs."),
   },
   {
@@ -269,7 +334,12 @@ const pages = [
       "Interaktywny świat, wideo i grafika w czasie rzeczywistym. Dla marek, które chcą, żeby stronę się pamiętało, a nie tylko przeglądało.",
       "An interactive world, video and real-time graphics. For brands that want their website remembered, not just browsed.",
     ),
-    packages: ["projekt-specjalny"],
+    thumb: "/projects/obok/icon.png",
+    forWhom: [
+      t("Marka, która wprowadza produkt i chce, żeby o premierze się mówiło.", "A brand launching a product that wants people to talk about it."),
+      t("Studio lub artysta, dla którego strona jest częścią portfolio.", "A studio or artist whose website is part of the portfolio."),
+      t("Wydarzenie z własnym światem wizualnym.", "An event with a visual world of its own."),
+    ],
     includes: [
       {
         title: t("Koncept i art direction", "Concept and art direction"),
@@ -294,13 +364,6 @@ const pages = [
         ),
       },
     ],
-    focus: {
-      title: t("Od pomysłu do premiery", "From idea to launch"),
-      text: t(
-        "Projekt specjalny wyceniam po rozmowie, bo zakres zależy od pomysłu. Najpierw ustalamy jedno doświadczenie, które ma zostać w głowie, potem powstają grafiki i ruch. Działające wersje widzisz po drodze, nie dopiero na końcu.",
-        "I quote a special project after a conversation, because the scope depends on the idea. First we agree on the one experience people should remember, then the graphics and motion follow. You see working versions along the way, not only at the end.",
-      ),
-    },
     proof: {
       project: "obok",
       text: t(
@@ -308,12 +371,30 @@ const pages = [
         "Obok is a desktop over a living lighthouse landscape that changes with the real weather and time of day. I made the design, the scenes, the video and the code myself.",
       ),
     },
-    fit: [
-      t("marki, która wprowadza produkt i chce, żeby o premierze się mówiło", "a brand launching a product that wants people to talk about it"),
-      t("studia lub artysty, dla którego strona jest częścią portfolio", "a studio or artist whose website is part of the portfolio"),
-      t("wydarzenia z własnym światem wizualnym", "an event with a visual world of its own"),
+    packages: ["projekt-specjalny"],
+    faq: [
+      {
+        q: t("Ile kosztuje projekt specjalny?", "How much does a special project cost?"),
+        a: t(
+          "Powyżej jest cena „od”. Dokładną kwotę podaję po rozmowie, bo zależy od pomysłu: liczby scen, wideo i interakcji.",
+          "The “from” price is above. I give the exact amount after a call, because it depends on the idea: the number of scenes, the video and the interactions.",
+        ),
+      },
+      {
+        q: t("Czy taka strona nie będzie wolna?", "Won't a site like this be slow?"),
+        a: t(
+          "Nie musi. Ciężkie elementy ładuję wtedy, gdy są potrzebne, a słabszy telefon dostaje lżejszą wersję. Wyniki pomiarów Obok są w case study.",
+          "It doesn't have to be. Heavy parts load when they're needed, and a weaker phone gets a lighter version. Obok's measured results are in the case study.",
+        ),
+      },
+      {
+        q: t("Kto przygotuje grafiki i wideo?", "Who makes the graphics and video?"),
+        a: t(
+          "Ja. Sceny, tekstury i nagrania powstają pod tę jedną stronę, tak jak w Obok.",
+          "I do. The scenes, textures and footage are made for this one website, as in Obok.",
+        ),
+      },
     ],
-    related: ["landing-page", "strony-internetowe"],
     cta: t("Masz pomysł, który nie mieści się w szablonie? Opowiedz o nim.", "Have an idea that doesn't fit a template? Tell me about it."),
   },
 ] satisfies (Omit<ServicePage, "id"> & { id: ServiceId })[];

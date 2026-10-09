@@ -1,5 +1,7 @@
 import { getDictionary } from "@/content/dictionaries";
 import { offer } from "@/content/profile/offer";
+import { serviceIds } from "@/lib/routes";
+import { LoadAhead } from "@/components/desktop/LoadAhead";
 import type { Locale } from "@/lib/i18n";
 import { href } from "@/lib/routes";
 import { imageSet } from "@/lib/image-manifest";
@@ -13,12 +15,23 @@ export function OfferWindow({ lang }: { lang: Locale }) {
   const dict = getDictionary(lang);
   const t = dict.tabs.offer;
   return (
-    <Tabs label={dict.files.offer} tabs={[t.services, t.process, t.pricing]}>
-      <ServicesPanel lang={lang} />
-      <ProcessPanel lang={lang} />
-      <PricingContent lang={lang} />
-    </Tabs>
+    <>
+      <Tabs label={dict.files.offer} tabs={[t.services, t.process, t.pricing]}>
+        <ServicesPanel lang={lang} />
+        <ProcessPanel lang={lang} />
+        <PricingContent lang={lang} />
+      </Tabs>
+      <ServicesAhead lang={lang} />
+    </>
   );
+}
+
+/**
+ * The service pages load ahead only once the Offer or Pricing is open (their
+ * links are here), not on every visit: same rules as the desktop's windows.
+ */
+export function ServicesAhead({ lang }: { lang: Locale }) {
+  return <LoadAhead windows={serviceIds.map((id) => href(lang, "service", id))} images={[]} />;
 }
 
 /**

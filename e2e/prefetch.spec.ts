@@ -38,3 +38,24 @@ test.describe("loading windows ahead", () => {
     expect(bodies.filter((b) => b.includes("data-app-window"))).toEqual([]);
   });
 });
+
+test.describe("service pages ahead", () => {
+  test.use({ viewport: { width: 1536, height: 864 } });
+  const serviceRsc = (r: Request) => {
+    const url = new URL(r.url());
+    return url.searchParams.has("_rsc") && url.pathname.startsWith("/pl/uslugi/") ? url.pathname : null;
+  };
+
+  test("load only once the Offer is open, not with the desktop", async ({ page }) => {
+    const requests: Request[] = [];
+    page.on("request", (r) => requests.push(r));
+    await page.goto("/pl");
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(3500); // the desktop's own load-ahead has run
+    expect(requests.map(serviceRsc).filter(Boolean)).toEqual([]);
+
+    await page.getByRole("navigation", { name: "Pliki na pulpicie" }).getByRole("link", { name: /Oferta/ }).click();
+    await expect(page.getByRole("dialog", { name: "Oferta" })).toBeVisible();
+    await expect.poll(() => new Set(requests.map(serviceRsc).filter(Boolean)).size, { timeout: 8000 }).toBe(5);
+  });
+});

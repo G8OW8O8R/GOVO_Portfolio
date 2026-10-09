@@ -1,18 +1,50 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type APIRequestContext } from "@playwright/test";
 import { SITE_URL } from "../content/profile/contact";
 import { pricing } from "../content/profile/pricing";
 import { formatPriceFrom } from "../lib/format";
+import { locales } from "../lib/i18n";
 import { legacyUrls } from "../lib/redirects";
+import { href, serviceIds } from "../lib/routes";
 
 /** The Obok case study, the service, pricing and local pages, SEO files and the redirects from the previous site. */
+
+/** Status and target of one request, redirects not followed. */
+async function hop(request: APIRequestContext, path: string) {
+  const res = await request.get(path, { maxRedirects: 0 });
+  const location = res.headers().location;
+  return { status: res.status(), to: location ? new URL(location, "http://x").href.replace("http://x", "") : undefined };
+}
 
 test.describe("addresses of the previous site: 301 to their new place, or the same page", () => {
   for (const { path, status, to } of legacyUrls) {
     test(`${path} → ${status}${to ? ` ${to}` : ""}`, async ({ request }) => {
-      const res = await request.get(path, { maxRedirects: 0 });
-      expect(res.status()).toBe(status);
-      if (to) expect(new URL(res.headers().location, "http://x").href.replace("http://x", "")).toBe(to);
+      const res = await hop(request, path);
+      expect(res.status).toBe(status);
+      if (to) expect(res.to).toBe(to);
     });
+  }
+});
+
+test("every redirect is one 301: no 307 or 308, no chain", async ({ request }) => {
+  const paths = [
+    ...legacyUrls.map(({ path }) => path),
+    // no language prefix (proxy), English segments served from Polish folders
+    "/",
+    "/o-mnie",
+    "/uslugi",
+    "/uslugi/landing-page",
+    "/umiejetnosci",
+    "/en/o-mnie",
+    "/en/oferta",
+    "/en/cennik",
+    "/en/uslugi/website-redesign",
+  ];
+  for (const path of paths) {
+    const first = await hop(request, path);
+    if (first.status === 200) continue;
+    expect(first.status, path).toBe(301);
+    const end = await hop(request, first.to!.split("#")[0]);
+    expect(end.status, `${path} → ${first.to}`).toBe(200);
   }
 });
 
@@ -53,14 +85,14 @@ test.describe("service, pricing and local pages", () => {
       path: "/pl/uslugi/landing-page",
       other: "/en/services/landing-pages",
       h1: "Landing page, który prowadzi do jednego celu",
-      types: ["Service", "Offer", "BreadcrumbList"],
+      types: ["Service", "Offer", "BreadcrumbList", "FAQPage", "Country"],
       from: lowest(["landing-page"]),
     },
     {
       path: "/en/services/special-project",
       other: "/pl/uslugi/projekt-specjalny",
       h1: "Special project: a website that is an event",
-      types: ["Service", "Offer", "BreadcrumbList"],
+      types: ["Service", "Offer", "BreadcrumbList", "FAQPage"],
       from: lowest(["projekt-specjalny"]),
     },
     {
@@ -74,7 +106,7 @@ test.describe("service, pricing and local pages", () => {
       path: "/pl/strony-internetowe-warszawa",
       other: "/en/web-design-warsaw",
       h1: "Strony internetowe dla firm z Warszawy",
-      types: ["Service", "City", "BreadcrumbList"],
+      types: ["Service", "City", "BreadcrumbList", "FAQPage"],
       from: lowest(["wizytowka", "strona-firmowa", "landing-page"]),
     },
   ]) {
@@ -91,6 +123,9 @@ test.describe("service, pricing and local pages", () => {
       expect(html).toContain(`<link rel="canonical" href="${SITE_URL}${path}"`);
       expect(html).toContain(`hrefLang="${lang === "pl" ? "en" : "pl"}" href="${SITE_URL}${other}"`);
       for (const type of types) expect(html).toContain(`"@type":"${type}"`);
+      // English service pages serve the world; only the local page names a city
+      if (path.startsWith("/en/services/")) expect(html).not.toContain('"areaServed"');
+      if (!path.includes("warsza") && !path.includes("warsaw")) expect(html).not.toContain('"@type":"City"');
       expect(html).toContain(`"minPrice":${from}`);
     });
   }
@@ -100,11 +135,26 @@ test.describe("service, pricing and local pages", () => {
     const page = await context.newPage();
     await page.goto("/pl/uslugi/redesign-strony");
     const dialog = page.getByRole("dialog");
-    await expect(dialog.getByRole("heading", { level: 1 })).toHaveText("Redesign strony bez utraty pozycji w Google");
+    await expect(dialog.getByRole("heading", { level: 1 })).toHaveText("Redesign strony, który nie gubi tego, co działa");
+    for (const name of ["Dla kogo", "Co dostajesz", "Jak pracuję", "Cena i czas realizacji", "Pytania"]) {
+      await expect(dialog.getByRole("heading", { level: 2, name, exact: true })).toBeVisible();
+    }
+    await expect(dialog.locator('a[href^="/pl/kontakt"]')).toHaveCount(1);
     await expect(dialog.locator('a[href="/pl/kontakt?temat=strona"]')).toHaveCount(1);
     await expect(dialog.locator('a[href="/pl/cennik"]')).not.toHaveCount(0);
     await expect(dialog.locator('a[href="/pl/projekty/obok"]')).not.toHaveCount(0);
     await context.close();
+  });
+
+  test("the Offer and Pricing link every service page, and every service page links Obok", async ({ request }) => {
+    const services = serviceIds.flatMap((id) => locales.map((lang) => ({ lang, path: href(lang, "service", id) })));
+    for (const from of ["/pl/oferta", "/pl/cennik", "/en/services", "/en/pricing"]) {
+      const html = await (await request.get(from)).text();
+      for (const { path } of services.filter(({ lang }) => from.startsWith(`/${lang}`))) expect(html, from).toContain(`href="${path}"`);
+    }
+    for (const { lang, path } of services) {
+      expect(await (await request.get(path)).text(), path).toContain(`href="${href(lang, "project", "obok")}"`);
+    }
   });
 });
 

@@ -6,6 +6,7 @@ import { formatPriceFrom } from "./format";
 import {
   breadcrumbJsonLd,
   creativeWorkJsonLd,
+  faqJsonLd,
   packagesById,
   pageMetadata,
   personJsonLd,
@@ -90,7 +91,7 @@ describe("prices from pricing.ts", () => {
 });
 
 describe("service structured data", () => {
-  it("offers each package from its net price, served in Poland (and the city)", () => {
+  it("offers each package from its net price, served in the city of a local page", () => {
     const data = serviceJsonLd({
       lang: "pl",
       name: "Strony",
@@ -103,16 +104,34 @@ describe("service structured data", () => {
       "@type": "Service",
       url: `${SITE_URL}/pl/strony-internetowe-warszawa`,
       provider: { "@id": `${SITE_URL}/#person` },
-      areaServed: [
-        { "@type": "Country", name: "Polska" },
-        { "@type": "City", name: "Warszawa" },
-      ],
+      areaServed: { "@type": "City", name: "Warszawa" },
     });
     expect(data.offers).toEqual([
       expect.objectContaining({
         "@type": "Offer",
         priceSpecification: expect.objectContaining({ minPrice: pricing.packages[0].from, priceCurrency: "PLN", valueAddedTaxIncluded: false }),
       }),
+    ]);
+  });
+
+  it("is served in Poland on Polish service pages and without a limit in English", () => {
+    const page = (lang: "pl" | "en") =>
+      serviceJsonLd({ lang, name: "S", description: "D", path: `/${lang}/x`, packages: packagesById(["landing-page"]) });
+    expect(page("pl").areaServed).toEqual({ "@type": "Country", name: "Polska" });
+    expect(page("en")).not.toHaveProperty("areaServed");
+    const warsaw = serviceJsonLd({ lang: "en", name: "S", description: "D", path: "/en/web-design-warsaw", packages: packagesById(["wizytowka"]), city: "Warsaw" });
+    expect(warsaw.areaServed).toEqual({ "@type": "City", name: "Warsaw" });
+  });
+
+  it("builds the FAQ from the visible questions, in order", () => {
+    const data = faqJsonLd([
+      { q: "Q1?", a: "A1." },
+      { q: "Q2?", a: "A2." },
+    ]);
+    expect(data["@type"]).toBe("FAQPage");
+    expect(data.mainEntity).toEqual([
+      { "@type": "Question", name: "Q1?", acceptedAnswer: { "@type": "Answer", text: "A1." } },
+      { "@type": "Question", name: "Q2?", acceptedAnswer: { "@type": "Answer", text: "A2." } },
     ]);
   });
 

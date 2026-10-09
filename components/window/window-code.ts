@@ -23,3 +23,4 @@ import "./live/LiveThumb";
 import "./live/LiveTicker";
 import "./content/ContactForm";
 import "@/components/cv/PrintButton";
+import "@/components/desktop/LoadAhead";

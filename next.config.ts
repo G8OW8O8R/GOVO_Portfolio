@@ -28,7 +28,7 @@ const nextConfig: NextConfig = {
       ...localizedSegmentRules().map(({ english, internal }) => ({
         source: internal,
         destination: english,
-        permanent: true,
+        statusCode: 301 as const,
       })),
       // addresses of the previous site (lib/redirects.ts)
       ...nextRedirects(),

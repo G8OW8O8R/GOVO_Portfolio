@@ -163,7 +163,8 @@ const provider = (lang: Locale): JsonLd => ({
 
 /**
  * schema.org Service with one Offer per package (service and local pages).
- * `areaServed`: Poland, plus the city on a local page.
+ * `areaServed`: only the city on a local page; otherwise Poland on Polish
+ * pages and none in English (clients worldwide).
  */
 export function serviceJsonLd({
   lang,
@@ -181,8 +182,11 @@ export function serviceJsonLd({
   city?: string;
 }): JsonLd {
   const url = absolute(path);
-  const areaServed: JsonLd[] = [{ "@type": "Country", name: getDictionary(lang).seo.country }];
-  if (city) areaServed.push({ "@type": "City", name: city });
+  const areaServed: JsonLd | undefined = city
+    ? { "@type": "City", name: city }
+    : lang === "pl"
+      ? { "@type": "Country", name: getDictionary(lang).seo.country }
+      : undefined;
   return {
     "@context": "https://schema.org",
     "@type": "Service",
@@ -192,7 +196,7 @@ export function serviceJsonLd({
     url,
     inLanguage: lang,
     provider: provider(lang),
-    areaServed,
+    ...(areaServed ? { areaServed } : {}),
     offers: packages.map((p) => ({
       "@type": "Offer",
       name: p.name[lang],
@@ -200,6 +204,19 @@ export function serviceJsonLd({
       url,
       priceCurrency: "PLN",
       priceSpecification: priceSpecification(p.from),
+    })),
+  };
+}
+
+/** schema.org FAQPage: only for questions shown on the page, in the same words. */
+export function faqJsonLd(items: readonly { q: string; a: string }[]): JsonLd {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map(({ q, a }) => ({
+      "@type": "Question",
+      name: q,
+      acceptedAnswer: { "@type": "Answer", text: a },
     })),
   };
 }

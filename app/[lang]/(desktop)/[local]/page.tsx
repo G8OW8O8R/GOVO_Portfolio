@@ -7,7 +7,7 @@ import { AppWindow } from "@/components/window/AppWindow";
 import { LocalWindow } from "@/components/window/content/OfferPageWindow";
 import { isLocale } from "@/lib/i18n";
 import { href, localIds, localSlugs, pageIdForSlug } from "@/lib/routes";
-import { breadcrumbJsonLd, packagesById, pageMetadata, serviceJsonLd, titleWithPrice, withPrice } from "@/lib/seo";
+import { breadcrumbJsonLd, faqJsonLd, packagesById, pageMetadata, serviceJsonLd, titleWithPrice, withPrice } from "@/lib/seo";
 
 export const dynamicParams = false;
 
@@ -62,6 +62,8 @@ export default async function LocalPage({ params }: PageProps<"/[lang]/[local]">
             { name: dict.files.offer, path: href(lang, "offer") },
             { name: page.title[lang], path },
           ]),
+          // the questions shown in the window, word for word
+          faqJsonLd(page.faq.map((item) => ({ q: item.q[lang], a: item.a[lang] }))),
         ]}
       />
       <AppWindow windowKey={`local-${page.id}`} title={page.name[lang]} labels={dict.window}>

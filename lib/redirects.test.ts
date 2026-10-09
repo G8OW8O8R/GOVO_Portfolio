@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { legacyRedirects, legacyUrls, matchRedirect, nextRedirects } from "./redirects";
+import nextConfig from "../next.config";
+import { legacyRedirects, legacyUrls, matchRedirect, nextRedirects, unprefixedTarget } from "./redirects";
 import { windowKeyForPath } from "./routes";
 
 const pathOnly = (url: string) => url.split("#")[0];
@@ -41,5 +42,33 @@ describe("legacy redirects", () => {
     expect(matchRedirect("/pl/strony-internetowe-warszawa", rules)).toBeNull();
     expect(matchRedirect("/pl/blog/kategoria/x", rules)?.destination).toBe("/pl/oferta");
     expect(matchRedirect("/pl/blog", rules)?.destination).toBe("/pl/oferta");
+  });
+
+  it("sends a path without a language prefix to its final page in one hop", () => {
+    for (const [path, to] of [
+      ["/", "/pl"],
+      ["/o-mnie", "/pl/o-mnie"],
+      ["/uslugi/landing-page", "/pl/uslugi/landing-page"],
+      ["/uslugi", "/pl/oferta"],
+      ["/blog/zanim-zlecisz", "/pl/oferta"],
+      ["/umiejetnosci", "/pl/o-mnie#umiejetnosci"],
+    ]) {
+      expect(unprefixedTarget(path), path).toBe(to);
+      expect(matchRedirect(pathOnly(to)), to).toBeNull();
+      expect(isNewPage(pathOnly(to)), to).toBe(true);
+    }
+  });
+});
+
+describe("every redirect of the site", () => {
+  it("is a 301 (no 307 or 308) and never leads to another redirect", async () => {
+    const rules = (await nextConfig.redirects!()) as { source: string; destination: string; statusCode?: number; permanent?: boolean }[];
+    expect(rules.length).toBeGreaterThan(legacyRedirects.length);
+    for (const rule of rules) {
+      expect(rule.statusCode, rule.source).toBe(301);
+      expect(rule.permanent, rule.source).toBeUndefined();
+      const target = pathOnly(rule.destination).replace(/:\w+/g, "x");
+      expect(matchRedirect(target, rules), `${rule.source} → ${rule.destination}`).toBeNull();
+    }
   });
 });

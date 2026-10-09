@@ -6,6 +6,7 @@ import { serviceForPackage } from "@/content/seo/services";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { AppWindow } from "@/components/window/AppWindow";
 import { PlayOnOpen } from "@/components/window/motion/PlayOnOpen";
+import { ServicesAhead } from "@/components/window/content/OfferWindow";
 import { PricingContent } from "@/components/window/content/PricingContent";
 import { isLocale } from "@/lib/i18n";
 import { href } from "@/lib/routes";
@@ -48,6 +49,7 @@ export default async function PricingPage({ params }: PageProps<"/[lang]/cennik"
         <PlayOnOpen>
           <PricingContent lang={lang} heading={dict.pages.pricing.title} />
         </PlayOnOpen>
+        <ServicesAhead lang={lang} />
       </AppWindow>
     </>
   );

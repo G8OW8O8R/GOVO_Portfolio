@@ -43,7 +43,18 @@ const SURFACE: StepsLook = {
  * and every step number turns black when the line reaches it. Final state
  * (no JS, hydration, reduced motion): full line, all numbers black.
  */
-export function Steps({ items, className = "", look = SURFACE }: { items: StepItem[]; className?: string; look?: StepsLook }) {
+export function Steps({
+  items,
+  className = "",
+  look = SURFACE,
+  heading = look.heading,
+}: {
+  items: StepItem[];
+  className?: string;
+  look?: StepsLook;
+  /** Step titles one level under the section: h3 on pages with their own h1 */
+  heading?: StepsLook["heading"];
+}) {
   const token = usePanelPlay();
   const scroller = useWindowScroller();
   const ref = useRef<HTMLOListElement>(null);
@@ -109,7 +120,7 @@ export function Steps({ items, className = "", look = SURFACE }: { items: StepIt
     };
   }, [token, scroller]);
 
-  const Heading = look.heading;
+  const Heading = heading;
   return (
     <ol ref={ref} data-stagger="" className={`${look.list} ${className}`}>
       {items.map((item, i) => {
