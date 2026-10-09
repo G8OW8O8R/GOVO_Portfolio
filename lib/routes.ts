@@ -14,6 +14,7 @@ export const routeSegments = {
   cv: { pl: "cv", en: "cv" },
   service: { pl: "uslugi", en: "services" },
   pricing: { pl: "cennik", en: "pricing" },
+  privacy: { pl: "prywatnosc", en: "privacy" },
   local: { pl: "", en: "" },
 } as const satisfies Record<string, Record<Locale, string>>;
 
@@ -127,6 +128,7 @@ export type WindowKey =
   | "contact"
   | "cv"
   | "pricing"
+  | "privacy"
   | `project-${string}`
   | `service-${string}`
   | `local-${string}`;
@@ -140,6 +142,7 @@ export function windowKeyForPath(pathname: string): WindowKey | null {
     case "contact":
     case "cv":
     case "pricing":
+    case "privacy":
       return page.route;
     case "project":
     case "service":

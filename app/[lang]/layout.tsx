@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Schibsted_Grotesk } from "next/font/google";
 import { notFound } from "next/navigation";
 import { getDictionary } from "@/content/dictionaries";
+import { Analytics } from "@/components/analytics/Analytics";
+import { analyticsWebsiteId } from "@/lib/analytics";
 import { isLocale, locales } from "@/lib/i18n";
 import { IMAGE_FADE_SCRIPT } from "@/lib/images";
 import { introScript } from "@/lib/intro";
@@ -48,6 +50,8 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
 export default async function RootLayout({ children, params }: LayoutProps<"/[lang]">) {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
+  // statistics: Vercel production only (read at build time, the pages are static)
+  const websiteId = analyticsWebsiteId(process.env);
 
   return (
     // data-intro is set by the head script before the first paint (lib/intro.ts)
@@ -56,7 +60,10 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
         <script dangerouslySetInnerHTML={{ __html: introScript() }} />
         <script dangerouslySetInnerHTML={{ __html: IMAGE_FADE_SCRIPT }} />
       </head>
-      <body className="font-sans">{children}</body>
+      <body className="font-sans">
+        {children}
+        {websiteId && <Analytics websiteId={websiteId} labels={getDictionary(lang).analytics} />}
+      </body>
     </html>
   );
 }

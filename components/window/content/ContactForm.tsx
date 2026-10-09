@@ -6,7 +6,9 @@ import { Check, Copy } from "lucide-react";
 import { sendContact } from "@/app/[lang]/(desktop)/kontakt/actions";
 import type { Dictionary } from "@/content/dictionaries";
 import { BUDGET_PARAM, SUBJECT_PARAM, budgets, findBudget, findSubject, subjects } from "@/content/profile/contact";
+import { track } from "@/components/analytics/track";
 import { EmailText, useEmail } from "@/components/ui/Email";
+import { WindowLink } from "@/components/window/WindowLink";
 import { VIEWER, characterGaze } from "@/lib/character/look-at";
 import {
   CONTACT_FIELDS,
@@ -19,6 +21,7 @@ import {
   type ContactState,
 } from "@/lib/contact";
 import type { Locale } from "@/lib/i18n";
+import { href } from "@/lib/routes";
 import { ui } from "./ui";
 
 type Labels = Dictionary["contact"];
@@ -62,6 +65,8 @@ export function ContactForm({ lang, labels: L, initial = EMPTY }: { lang: Locale
   const [dismissed, setDismissed] = useState<ContactState | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const releaseGaze = useRef<(() => void) | null>(null);
+  /** What the statistics get of a message: topic and budget ids, never what was typed; null = the honeypot was filled. */
+  const sentEvent = useRef<{ topic: string; budget: string } | null>(null);
   const id = useId();
 
   const check = validateContact({ ...values, lang });
@@ -75,6 +80,7 @@ export function ContactForm({ lang, labels: L, initial = EMPTY }: { lang: Locale
   // Sent: look at the visitor for a moment, flash the pendant.
   useEffect(() => {
     if (state.status !== "sent") return;
+    if (sentEvent.current) track("contact-sent", sentEvent.current);
     characterGaze.flash();
     const release = characterGaze.lookAt(VIEWER);
     const t = setTimeout(release, 2600);
@@ -90,7 +96,13 @@ export function ContactForm({ lang, labels: L, initial = EMPTY }: { lang: Locale
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     setSubmitted(true);
-    if (check.ok) return; // the action takes over
+    if (check.ok) {
+      // the action takes over
+      const trap = e.currentTarget.elements.namedItem(HONEYPOT);
+      const bot = trap instanceof HTMLInputElement && trap.value !== "";
+      sentEvent.current = bot ? null : { topic: values.subject, budget: (!job && values.budget) || "none" };
+      return;
+    }
     e.preventDefault();
     const first = CONTACT_FIELDS.find((f) => errors[f]);
     formRef.current?.querySelector<HTMLElement>(`[data-field="${first}"]`)?.focus();
@@ -230,6 +242,13 @@ export function ContactForm({ lang, labels: L, initial = EMPTY }: { lang: Locale
           {!pending && <Status state={state} values={values} lang={lang} L={L} />}
         </div>
       </div>
+
+      <p className="-mt-2 text-13 text-ink-soft">
+        {L.privacyNote}{" "}
+        <WindowLink href={href(lang, "privacy")} className={ui.link}>
+          {L.privacyLink}&nbsp;→
+        </WindowLink>
+      </p>
     </form>
   );
 }

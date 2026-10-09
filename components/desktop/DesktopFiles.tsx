@@ -34,6 +34,7 @@ import type { Depth } from "@/lib/desktop-slots";
 import { pointer } from "@/lib/pointer";
 import type { WindowKey } from "@/lib/routes";
 import { computeWindowRect, overlaps } from "@/lib/window-layout";
+import { track } from "@/components/analytics/track";
 import { cursorFlags } from "@/components/cursor/store";
 import { Picture } from "@/components/ui/Picture";
 import { warmImages } from "@/components/ui/warm-images";
@@ -119,6 +120,10 @@ function createOffsetsStore(keys: readonly string[]) {
   };
 }
 
+/** A small preview counts as a quick look once it has stayed this long (once per file a visit). */
+const PREVIEW_COUNT_MS = 800;
+const previewsCounted = new Set<string>();
+
 /**
  * Desktop files: drag with inertia, parallax on 3 depths, remembered
  * positions, the character looks at the hovered/focused file, quick look.
@@ -162,6 +167,17 @@ export function DesktopFiles({ files, labels }: { files: DesktopFile[]; labels: 
     return () => window.removeEventListener("resize", mark);
   }, [windowOpen]);
 
+  // Statistics: a small preview that stayed (a cursor passing by isn't a look).
+  const previewKey = hover?.file.preview ? hover.file.key : null;
+  useEffect(() => {
+    if (!previewKey || previewsCounted.has(previewKey)) return;
+    const t = setTimeout(() => {
+      previewsCounted.add(previewKey);
+      track("quicklook", { file: previewKey });
+    }, PREVIEW_COUNT_MS);
+    return () => clearTimeout(t);
+  }, [previewKey]);
+
   const commit = useCallback((key: string, next: Offset) => store.set({ ...store.get(), [key]: next }), [store]);
 
   const tidy = () => {
@@ -191,6 +207,7 @@ export function DesktopFiles({ files, labels }: { files: DesktopFile[]; labels: 
               onQuickLook={(from) => {
                 setHover(null);
                 setQuick({ file, from });
+                if (file.preview) track("quicklook", { file: file.key });
               }}
             />
           ))}

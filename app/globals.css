@@ -284,6 +284,26 @@ img[data-fade] {
   }
 }
 
+/* "This browser isn't counted" notice (Analytics): in, 3 s, out. Reduced motion: shown as is. */
+.analytics-notice {
+  animation: analytics-notice 3s ease-out;
+}
+
+@keyframes analytics-notice {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  6%,
+  90% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 /*
  * Print (CV): when the page holds the CV sheet, only the sheet
  * is printed – one A4 page, colours kept, no window chrome and no motion.

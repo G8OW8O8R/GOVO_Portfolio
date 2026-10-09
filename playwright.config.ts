@@ -3,7 +3,8 @@ import { defineConfig } from "@playwright/test";
 const port = 3100;
 // The character's debug hooks (?character=debug) exist only in development,
 // so its spec runs against `next dev` (output in .next/dev, so it can run
-// next to `next build`; an already running dev server is reused).
+// next to `next build`; an already running dev server is reused). The
+// statistics spec runs on both: counted in the build, never on dev.
 const devPort = 3000;
 
 export default defineConfig({
@@ -15,7 +16,7 @@ export default defineConfig({
   },
   projects: [
     { name: "production", testIgnore: /character\.spec/, use: { baseURL: `http://localhost:${port}` } },
-    { name: "dev", testMatch: /character\.spec/, use: { baseURL: `http://localhost:${devPort}` } },
+    { name: "dev", testMatch: /(character|analytics)\.spec/, use: { baseURL: `http://localhost:${devPort}` } },
   ],
   webServer: [
     {
@@ -23,8 +24,13 @@ export default defineConfig({
       url: `http://localhost:${port}/pl`,
       reuseExistingServer: true,
       timeout: 180_000,
-      // contact form: everything runs except the e-mail provider call (never on Vercel production)
-      env: { CONTACT_DRY_RUN: "1" },
+      // contact form: everything runs except the e-mail provider call (never on Vercel production);
+      // statistics on with a made-up website id (e2e/analytics.spec.ts stubs the tracker, nothing is sent)
+      env: {
+        CONTACT_DRY_RUN: "1",
+        ANALYTICS_E2E: "1",
+        NEXT_PUBLIC_UMAMI_WEBSITE_ID: "00000000-0000-4000-8000-000000000000",
+      },
     },
     {
       command: `pnpm dev -p ${devPort}`,

@@ -29,6 +29,10 @@ const pl = {
       description:
         "Cennik: wizytówka, landing page, strona firmowa, sklep internetowy, redesign i projekt specjalny. Ceny netto {price}, czas realizacji przy każdym pakiecie.",
     },
+    privacy: {
+      title: "Prywatność – GOVO DIGITAL",
+      description: "Jakie dane zbiera formularz kontaktu, po co i jak długo je przechowuję. Statystyki odwiedzin bez cookies.",
+    },
   },
   desktop: {
     heading: "Piotr Goworek – frontend developer. Strony premium, ruch i interakcje.",
@@ -115,6 +119,13 @@ const pl = {
     preferEmail: "Wolisz maila?",
     copy: "Kopiuj",
     copied: "Skopiowano",
+    privacyNote: "Dane z formularza wykorzystam tylko do odpowiedzi. Statystyki odwiedzin są anonimowe, bez cookies.",
+    privacyLink: "Prywatność",
+  },
+  privacy: { updated: "Ostatnia zmiana: {date}" },
+  analytics: {
+    out: "Ta przeglądarka nie jest liczona w statystykach",
+    in: "Liczenie włączone",
   },
   cv: { download: "Pobierz PDF", print: "Drukuj", actions: "Pobierz lub wydrukuj CV" },
   project: {
@@ -144,6 +155,7 @@ const pl = {
     cv: "CV.pdf",
     contact: "Kontakt",
     pricing: "Cennik",
+    privacy: "Prywatność",
     projectLabel: "Projekt",
     badgeNew: "Nowy",
   },

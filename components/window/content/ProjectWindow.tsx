@@ -1,6 +1,7 @@
 import { getDictionary } from "@/content/dictionaries";
 import { SUBJECT_PARAM } from "@/content/profile/contact";
 import type { Project } from "@/content/projects/schema";
+import { trackAttrs } from "@/lib/analytics";
 import type { Locale } from "@/lib/i18n";
 import { requireImage } from "@/lib/image-manifest";
 import { href } from "@/lib/routes";
@@ -15,9 +16,21 @@ import { Section, ui } from "./ui";
 const amber =
   "inline-flex h-11 items-center justify-center gap-2 rounded-full bg-amber px-5 text-15 font-medium text-ink transition-[filter] hover:brightness-105";
 
-function External({ url, className, label, newTab }: { url: string; className: string; label: string; newTab: string }) {
+function External({
+  url,
+  className,
+  label,
+  newTab,
+  track,
+}: {
+  url: string;
+  className: string;
+  label: string;
+  newTab: string;
+  track?: Record<string, string>;
+}) {
   return (
-    <a href={url} target="_blank" rel="noopener" className={className}>
+    <a href={url} target="_blank" rel="noopener" className={className} {...track}>
       {label}
       <span aria-hidden="true">↗</span>
       <span className="sr-only"> ({newTab})</span>
@@ -48,7 +61,13 @@ export function ProjectWindow({ project, lang }: { project: Project; lang: Local
           <p className={`${ui.introText} mt-4 desk:text-22`}>{project.summary[lang]}</p>
           <p className="mt-4 text-balance font-mono text-13 text-ink-soft">{cs.meta[lang]}</p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <External url={cs.live.url} label={cs.live.label[lang]} newTab={dict.project.newTab} className={amber} />
+            <External
+              url={cs.live.url}
+              label={cs.live.label[lang]}
+              newTab={dict.project.newTab}
+              className={amber}
+              track={trackAttrs(`${project.slug}-open-live`)}
+            />
             {cs.code && (
               <External url={cs.code.url} label={cs.code.label[lang]} newTab={dict.project.newTab} className={ui.secondary} />
             )}

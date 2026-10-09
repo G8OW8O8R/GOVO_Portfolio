@@ -5,6 +5,7 @@ import { CvDocument } from "@/components/cv/CvDocument";
 import { PrintButton } from "@/components/cv/PrintButton";
 import frame from "@/components/cv/cv.module.css";
 import type { Locale } from "@/lib/i18n";
+import { trackAttrs } from "@/lib/analytics";
 import { cvPdfPath, hasCv } from "@/lib/site";
 import { PlayOnOpen } from "../motion/PlayOnOpen";
 
@@ -30,7 +31,7 @@ export function CvWindow({ lang }: { lang: Locale }) {
         className="sticky top-0 z-10 isolate flex justify-center gap-2 border-b border-win-line px-4 py-2 before:absolute before:inset-0 before:-z-10 before:bg-win/85 before:backdrop-blur-md"
       >
         {pdf && (
-          <a href={pdf} download={fileName} className={primary}>
+          <a href={pdf} download={fileName} className={primary} {...trackAttrs("cv-download", { lang })}>
             <Download className="size-4.5" aria-hidden="true" />
             {dict.cv.download}
           </a>

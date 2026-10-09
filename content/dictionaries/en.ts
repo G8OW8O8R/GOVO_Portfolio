@@ -30,6 +30,10 @@ const en: Dictionary = {
       description:
         "Pricing for a one-page site, landing page, company website, online shop, redesign and special project. Net prices {price}, with the timeline of each package.",
     },
+    privacy: {
+      title: "Privacy – GOVO DIGITAL",
+      description: "What the contact form collects, why and for how long I keep it. Visit statistics without cookies.",
+    },
   },
   desktop: {
     heading: "Piotr Goworek – frontend developer. Premium websites, motion and interaction.",
@@ -116,6 +120,13 @@ const en: Dictionary = {
     preferEmail: "Prefer email?",
     copy: "Copy",
     copied: "Copied",
+    privacyNote: "I'll use the details from this form only to reply. Visit statistics are anonymous, with no cookies.",
+    privacyLink: "Privacy",
+  },
+  privacy: { updated: "Last updated: {date}" },
+  analytics: {
+    out: "This browser isn't counted in the statistics",
+    in: "Counting is on",
   },
   cv: { download: "Download PDF", print: "Print", actions: "Download or print the CV" },
   project: {
@@ -145,6 +156,7 @@ const en: Dictionary = {
     cv: "CV.pdf",
     contact: "Contact",
     pricing: "Pricing",
+    privacy: "Privacy",
     projectLabel: "Project",
     badgeNew: "New",
   },

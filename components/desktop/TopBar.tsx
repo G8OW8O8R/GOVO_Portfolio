@@ -1,4 +1,5 @@
 import type { Dictionary } from "@/content/dictionaries";
+import { trackAttrs } from "@/lib/analytics";
 import type { Locale } from "@/lib/i18n";
 import { href } from "@/lib/routes";
 import { Logo } from "@/components/ui/Logo";
@@ -19,6 +20,7 @@ export function TopBar({ lang, dict }: { lang: Locale; dict: Dictionary }) {
         <WindowLink
           href={href(lang, "contact")}
           data-window-anchor="contact"
+          {...trackAttrs("cta-cooperate")}
           data-intro-drop="late"
           className="flex h-10 items-center gap-2.5 rounded-full bg-ink px-4 text-15 font-medium leading-none text-white shadow-[0_8px_24px_-6px_rgb(0_0_0/0.45)] transition-colors hover:bg-[#2a2a2a] desk:h-11 desk:px-5"
         >

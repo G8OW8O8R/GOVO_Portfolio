@@ -16,6 +16,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { route: "about", priority: 0.7 },
     { route: "contact", priority: 0.6 },
     { route: "cv", priority: 0.5 },
+    { route: "privacy", priority: 0.3 },
   ];
   return pages.flatMap(({ route, slug, priority }) =>
     locales.map((lang) => {

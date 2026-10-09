@@ -60,6 +60,8 @@ test("sitemap, robots and structured data", async ({ request }) => {
     "/pl/cennik",
     "/en/pricing",
     "/pl/strony-internetowe-warszawa",
+    "/pl/prywatnosc",
+    "/en/privacy",
   ]) {
     expect(sitemap).toContain(`<loc>${SITE_URL}${path}</loc>`);
   }

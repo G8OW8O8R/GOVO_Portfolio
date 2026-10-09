@@ -44,6 +44,30 @@ Environment variables (`.env.local`):
 - `RESEND_API_KEY` — sends messages from the contact form
 - `CONTACT_DRY_RUN` — runs the contact form without sending e-mail (ignored in production)
 - `CV_BASE_URL` — server used by `pnpm cv`; without it the script starts its own
+- `NEXT_PUBLIC_UMAMI_WEBSITE_ID` — Umami website ID for visit statistics (production only, see below)
+
+### Visit statistics
+
+[Umami Cloud](https://umami.is): no cookies, nothing stored on the visitor's device, so no consent banner. The tracker and its endpoint go through the site's own domain (`/s/script.js` and `/s/api/send`, rewrites in `next.config.ts`), so ad blockers don't drop them. It is only on in a Vercel production build (`VERCEL_ENV=production`), never in dev or preview, and sends only from `www.govodigital.com`. It loads after the first interaction or once the intro and the character have loaded, so it never delays the first paint. Every address counts as a page view, including windows opened without a reload; `/pl` or `/en` in the URL tells the language.
+
+| Event | Properties | When |
+| --- | --- | --- |
+| `window-open` | `window` (`about`, `project-obok`, `service-landing-page` …) | a window opened on the desktop (a direct entry is just a page view) |
+| `service-view` | `service` (`landing-page` …) | a service page shown, also entered from search |
+| `quicklook` | `file` | quick look (Space or long press), or a hover preview that stayed 800 ms (once per file per visit) |
+| `cta-cooperate` | — | the "Work with me" capsule |
+| `contact-sent` | `topic`, `budget` | a message actually sent (ids only, never what was typed) |
+| `cv-download` | `lang` | "Download PDF" |
+| `obok-open-live` | — | "Open Obok ↗" in the case study |
+
+Not counted:
+
+- **Your own browser:** open any page with `?nie-licz-mnie` (or `?dont-count-me`). It sets `localStorage["umami.disabled"] = "1"`, shows a short note and removes the parameter from the address. `?licz-mnie` (or `?count-me`) turns counting back on. Do this once in every browser and on every device you use.
+- **Automated browsers:** when `navigator.webdriver` is true or the user agent contains `Chrome-Lighthouse` or `HeadlessChrome` (Playwright, Lighthouse, PageSpeed), the tracker never loads.
+
+To check events: open the site in a counted browser, click around, then in the Umami dashboard go to the website → **Events** (event names and their properties) or **Realtime** (the visit as it happens). Filter by URL `/en` to see the English version. `pnpm e2e` checks every event against a stubbed tracker and sends nothing.
+
+If the dashboard shows the server's location instead of the visitors', set `UMAMI_SEND = "relay"` in `lib/analytics.ts`: `/s/api/send` is then handled by `app/s/api/send/route.ts`, which forwards the visitor's IP in `X-Forwarded-For`.
 
 ## Rights
 

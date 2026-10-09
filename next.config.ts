@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { ANALYTICS_BASE, UMAMI_ORIGIN, UMAMI_SEND } from "./lib/analytics";
 import { nextRedirects } from "./lib/redirects";
 import { localizedSegmentRules } from "./lib/routes";
 
@@ -16,12 +17,20 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/img/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] }];
   },
-  // English URLs (/en/about) are served from the Polish route folders (/en/o-mnie).
   async rewrites() {
-    return localizedSegmentRules().map(({ english, internal }) => ({
-      source: english,
-      destination: internal,
-    }));
+    return {
+      // Visit statistics through our own domain (lib/analytics.ts), ahead of the app's routes.
+      beforeFiles: [
+        { source: `${ANALYTICS_BASE}/script.js`, destination: `${UMAMI_ORIGIN}/script.js` },
+        ...(UMAMI_SEND === "rewrite" ? [{ source: `${ANALYTICS_BASE}/api/send`, destination: `${UMAMI_ORIGIN}/api/send` }] : []),
+      ],
+      // English URLs (/en/about) are served from the Polish route folders (/en/o-mnie).
+      afterFiles: localizedSegmentRules().map(({ english, internal }) => ({
+        source: english,
+        destination: internal,
+      })),
+      fallback: [],
+    };
   },
   async redirects() {
     return [

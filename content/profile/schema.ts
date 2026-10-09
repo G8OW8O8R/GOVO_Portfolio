@@ -130,6 +130,20 @@ export const workflowSchema = z.object({
 });
 
 /**
+ * Privacy page: short rows (heading + one or two sentences). The contact
+ * row says `{email}` where the address goes – it is assembled in the browser.
+ */
+export const privacySchema = z.object({
+  lead: localized,
+  /** Date of the last change, YYYY-MM-DD */
+  updated: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  rows: z
+    .array(z.object({ id, title: localized, text: localized }))
+    .min(5)
+    .refine((rows) => rows.some((r) => r.text.pl.includes("{email}") && r.text.en.includes("{email}")), "one row needs {email}"),
+});
+
+/**
  * Only what lives nowhere else: name, e-mail,
  * links, skills and the site address are imported from the other profile
  * files, so the CV and the website never drift apart.
@@ -170,3 +184,4 @@ export type Pricing = z.output<typeof pricingSchema>;
 export type Offer = z.output<typeof offerSchema>;
 export type Cv = z.output<typeof cvSchema>;
 export type Workflow = z.output<typeof workflowSchema>;
+export type Privacy = z.output<typeof privacySchema>;
