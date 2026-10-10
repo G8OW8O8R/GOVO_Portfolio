@@ -78,6 +78,27 @@ test("sitemap, robots and structured data", async ({ request }) => {
   expect(await (await request.get("/pl")).text()).toContain('"@type":"Person"');
 });
 
+test("the brand name, not the domain: site name on every page, WebSite and Organization on the home page", async ({ request }) => {
+  const sitemap = await (await request.get("/sitemap.xml")).text();
+  const paths = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map((m) => new URL(m[1]).pathname);
+  expect(paths.length).toBeGreaterThan(20);
+  for (const path of paths) {
+    const res = await request.get(path, { maxRedirects: 0 });
+    expect(res.status(), path).toBe(200);
+    expect(await res.text(), path).toContain('property="og:site_name" content="GOVO DIGITAL"');
+  }
+
+  for (const lang of locales) {
+    const html = await (await request.get(`/${lang}`)).text();
+    expect(/<title>(.*?)<\/title>/.exec(html)?.[1]).toContain("GOVO DIGITAL");
+    const data = [...html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/g)].flatMap((m) => JSON.parse(m[1]));
+    expect(data.find((d) => d["@type"] === "WebSite")).toMatchObject({ name: "GOVO DIGITAL", alternateName: "GOVO Digital", url: `${SITE_URL}/` });
+    const org = data.find((d) => d["@type"] === "Organization");
+    expect(org).toMatchObject({ name: "GOVO DIGITAL", founder: { name: "Piotr Goworek" } });
+    expect(org.sameAs).toEqual(expect.arrayContaining([expect.stringContaining("instagram.com/govo.web")]));
+  }
+});
+
 test.describe("service, pricing and local pages", () => {
   const lowest = (ids: string[]) => Math.min(...pricing.packages.filter((p) => ids.includes(p.id)).map((p) => p.from));
   const text = (html: string) => html.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();

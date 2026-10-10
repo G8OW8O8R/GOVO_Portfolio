@@ -65,6 +65,38 @@ export function pageMetadata({
 type JsonLd = Record<string, unknown>;
 
 const PERSON_ID = `${SITE_URL}/#person`;
+const ORGANIZATION_ID = `${SITE_URL}/#organization`;
+const WEBSITE_ID = `${SITE_URL}/#website`;
+
+/** The site name search engines show instead of the domain. */
+const BRAND = { name: "GOVO DIGITAL", alternateName: "GOVO Digital" } as const;
+
+/** schema.org WebSite: the site name in search results (home page, both languages). */
+export function websiteJsonLd(): JsonLd {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": WEBSITE_ID,
+    ...BRAND,
+    url: `${SITE_URL}/`,
+    inLanguage: [...locales],
+    publisher: { "@id": ORGANIZATION_ID },
+  };
+}
+
+/** schema.org Organization: the brand, its logo, founder and profiles (home page). */
+export function organizationJsonLd(): JsonLd {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": ORGANIZATION_ID,
+    ...BRAND,
+    url: `${SITE_URL}/`,
+    logo: { "@type": "ImageObject", url: absolute("/icon-512.png"), width: 512, height: 512 },
+    founder: { "@type": "Person", "@id": PERSON_ID, name: about.name },
+    sameAs: [links.linkedin, links.instagram, links.github].filter(Boolean),
+  };
+}
 
 /** schema.org Person: the author (home page, About me). */
 export function personJsonLd(lang: Locale): JsonLd {
@@ -78,7 +110,7 @@ export function personJsonLd(lang: Locale): JsonLd {
     description: dict.meta.description,
     url: absolute(href(lang, "home")),
     image: absolute("/cv/photo.jpg"),
-    worksFor: { "@type": "Organization", name: dict.meta.siteName, url: SITE_URL },
+    worksFor: { "@type": "Organization", "@id": ORGANIZATION_ID, name: dict.meta.siteName, url: `${SITE_URL}/` },
     sameAs: [links.linkedin, links.github].filter(Boolean),
   };
 }

@@ -7,6 +7,7 @@ import {
   breadcrumbJsonLd,
   creativeWorkJsonLd,
   faqJsonLd,
+  organizationJsonLd,
   packagesById,
   pageMetadata,
   personJsonLd,
@@ -14,6 +15,7 @@ import {
   serializeJsonLd,
   serviceJsonLd,
   titleWithPrice,
+  websiteJsonLd,
   withPrice,
 } from "./seo";
 
@@ -45,6 +47,33 @@ describe("structured data", () => {
     const person = personJsonLd("pl");
     expect(person).toMatchObject({ "@type": "Person", name: "Piotr Goworek", url: `${SITE_URL}/pl` });
     expect(person.sameAs).toEqual(expect.arrayContaining([expect.stringContaining("linkedin.com")]));
+  });
+
+  it("website carries the brand name for search results", () => {
+    expect(websiteJsonLd()).toMatchObject({
+      "@type": "WebSite",
+      name: "GOVO DIGITAL",
+      alternateName: "GOVO Digital",
+      url: "https://www.govodigital.com/",
+      publisher: { "@id": `${SITE_URL}/#organization` },
+    });
+  });
+
+  it("organization has the logo, the founder and every profile", () => {
+    const org = organizationJsonLd();
+    expect(org).toMatchObject({
+      "@type": "Organization",
+      name: "GOVO DIGITAL",
+      url: `${SITE_URL}/`,
+      logo: { url: `${SITE_URL}/icon-512.png` },
+      founder: { "@id": `${SITE_URL}/#person`, name: "Piotr Goworek" },
+    });
+    expect(org.sameAs).toEqual([
+      "https://www.linkedin.com/in/piotrgoworek/",
+      "https://www.instagram.com/govo.web/",
+      "https://github.com/G8OW8O8R",
+    ]);
+    expect(personJsonLd("en").worksFor).toMatchObject({ "@id": org["@id"] });
   });
 
   it("creative work points to the person and the absolute case study URL", () => {

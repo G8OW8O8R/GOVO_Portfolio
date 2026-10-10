@@ -7,6 +7,7 @@ import {
   isAutomated,
   pathEvents,
   readOptParam,
+  relayHeaders,
   trackAttrs,
 } from "./analytics";
 
@@ -74,5 +75,24 @@ describe("analytics", () => {
     expect(clientIp(new Headers({ "x-forwarded-for": "203.0.113.7, 10.0.0.1" }))).toBe("203.0.113.7");
     expect(clientIp(new Headers({ "x-real-ip": "198.51.100.2" }))).toBe("198.51.100.2");
     expect(clientIp(new Headers())).toBeNull();
+  });
+
+  it("relays the visitor's IP and user agent to Umami, and nothing else", () => {
+    const headers = relayHeaders(
+      new Headers({
+        "x-forwarded-for": "203.0.113.7, 76.76.21.21",
+        "user-agent": "Mozilla/5.0 Test",
+        "content-type": "application/json",
+        cookie: "a=b",
+        "x-vercel-id": "arn1::abc",
+      }),
+    );
+    for (const name of ["x-forwarded-for", "x-real-ip", "x-client-ip"]) expect(headers.get(name)).toBe("203.0.113.7");
+    expect(headers.get("user-agent")).toBe("Mozilla/5.0 Test");
+    expect(headers.get("content-type")).toBe("application/json");
+    expect(headers.get("cookie")).toBeNull();
+    expect(headers.get("x-vercel-id")).toBeNull();
+    expect(relayHeaders(new Headers({ "x-real-ip": "198.51.100.2" })).get("x-client-ip")).toBe("198.51.100.2");
+    expect(relayHeaders(new Headers()).has("x-forwarded-for")).toBe(false);
   });
 });

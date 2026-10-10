@@ -13,12 +13,11 @@ export const ANALYTICS_BASE = "/s";
 export const ANALYTICS_SCRIPT = `${ANALYTICS_BASE}/script.js`;
 
 /**
- * How /s/api/send reaches Umami. "rewrite": a plain proxy rewrite.
- * "relay": app/s/api/send/route.ts forwards the request with the visitor's IP
- * in X-Forwarded-For – switch to it if the dashboard shows Vercel's location
- * instead of the visitors'.
+ * How /s/api/send reaches Umami. "rewrite": a plain proxy rewrite – Umami
+ * then sees Vercel's IP and places every visit at the edge's location.
+ * "relay": app/s/api/send/route.ts forwards the request with the visitor's IP.
  */
-export const UMAMI_SEND: "rewrite" | "relay" = "rewrite";
+export const UMAMI_SEND: "rewrite" | "relay" = "relay";
 
 /** The only host that sends (data-domains): a local or preview build never counts. */
 export const ANALYTICS_HOST = new URL(SITE_URL).hostname;
@@ -111,4 +110,21 @@ export function eventFromAttributes(attrs: { name: string; value: string }[]): E
 export function clientIp(headers: Headers): string | null {
   const forwarded = headers.get("x-forwarded-for")?.split(",")[0]?.trim();
   return forwarded || headers.get("x-real-ip")?.trim() || null;
+}
+
+/** Tracker headers passed on as they came (cookies and everything else stay behind). */
+const RELAYED = ["content-type", "user-agent", "accept-language", "x-umami-website-id", "x-umami-hostname", "x-umami-cache"];
+/** Headers Umami reads the visitor's IP from; each one carries the same address. */
+const IP_HEADERS = ["x-forwarded-for", "x-real-ip", "x-client-ip"];
+
+/** Headers of the relayed request to Umami: the tracker's own plus the visitor's IP. */
+export function relayHeaders(incoming: Headers): Headers {
+  const headers = new Headers();
+  for (const name of RELAYED) {
+    const value = incoming.get(name);
+    if (value) headers.set(name, value);
+  }
+  const ip = clientIp(incoming);
+  if (ip) for (const name of IP_HEADERS) headers.set(name, ip);
+  return headers;
 }
