@@ -26,6 +26,19 @@ My portfolio, built as a living desktop. In the middle stands a black-and-white 
 
 **Stack:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, Motion, Zod, WebGL2, Vitest, Playwright, Vercel.
 
+## Lighthouse
+
+Measured on production (`https://www.govodigital.com`) on 2026-10-10: Lighthouse 12.8.2, headless Chrome 154, default simulated throttling (mobile: Moto G Power on slow 4G with a 4× slower CPU; desktop: the `desktop` preset). Three runs per row, each value is the median of the three.
+
+| Page | Device | Performance | Accessibility | Best practices | SEO | FCP | LCP | TBT | CLS | Speed Index |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| [`/pl`](https://www.govodigital.com/pl) | desktop | 100 | 100 | 100 | 100 | 0.3 s | 0.7 s | 2 ms | 0 | 0.7 s |
+| [`/pl`](https://www.govodigital.com/pl) | mobile | 72 | 100 | 100 | 100 | 1.0 s | 3.5 s | 662 ms | 0 | 4.3 s |
+| [`/pl/projekty/obok`](https://www.govodigital.com/pl/projekty/obok) | desktop | 99 | 100 | 100 | 100 | 0.3 s | 0.8 s | 16 ms | 0 | 0.9 s |
+| [`/pl/projekty/obok`](https://www.govodigital.com/pl/projekty/obok) | mobile | 79 | 100 | 100 | 100 | 1.1 s | 4.0 s | 303 ms | 0 | 4.0 s |
+
+Performance in the individual runs: `/pl` desktop 100 / 99 / 100, mobile 72 / 72 / 72; `/pl/projekty/obok` desktop 99 / 99 / 99, mobile 79 / 79 / 81. On mobile the largest element on both pages is the character's full-screen poster, and the blocking time is the start-up JavaScript of the desktop on a CPU slowed down 4×. Lighthouse sees the site without the intro and without statistics.
+
 ## Development
 
 Requires Node.js, pnpm and a local Chrome for the end-to-end tests.
@@ -42,6 +55,8 @@ pnpm cv        # regenerate the CV PDFs
 Environment variables (`.env.local`):
 
 - `RESEND_API_KEY` — sends messages from the contact form
+- `CONTACT_FROM` — the form's sender, e.g. `GOVO DIGITAL <kontakt@govodigital.com>` (a domain verified in Resend); required in production, elsewhere it falls back to Resend's test sender
+- `CONTACT_TO` — the inbox the form's messages go to (defaults to the owner's); the visitor's address is only the Reply-To, the form never e-mails it
 - `CONTACT_DRY_RUN` — runs the contact form without sending e-mail (ignored in production)
 - `CV_BASE_URL` — server used by `pnpm cv`; without it the script starts its own
 - `NEXT_PUBLIC_UMAMI_WEBSITE_ID` — Umami website ID for visit statistics (production only, see below)

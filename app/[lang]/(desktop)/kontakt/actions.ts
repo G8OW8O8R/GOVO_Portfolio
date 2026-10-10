@@ -1,12 +1,13 @@
 "use server";
 
+import { appendFile } from "node:fs/promises";
 import { headers } from "next/headers";
-import { assembleEmail } from "@/content/profile/contact";
 import {
   CONTACT_RATE,
   HONEYPOT,
-  buildContactEmail,
   clientIp,
+  contactRequest,
+  contactSender,
   createRateLimiter,
   type ContactState,
 } from "@/lib/contact";
@@ -15,8 +16,8 @@ import { SITE_URL } from "@/lib/site";
 
 const limiter = createRateLimiter(CONTACT_RATE);
 
-/** Resend's shared test sender: delivers to the account owner's address (the one in contact.ts). */
-const FROM = "GOVO Portfolio <onboarding@resend.dev>";
+/** The owner's inbox (CONTACT_TO overrides it). Server only: the site shows the public address from contact.ts. */
+const OWNER_INBOX = "piotrgoworek05@gmail.com";
 
 /**
  * Contact form → e-mail via the Resend REST API (no SDK). The full Zod schema
@@ -33,25 +34,30 @@ export async function sendContact(_prev: ContactState, formData: FormData): Prom
   const key = process.env.RESEND_API_KEY;
   // Test runs (E2E) skip the provider; never on a Vercel production deployment.
   const dryRun = process.env.CONTACT_DRY_RUN === "1" && process.env.VERCEL_ENV !== "production";
-  if (!key && !dryRun) return { status: "unavailable" };
+  const from = contactSender(process.env);
+  if (!from) console.error("[contact] CONTACT_FROM is not set");
+  if (!from || (!key && !dryRun)) return { status: "unavailable" };
 
   const limit = limiter.hit(clientIp(await headers()));
   if (!limit.ok) return { status: "limited", retryAfterMin: Math.ceil(limit.retryAfterMs / 60_000) };
 
-  if (dryRun) return { status: "sent" };
+  const request = contactRequest(result.data, new Date(), new URL(SITE_URL).host, {
+    from,
+    to: process.env.CONTACT_TO?.trim() || OWNER_INBOX,
+  });
 
-  const mail = buildContactEmail(result.data, new Date(), new URL(SITE_URL).host);
+  if (dryRun) {
+    // the request that would have been sent, one JSON line per message (the E2E test reads it)
+    const out = process.env.CONTACT_DRY_RUN_FILE;
+    if (out) await appendFile(out, JSON.stringify(request) + "\n");
+    return { status: "sent" };
+  }
+
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        from: FROM,
-        to: [assembleEmail()],
-        reply_to: result.data.email,
-        subject: mail.subject,
-        text: mail.text,
-      }),
+      body: JSON.stringify(request),
       signal: AbortSignal.timeout(10_000),
       cache: "no-store",
     });

@@ -6,11 +6,13 @@
 export const SITE_URL = "https://www.govodigital.com";
 
 /**
- * Contact details. The e-mail address is stored in parts and assembled in
- * the browser (components/ui/Email.tsx), so it never appears as plain text in
- * the server-rendered HTML. Never hard-code it in components.
+ * The public contact address (page, CV, JSON-LD). It is stored in parts and
+ * assembled in the browser (components/ui/Email.tsx), so the visible text is
+ * never in the server-rendered HTML; only the JSON-LD on the home and About
+ * pages carries it. Never hard-code it in components. Mail to it is forwarded
+ * (ImprovMX); the form's messages go to the owner's inbox (CONTACT_TO, kontakt/actions.ts).
  */
-export const emailParts = { user: "piotrgoworek05", domain: "gmail.com" } as const;
+export const emailParts = { user: "kontakt", domain: "govodigital.com" } as const;
 
 export function assembleEmail(parts: { user: string; domain: string } = emailParts): string {
   return [parts.user, parts.domain].join("@");

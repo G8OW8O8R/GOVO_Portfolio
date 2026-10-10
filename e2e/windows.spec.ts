@@ -50,8 +50,9 @@ test.describe("desktop windows", () => {
       await page.reload();
       await expect(page.getByRole("dialog", { name: w.title }), `${w.path} after reload`).toBeVisible();
     }
-    // The e-mail is never plain text in the server HTML.
+    // The e-mail is never plain text in the server HTML; the owner's inbox is never on the page at all.
     const html = await (await page.request.get("/pl/kontakt")).text();
+    expect(html).not.toContain("kontakt@govodigital.com");
     expect(html).not.toContain("@gmail.com");
     // The CV is a page of its own (e2e/cv.spec.ts); only its file and download need the PDF.
     expect((await page.request.get("/pl/cv")).status()).toBe(200);

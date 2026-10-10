@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildContactEmail, clientIp, contactMailto, createRateLimiter } from "./contact";
+import { DEV_SENDER, buildContactEmail, clientIp, contactMailto, contactRequest, contactSender, createRateLimiter } from "./contact";
 import { checkContact } from "./contact-live";
 import { validateContact } from "./contact-schema";
 
@@ -122,6 +122,35 @@ describe("buildContactEmail", () => {
     const mail = buildContactEmail(r.data, sentAt, "govo.digital");
     expect(mail.subject).toBe("[Portfolio] Oferta pracy – Anna Nowak");
     expect(mail.text).not.toContain("Budżet");
+  });
+});
+
+describe("contactSender", () => {
+  it("uses CONTACT_FROM; the shared test sender only outside production", () => {
+    const from = "GOVO DIGITAL <kontakt@govodigital.com>";
+    expect(contactSender({ CONTACT_FROM: from, VERCEL_ENV: "production" })).toBe(from);
+    expect(contactSender({ VERCEL_ENV: "preview" })).toBe(DEV_SENDER);
+    expect(contactSender({})).toBe(DEV_SENDER);
+    expect(contactSender({ VERCEL_ENV: "production" })).toBeNull();
+    expect(contactSender({ CONTACT_FROM: " ", VERCEL_ENV: "production" })).toBeNull();
+  });
+});
+
+describe("contactRequest", () => {
+  it("goes to the owner only, the visitor is the reply-to", () => {
+    const r = validateContact(valid);
+    if (!r.ok) throw new Error("invalid");
+    const req = contactRequest(r.data, new Date("2026-10-10T08:00:00Z"), "www.govodigital.com", {
+      from: "GOVO DIGITAL <kontakt@govodigital.com>",
+      to: "owner@example.com",
+    });
+    expect(req).toMatchObject({
+      from: "GOVO DIGITAL <kontakt@govodigital.com>",
+      to: ["owner@example.com"],
+      reply_to: "anna@example.com",
+      subject: "[Portfolio] Strona dla firmy – Anna Nowak",
+    });
+    expect(JSON.stringify(req.to)).not.toContain("anna@example.com");
   });
 });
 

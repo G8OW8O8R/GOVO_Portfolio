@@ -13,8 +13,8 @@ test.describe("CV", () => {
     await expect(sheet.getByRole("heading", { name: "Piotr Goworek" })).toBeVisible();
     await expect(sheet.getByText("Dostępny od zaraz")).toBeVisible();
     // the e-mail is assembled in the browser, never in the server HTML
-    await expect(sheet.getByRole("link", { name: "piotrgoworek05@gmail.com" })).toHaveAttribute("href", /^mailto:/);
-    expect(await (await page.request.get("/pl/cv")).text()).not.toContain("@gmail.com");
+    await expect(sheet.getByRole("link", { name: "kontakt@govodigital.com" })).toHaveAttribute("href", "mailto:kontakt@govodigital.com");
+    expect(await (await page.request.get("/pl/cv")).text()).not.toContain("kontakt@govodigital.com");
 
     // projects: newest first, the portfolio always last, at most three
     const projects = sheet.locator("ol > li h4");

@@ -142,7 +142,7 @@ test.describe("edge cases", () => {
       route.request().method() === "POST" && route.request().headers()["next-action"] && fail ? route.abort("failed") : route.continue(),
     );
     await page.goto("/pl/kontakt");
-    await expect(page.getByText(/@gmail\.com/)).toBeVisible();
+    await expect(page.getByText("kontakt@govodigital.com")).toBeVisible();
     const dialog = page.getByRole("dialog", { name: "Kontakt" });
     await page.getByLabel("Imię").fill("Anna Nowak");
     await page.getByLabel("E-mail", { exact: true }).fill("anna@example.com");

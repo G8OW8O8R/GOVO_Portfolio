@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getDictionary } from "@/content/dictionaries";
 import { about } from "@/content/profile/about";
-import { SITE_URL } from "@/content/profile/contact";
+import { SITE_URL, assembleEmail } from "@/content/profile/contact";
 import { links } from "@/content/profile/links";
 import { pricing } from "@/content/profile/pricing";
 import type { Pricing } from "@/content/profile/schema";
@@ -84,7 +84,7 @@ export function websiteJsonLd(): JsonLd {
   };
 }
 
-/** schema.org Organization: the brand, its logo, founder and profiles (home page). */
+/** schema.org Organization: the brand, its logo, contact address, founder and profiles (home page). */
 export function organizationJsonLd(): JsonLd {
   return {
     "@context": "https://schema.org",
@@ -93,6 +93,7 @@ export function organizationJsonLd(): JsonLd {
     ...BRAND,
     url: `${SITE_URL}/`,
     logo: { "@type": "ImageObject", url: absolute("/icon-512.png"), width: 512, height: 512 },
+    email: assembleEmail(),
     founder: { "@type": "Person", "@id": PERSON_ID, name: about.name },
     sameAs: [links.linkedin, links.instagram, links.github].filter(Boolean),
   };
@@ -110,6 +111,7 @@ export function personJsonLd(lang: Locale): JsonLd {
     description: dict.meta.description,
     url: absolute(href(lang, "home")),
     image: absolute("/cv/photo.jpg"),
+    email: assembleEmail(),
     worksFor: { "@type": "Organization", "@id": ORGANIZATION_ID, name: dict.meta.siteName, url: `${SITE_URL}/` },
     sameAs: [links.linkedin, links.github].filter(Boolean),
   };

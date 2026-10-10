@@ -123,6 +123,24 @@ export function buildContactEmail(data: ContactData, sentAt: Date, site: string)
   return { subject: `[Portfolio] ${subjectLabel} – ${data.name}`, text: lines.join("\n") };
 }
 
+/** Resend's shared test sender: delivers only to the Resend account owner. */
+export const DEV_SENDER = "GOVO Portfolio <onboarding@resend.dev>";
+
+/** The sender: CONTACT_FROM; the shared test sender only outside Vercel production (null there: form unavailable). */
+export function contactSender(env: Record<string, string | undefined>): string | null {
+  return env.CONTACT_FROM?.trim() || (env.VERCEL_ENV === "production" ? null : DEV_SENDER);
+}
+
+/**
+ * The provider request. It always goes to the owner; the visitor's address is
+ * only the Reply-To. Nothing is ever sent to it (no confirmation e-mail), so
+ * the form can't be used to mail an arbitrary address.
+ */
+export function contactRequest(data: ContactData, sentAt: Date, site: string, route: { from: string; to: string }) {
+  const mail = buildContactEmail(data, sentAt, site);
+  return { from: route.from, to: [route.to], reply_to: data.email, subject: mail.subject, text: mail.text };
+}
+
 /** mailto: fallback with the visitor's message prefilled (form unavailable). */
 export function contactMailto(to: string, data: Partial<Record<"subject" | "message", string>>, lang: Locale): string {
   const subjectLabel = (data.subject && findSubject(data.subject)?.label[lang]) || "";

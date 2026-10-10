@@ -1,9 +1,12 @@
+import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
+import { CONTACT_DRY_RUN_FILE } from "../playwright.config";
 
 /**
  * Contact form against the production build started with CONTACT_DRY_RUN=1
  * (playwright.config.ts): the whole server action runs – validation, honeypot,
- * rate limit – only the provider call is skipped. Each test gets its own
+ * rate limit – only the provider call is skipped; the request it would have
+ * sent is written to CONTACT_DRY_RUN_FILE. Each test gets its own
  * client IP (x-forwarded-for), so the limits don't leak between tests.
  */
 
@@ -12,7 +15,7 @@ const ip = () => `203.0.113.${Math.floor(Math.random() * 250) + 1}`;
 /** Hydrated: the e-mail line is assembled in the browser only after hydration. */
 async function openContact(page: Page, path = "/pl/kontakt") {
   await page.goto(path);
-  await expect(page.getByText(/@gmail\.com/)).toBeVisible();
+  await expect(page.getByText("kontakt@govodigital.com")).toBeVisible();
 }
 
 async function fill(page: Page, { name = "Anna Nowak", email = "anna@example.com", message = "Potrzebuję strony dla gabinetu." } = {}) {
@@ -57,6 +60,28 @@ test.describe("contact form", () => {
     await expect(page.getByLabel("Wiadomość")).toHaveValue("Potrzebuję strony dla gabinetu.");
   });
 
+  test("the message comes from the site's domain, to the owner only, reply-to the visitor", async ({ page }) => {
+    await page.setExtraHTTPHeaders({ "x-forwarded-for": ip() });
+    await openContact(page);
+    const dialog = page.getByRole("dialog", { name: "Kontakt" });
+    const name = `Anna ${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
+    await fill(page, { name, email: "anna.nowak@example.com" });
+    await dialog.getByRole("button", { name: "Wyślij wiadomość" }).click();
+    await expect(dialog.getByText("Dzięki! Odpiszę zwykle w ciągu doby.")).toBeVisible();
+
+    const sent = (await readFile(CONTACT_DRY_RUN_FILE, "utf8"))
+      .split("\n")
+      .filter(Boolean)
+      .map((line) => JSON.parse(line) as { from: string; to: string[]; reply_to: string; subject: string })
+      .filter((r) => r.subject.endsWith(name));
+    expect(sent).toHaveLength(1);
+    expect(sent[0]).toMatchObject({
+      from: "GOVO DIGITAL <kontakt@govodigital.com>",
+      to: ["piotrgoworek05@gmail.com"],
+      reply_to: "anna.nowak@example.com",
+    });
+  });
+
   test("a filled honeypot looks sent but does not count (nor send)", async ({ page }) => {
     await page.setExtraHTTPHeaders({ "x-forwarded-for": ip() });
     await openContact(page);
@@ -82,6 +107,6 @@ test.describe("contact form", () => {
     await expect(page.getByRole("radio", { name: "Strona dla firmy" })).toBeChecked();
     // e-mail never in the server HTML, assembled in the browser for the fallback line
     await expect(page.getByText("Wolisz maila?")).toBeVisible();
-    await expect(page.getByText(/@gmail\.com/)).toBeVisible();
+    await expect(page.getByText("kontakt@govodigital.com")).toBeVisible();
   });
 });

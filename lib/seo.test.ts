@@ -45,7 +45,7 @@ describe("pageMetadata", () => {
 describe("structured data", () => {
   it("person links the profiles and the brand", () => {
     const person = personJsonLd("pl");
-    expect(person).toMatchObject({ "@type": "Person", name: "Piotr Goworek", url: `${SITE_URL}/pl` });
+    expect(person).toMatchObject({ "@type": "Person", name: "Piotr Goworek", url: `${SITE_URL}/pl`, email: "kontakt@govodigital.com" });
     expect(person.sameAs).toEqual(expect.arrayContaining([expect.stringContaining("linkedin.com")]));
   });
 
@@ -66,6 +66,7 @@ describe("structured data", () => {
       name: "GOVO DIGITAL",
       url: `${SITE_URL}/`,
       logo: { url: `${SITE_URL}/icon-512.png` },
+      email: "kontakt@govodigital.com",
       founder: { "@id": `${SITE_URL}/#person`, name: "Piotr Goworek" },
     });
     expect(org.sameAs).toEqual([
