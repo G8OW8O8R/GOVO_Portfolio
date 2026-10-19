@@ -14,8 +14,8 @@ export const cv = cvSchema.parse({
   location: t("Warszawa i okolice · zdalnie lub hybrydowo", "Warsaw area · remote or hybrid"),
   photo: "/cv/photo.jpg",
   profile: t(
-    "Frontend developer szukający pierwszego etatu w zespole produktowym. Projektuję interfejsy i sam je koduję – od makiety po wdrożenie – w React, Next.js i TypeScript. Najbardziej lubię miejsce, w którym design spotyka się z techniką: ruch, grafikę w czasie rzeczywistym i dane na żywo. Dbam o wydajność, dostępność i SEO, a w zespole chcę rozwijać się dalej obok bardziej doświadczonych osób.",
-    "Frontend developer looking for a first full-time role in a product team. I design interfaces and code them myself – from mockup to deployment – in React, Next.js and TypeScript. What I enjoy most is where design meets engineering: motion, real-time graphics and live data. I care about performance, accessibility and SEO, and I want to keep growing in a team alongside more experienced people.",
+    "Frontend developer szukający pierwszego etatu w zespole produktowym. Projektuję interfejsy i sam je koduję – od makiety po wdrożenie – w React, Next.js i TypeScript. Najbardziej lubię styk designu i techniki: ruch, grafikę w czasie rzeczywistym i dane na żywo. Dbam o wydajność, dostępność i SEO.",
+    "Frontend developer looking for a first full-time role in a product team. I design interfaces and code them myself – from mockup to deployment – in React, Next.js and TypeScript. What I enjoy most is where design meets engineering: motion, real-time graphics and live data. I care about performance, accessibility and SEO.",
   ),
   headings: {
     projects: t("Projekty", "Projects"),

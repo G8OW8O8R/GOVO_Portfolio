@@ -27,6 +27,97 @@
     "height": 192,
     "placeholder": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAADwAQCdASoQABAAA4BaJQBOgB6Rf46XeKAA/tAXzhM8duw62Hin1mD0rAiunBf62wk0Gl+nFmbBSSbB5X8oAA=="
   },
+  "projects/moonpatch/cover": {
+    "group": "moonpatchCover",
+    "hash": "95a98ce0",
+    "width": 960,
+    "height": 536,
+    "placeholder": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAADQAQCdASoQAAkAA4BaJZgCdAEJ4j+5YADiZYWTuatfGSdBzx4L9QL9Z3W6tBliZ31vTuw7RU1NbiiaagoAAA=="
+  },
+  "projects/moonpatch/icon": {
+    "group": "moonpatchIcon",
+    "hash": "ab8708fb",
+    "width": 192,
+    "height": 192,
+    "placeholder": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAAAwAgCdASoQABAAA4BaJZACdH8G6AA5WiMvAAD+3D71WBo3J8AFl2+wv9qxZkfTqaoG9ax/EqwVo4LsgXbHqQAA"
+  },
+  "projects/moonpatch/scenes/barn": {
+    "group": "moonpatchScenes",
+    "hash": "17b50360",
+    "width": 384,
+    "height": 480,
+    "placeholder": "data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAADwAwCdASoQABQAPu1iqU2ppaOiMAgBMB2JaACdL1yB1T0d1WtUJipgAP6jcel3FIqso0I+pMPYwquB+Rahp+3EqOAh3uO2APYRam1jiAdiaK3983YFWk7M9/bCNlj7uDrz71ikVuZcgAAA"
+  },
+  "projects/moonpatch/scenes/cafe": {
+    "group": "moonpatchScenes",
+    "hash": "0762c4e7",
+    "width": 384,
+    "height": 480,
+    "placeholder": "data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAABQBACdASoQABQAPu1iqU2ppaOiMAgBMB2JZACdMoGv/7oABFD5hTGUvRwQAP6CfAo3XpYVxsF0//7rd3S0Cse7i3B6YwSu4p/BSf0t0RCIoGBeSzDfU8I92OPV/VMo6MVnqimcN77bAEAA"
+  },
+  "projects/moonpatch/scenes/gate": {
+    "group": "moonpatchScenes",
+    "hash": "bf8a4ba2",
+    "width": 384,
+    "height": 480,
+    "placeholder": "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAADQAwCdASoQABQAPu1iqU2ppaOiMAgBMB2JQBOgBEBUb/F94Rik2gAA/lvU2XTRtZqXFfQ7KYg9hIax4eM47xe4MuWFLNrPi8bHh0wSeoTkCzYDXDhiAAAA"
+  },
+  "projects/moonpatch/scenes/haunt": {
+    "group": "moonpatchScenes",
+    "hash": "65581b43",
+    "width": 384,
+    "height": 480,
+    "placeholder": "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAACwAwCdASoQABQAPu1iqk4ppaQiMAgBMB2JQBhQBD4D1QOALZSQAAD+8NDMzXtEn8UzcIzrF+oW408lMUbojoojCO85VxkUILGWK7JSmx1w37aC+7STgCgA"
+  },
+  "projects/moonpatch/scenes/square-dusk": {
+    "group": "moonpatchScenes",
+    "hash": "3d21a11f",
+    "width": 384,
+    "height": 480,
+    "placeholder": "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAABwBACdASoQABQAPu1iqU2ppaQiMAgBMB2JaACdMoR4GCnGYvQ/thQPJF3uAADxcfByhZ7hfwWPRrR4ax96oaA4bqYtC9jcpjI6g5rU2y5YXjO8iwlscAAA"
+  },
+  "projects/moonpatch/scenes/square-golden": {
+    "group": "moonpatchScenes",
+    "hash": "484bb9a3",
+    "width": 384,
+    "height": 480,
+    "placeholder": "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAAAQBACdASoQABQAPu1iqU2ppaOiMAgBMB2JQBOmUABp1d6n4Fwpktk6AAD+35Wqw15zYkyyLIRSri3Jj4l8CkA/F4vSP5ZGJW0Z8rxMN4Pm+TEAAAA="
+  },
+  "projects/moonpatch/shots/gate": {
+    "group": "moonpatchShots",
+    "hash": "b35b4586",
+    "width": 960,
+    "height": 600,
+    "placeholder": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAAAQAgCdASoQAAoAA4BaJZACdAEQT+kkgrLAAOJlRCEuLCJeoYTtBje5CC0GyS/KGIkgxHJDIJhxW6omZT6a6AAA"
+  },
+  "projects/moonpatch/shots/square": {
+    "group": "moonpatchShots",
+    "hash": "054fc823",
+    "width": 960,
+    "height": 600,
+    "placeholder": "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAAAQAgCdASoQAAoAA4BaJZACdGuAAuORYXSAAP5I/Vp6llVPKir4z8ecuwKDdmcT/r07FWkoAFjKUKe7wk0SuueB5oAAAA=="
+  },
+  "projects/moonpatch/shots/ticket": {
+    "group": "moonpatchShots",
+    "hash": "a4d87784",
+    "width": 960,
+    "height": 600,
+    "placeholder": "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAAAQAgCdASoQAAoAA4BaJYwCdAEXeX+8v5+AAP7l1BT/BV7wmnSiRiWZX35w4s6W44ivASOpGTML8jkzkAA="
+  },
+  "projects/moonpatch/shots/transition": {
+    "group": "moonpatchShots",
+    "hash": "b3bc2952",
+    "width": 960,
+    "height": 600,
+    "placeholder": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAADwAQCdASoQAAoAA4BaJbACdAELz9ePeoAA9kXIzBDVcFCKdej1k2oibpUoxDLzKQbW+Iz3161lbUouwdMAAA=="
+  },
+  "projects/moonpatch/showreel-poster": {
+    "group": "moonpatchShowreel",
+    "hash": "1076c9c8",
+    "width": 1920,
+    "height": 1080,
+    "placeholder": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAACwAQCdASoQAAkAA4BaJZgCdADr4lQAAOJlQ4UaqFIXnrI6w2m7oCv2GQsVT3U9TIRTuw7RLWJmU+mw6FAAAA=="
+  },
   "projects/obok/cover": {
     "group": "cover",
     "hash": "37a7fa5c",
