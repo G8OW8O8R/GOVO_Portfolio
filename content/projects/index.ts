@@ -1,10 +1,11 @@
 import moonpatch from "./moonpatch";
 import obok from "./obok";
 import portfolio from "./portfolio";
+import tesorra from "./tesorra";
 import { cvEntrySchema, projectSchema, type CvEntry, type Project } from "./schema";
 
 /** Register a new project here (one import); the desktop places it on its own and the CV lists it. */
-const entries = [moonpatch, obok];
+const entries = [tesorra, moonpatch, obok];
 
 /** CV-only entries: no desktop file, no window. */
 const cvOnly = [portfolio];

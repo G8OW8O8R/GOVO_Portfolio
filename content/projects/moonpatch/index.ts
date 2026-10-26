@@ -10,9 +10,9 @@ const plate = (id: string, caption: Text, alt: Text) => ({ src: `${dir}/scenes/$
 /** Case study copy: PL is the source, EN translated. */
 const moonpatch: ProjectInput = {
   slug: "moonpatch",
-  order: 1,
+  order: 2,
   year: 2026,
-  isNew: true,
+  isNew: false,
   title: { pl: "Moonpatch Farm", en: "Moonpatch Farm" },
   summary: {
     pl: "Jesienna farma dyń, którą zwiedza się jak film – od bramy po sklep ze straszydłami.",
@@ -37,8 +37,7 @@ const moonpatch: ProjectInput = {
       en: "2026 · concept · design, assets, code, deployment",
     },
     live: { url: "https://moonpatch.vercel.app", label: { pl: "Otwórz Moonpatch", en: "Open Moonpatch" } },
-    // Tylko jeśli repozytorium będzie publiczne:
-    // code: { url: "https://github.com/…/moonpatch", label: { pl: "Zobacz kod", en: "View the code" } },
+    code: { url: "https://github.com/G8OW8O8R/Moonpatch", label: { pl: "Zobacz kod", en: "View the code" } },
     // Wymiary uzupełnić z gotowego pliku showreel.mp4.
     showreel: { src: `${dir}/showreel.mp4`, poster: `${dir}/showreel-poster.jpg`, width: 1920, height: 1080 },
     brief: [

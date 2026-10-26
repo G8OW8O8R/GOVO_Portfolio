@@ -14,7 +14,7 @@ const scene = (id: string, caption: Text, when: Text) => ({
 /** Case study copy: PL is the source, EN translated. */
 const obok: ProjectInput = {
   slug: "obok",
-  order: 2,
+  order: 3,
   year: 2026,
   isNew: false,
   title: { pl: "Obok", en: "Obok" },

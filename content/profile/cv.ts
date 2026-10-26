@@ -31,7 +31,7 @@ export const cv = cvSchema.parse({
     {
       role: t("Magazynier", "Warehouse operative"),
       place: "AutoPartner S.A., Pruszków",
-      period: t("07.2025 – obecnie", "07.2025 – present"),
+      period: t("07.2025 – 10.2026"),
       note: t("kompletacja zwrotów, dostawy, organizacja magazynu", "processing returns, deliveries, warehouse organisation"),
     },
     {

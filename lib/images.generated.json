@@ -202,6 +202,97 @@
     "height": 950,
     "placeholder": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAADwAQCdASoQAAgAA4BaJQBOgCBvkYhtyQAA/s3liWWaLfFMh4a9183yHMPzuaNvO+Ff4AAA"
   },
+  "projects/tesorra/cover": {
+    "group": "tesorraCover",
+    "hash": "ca14cb82",
+    "width": 960,
+    "height": 540,
+    "placeholder": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADwAQCdASoQAAkAA4BaJYgCdAEO9QRrigAA/qNx1/xbOKx6+qxRKo5pyANV28tTmR2nUJUgpIr0P0vEIYOKAAAA"
+  },
+  "projects/tesorra/icon": {
+    "group": "tesorraIcon",
+    "hash": "945f788d",
+    "width": 192,
+    "height": 192,
+    "placeholder": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAAAwAgCdASoQABAAA4BaJYwCdH8AEbjGVQEEYAD+3NAbqZap36oTNGsDe6SX7ARbD7ofYmaW2GHfteS3YqAAAA=="
+  },
+  "projects/tesorra/scenes/archive": {
+    "group": "tesorraScenes",
+    "hash": "92765afd",
+    "width": 384,
+    "height": 480,
+    "placeholder": "data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAAAwAwCdASoQABQAPu1iqU2ppaOiMAgBMB2JZwAAW+N+A61AAP7Zq79ebFkGntrLbphg2dhiBg1cs1mGBOt/fzwqS3wvUp5ljnc752PcH6d2AAAA"
+  },
+  "projects/tesorra/scenes/hero": {
+    "group": "tesorraScenes",
+    "hash": "bbf46016",
+    "width": 384,
+    "height": 480,
+    "placeholder": "data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAABQAwCdASoQABQAPu1iqU2ppaOiMAgBMB2JZAC7AB5VQAXAgAD+2tOIaS+81QsAerx09cY0RWDB5FTfwTXy6Rwf8AgubRO2gK6Co5yIcsPoxhqTiUy9bTgnCR9zcPHdNc58lFqtXoMpAAAA"
+  },
+  "projects/tesorra/scenes/live": {
+    "group": "tesorraScenes",
+    "hash": "9b6e380f",
+    "width": 384,
+    "height": 480,
+    "placeholder": "data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAACwAwCdASoQABQAPu1kq04ppaQiMAgBMB2JQBUehDvP8p0r/zSeEAD+8p1XJeVcK9O9dzukTKGSi8VNg4VZvOp5a/fBwEX10qOkKw6IgYCAAA=="
+  },
+  "projects/tesorra/scenes/menu": {
+    "group": "tesorraScenes",
+    "hash": "4f1f5415",
+    "width": 384,
+    "height": 480,
+    "placeholder": "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAACwAwCdASoQABQAPu1iqU2ppaQiMAgBMB2JZwDM0CHS4Ns3qoxWAAD+8p8X2t4cP3//vT8vhJb+gFOek485OccWwpFXkAAA"
+  },
+  "projects/tesorra/scenes/moto": {
+    "group": "tesorraScenes",
+    "hash": "63368d33",
+    "width": 384,
+    "height": 480,
+    "placeholder": "data:image/webp;base64,UklGRmIAAABXRUJQVlA4IFYAAADwAwCdASoQABQAPu1iqk4ppaQiMAgBMB2JZwC2yCHgC6WabxKDWPm4AP7ymOUGTokYYMLyGe1HS/EuQ5QeaBR9cVLPAHN7ff7Gyd/0XhaqSkctLu5AAA=="
+  },
+  "projects/tesorra/scenes/team": {
+    "group": "tesorraScenes",
+    "hash": "fab3d778",
+    "width": 384,
+    "height": 480,
+    "placeholder": "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAAAQBACdASoQABQAPu1iqU2ppaOiMAgBMB2JYgC/OCF5zB9z9Doh5FLtoAD+z103Il5cmdQYu2tWkns3Xqmq8xAvvrcLzFoXyETzr/2aVsKu8vqTpiguAAAA"
+  },
+  "projects/tesorra/shots/driver": {
+    "group": "tesorraShots",
+    "hash": "eed51008",
+    "width": 960,
+    "height": 600,
+    "placeholder": "data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAACwAQCdASoQAAoAA4BaJQBOgB4ajeoAAP73gkKoMT+92VyZ2wd74BkMRJ1Sr2k+BzUZrCPbMfoptcgA"
+  },
+  "projects/tesorra/shots/pass": {
+    "group": "tesorraShots",
+    "hash": "90f48fa2",
+    "width": 960,
+    "height": 600,
+    "placeholder": "data:image/webp;base64,UklGRjYAAABXRUJQVlA4ICoAAACwAQCdASoQAAoAA4BaJaQAAudc5DbAAP73vrQ/KVODeotCCIbMwfPCAAA="
+  },
+  "projects/tesorra/shots/road": {
+    "group": "tesorraShots",
+    "hash": "75ba9dc4",
+    "width": 960,
+    "height": 600,
+    "placeholder": "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAADQAQCdASoQAAoAA4BaJZQAAuaxeQBGAAD+93fd7I3p65t36eY+9MnxM48bi/yvijj2EdOdaFSbZagAAAA="
+  },
+  "projects/tesorra/shots/store": {
+    "group": "tesorraShots",
+    "hash": "f987ea47",
+    "width": 960,
+    "height": 600,
+    "placeholder": "data:image/webp;base64,UklGRj4AAABXRUJQVlA4IDIAAACwAQCdASoQAAoAA4BaJZwAAudPULvAAP7170hWLmvhoz90w4qPlygVWeVlSjZQaI4AAA=="
+  },
+  "projects/tesorra/showreel-poster": {
+    "group": "tesorraShowreel",
+    "hash": "fababb51",
+    "width": 1920,
+    "height": 1080,
+    "placeholder": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADwAQCdASoQAAkAA4BaJYgCdAEO9QRrigAA/qNx1/xbOKx6+qxRKo5pyANV28tTmR2nUJUgpIr0P0vEIYOKAAAA"
+  },
   "services/firmowe": {
     "group": "services",
     "hash": "c13e5b08",

@@ -31,6 +31,7 @@ export const IMAGE_GROUPS = {
   icons: { dir: "icons", names: ["o-mnie", "oferta", "cv"], widths: [96, 192], sizes: "{desk} 96px, 60px" },
   projectIcons: { dir: "projects/obok", names: ["icon"], widths: [96, 192], sizes: "{desk} 96px, 60px" },
   moonpatchIcon: { dir: "projects/moonpatch", names: ["icon"], widths: [96, 192], sizes: "{desk} 96px, 60px" },
+  tesorraIcon: { dir: "projects/tesorra", names: ["icon"], widths: [96, 192], sizes: "{desk} 96px, 60px" },
   /** Skill rows: 72 px square on the desktop, 56 px on phones. */
   skills: { dir: "skills", exclude: /^workflow-/, widths: [72, 144], sizes: "{desk} 72px, 56px" },
   /** "My workflow": three 16:10 frames side by side, one column on phones (sources are 512 px). */
@@ -50,6 +51,11 @@ export const IMAGE_GROUPS = {
   moonpatchScenes: { dir: "projects/moonpatch/scenes", widths: [192, 384], crop: { aspect: 4 / 5 }, sizes: "{desk} 170px, 38vw" },
   moonpatchShowreel: { dir: "projects/moonpatch", names: ["showreel-poster"], widths: [960, 1920], sizes: "{desk} 860px, 92vw" },
   moonpatchCover: { dir: "projects/moonpatch", names: ["cover"], widths: [480, 960], sizes: "{desk} 360px, 90vw" },
+  /** Tesorra: as Moonpatch, its scenes are 16:9 frames cropped to 4:5 from the middle. */
+  tesorraShots: { dir: "projects/tesorra/shots", widths: [480, 960], crop: { aspect: 16 / 10 }, sizes: "{desk} 420px, 92vw" },
+  tesorraScenes: { dir: "projects/tesorra/scenes", widths: [192, 384], crop: { aspect: 4 / 5 }, sizes: "{desk} 170px, 38vw" },
+  tesorraShowreel: { dir: "projects/tesorra", names: ["showreel-poster"], widths: [960, 1920], sizes: "{desk} 860px, 92vw" },
+  tesorraCover: { dir: "projects/tesorra", names: ["cover"], widths: [480, 960], sizes: "{desk} 360px, 90vw" },
   /**
    * The character's poster on phones (the crop, base-mobile.jpg): AVIF only, the
    * WebP fallback is next/image's q90. Widths follow the crop's rendered width ×
